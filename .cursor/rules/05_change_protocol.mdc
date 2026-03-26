@@ -1,0 +1,51 @@
+---
+description: Change protocol — docs-first, coupled updates, tests required
+alwaysApply: true
+---
+
+# 변경 작업 프로토콜 (항상 준수)
+
+## 규칙 1. 문서 선행 원칙
+코드를 작성하기 전에 반드시 아래 순서로 확인:
+1. docs/01_PRD.md 에서 관련 기능 정의 확인
+2. docs/03_DATA_MODEL.md 에서 스키마 확인
+3. docs/04_API_SPEC.md 에서 엔드포인트 스펙 확인
+4. 위 문서에 정의되지 않은 코드는 작성 금지
+   → 문서에 없으면 먼저 해당 문서에 추가하고 사용자 확인을 받은 후 코드 작성
+
+## 규칙 2. 코드 변경 시 연쇄 업데이트 의무
+아래 파일이 변경되면 동일 작업 내에서 반드시 함께 업데이트:
+
+| 변경 파일 | 함께 업데이트할 파일 |
+|---|---|
+| supabase/migrations/*.sql | docs/03_DATA_MODEL.md |
+| src/lib/calculators/*.ts | docs/04_API_SPEC.md, docs/06_TEST_SPEC.md |
+| src/app/api/**/*.ts | docs/04_API_SPEC.md |
+| docs/01_PRD.md | docs/05_ROADMAP.md |
+| docs/02_SYSTEM_ARCHITECTURE.md | .cursor/rules/02_architecture.mdc |
+| .cursor/rules/*.mdc | .context/current_state.md |
+
+## 규칙 3. 테스트 동시 작성 의무
+- src/lib/calculators/ 하위 함수 작성 시
+  → 반드시 동일 작업에서 src/__tests__/calculators/[함수명].test.ts 작성
+- PRD Acceptance Criteria 항목 1개 = 테스트 케이스 최소 1개
+- 테스트 파일 없이 "완료" 보고 금지
+
+## 규칙 4. 테스트 실행 및 수정 루프
+함수 구현 완료 후 반드시 아래 루프 실행:
+1. `npm run test -- --testPathPattern=[해당 테스트 파일]` 실행
+2. 실패 시 → 테스트 수정 금지, 코드만 수정
+3. 전체 PASS 확인 후 다음 작업 진행
+4. 테스트 결과 사용자에게 반드시 보고
+
+## 규칙 5. 작업 완료 보고 형식
+모든 작업 완료 시 반드시 아래 형식으로 보고:
+
+```
+### 완료 보고
+- 변경된 코드 파일: [목록]
+- 업데이트된 문서: [목록]
+- 작성된 테스트: [목록]
+- 테스트 결과: PASS N개 / FAIL 0개
+- 다음 작업: [next_tasks.md 기준 다음 항목]
+```

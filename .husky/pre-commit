@@ -1,0 +1,40 @@
+#!/bin/sh
+
+echo "--- Pre-commit 검사 시작 ---"
+
+# 검사 1. PRD 변경 시 ROADMAP 동시 업데이트 강제
+if git diff --cached --name-only | grep -q "docs/01_PRD.md"; then
+  if ! git diff --cached --name-only | grep -q "docs/05_ROADMAP.md"; then
+    echo "ERROR: PRD 변경 시 docs/05_ROADMAP.md 도 함께 스테이징해야 합니다."
+    exit 1
+  fi
+fi
+
+# 검사 2. DB 마이그레이션 변경 시 DATA_MODEL 문서 강제
+if git diff --cached --name-only | grep -q "supabase/migrations/"; then
+  if ! git diff --cached --name-only | grep -q "docs/03_DATA_MODEL.md"; then
+    echo "ERROR: 마이그레이션 변경 시 docs/03_DATA_MODEL.md 를 함께 스테이징해야 합니다."
+    exit 1
+  fi
+fi
+
+# 검사 3. calculators 소스(.ts) 변경 시 대응 테스트 파일 존재 강제 (__tests__ 제외)
+for f in $(git diff --cached --name-only | grep -E '^src/lib/calculators/[^/]+\.ts$' || true); do
+  [ -z "$f" ] && continue
+  func=$(basename "$f" .ts)
+  TEST_FILE="src/__tests__/calculators/${func}.test.ts"
+  if [ ! -f "$TEST_FILE" ] && ! git diff --cached --name-only | grep -Fxq "$TEST_FILE"; then
+    echo "ERROR: ${func} 에 대한 테스트 파일(${TEST_FILE})이 없습니다."
+    exit 1
+  fi
+done
+
+# 검사 4. 전체 테스트 실행
+echo "테스트 실행 중..."
+npm run test -- --passWithNoTests --silent
+if [ $? -ne 0 ]; then
+  echo "ERROR: 테스트 실패. 테스트를 통과한 후 커밋하세요."
+  exit 1
+fi
+
+echo "--- Pre-commit 검사 통과 ---"

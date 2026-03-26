@@ -34,3 +34,6 @@ supabase/.temp
 # misc
 .DS_Store
 
+# jest
+/coverage
+

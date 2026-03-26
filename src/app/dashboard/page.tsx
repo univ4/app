@@ -26,13 +26,23 @@ export default async function DashboardPage() {
 
   if (!user) redirect("/login");
 
+  const { data: student } = await supabase
+    .from("students")
+    .select("name")
+    .eq("id", user.id)
+    .maybeSingle();
+
   const email = user.email ?? "사용자";
+  const emailLocalPart = email.includes("@") ? email.split("@")[0] : email;
+  const greetingName = student?.name?.trim() || emailLocalPart;
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="mx-auto w-full max-w-5xl">
         <div className="mb-6 flex items-center justify-between gap-4">
-          <h1 className="text-2xl font-semibold text-black">안녕하세요, {email}님</h1>
+          <h1 className="text-2xl font-semibold text-black">
+            안녕하세요, {greetingName}님
+          </h1>
           <form action={logout}>
             <Button type="submit" className="w-auto px-4">
               로그아웃

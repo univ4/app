@@ -1,4 +1,4 @@
-import { calculateAdmissionProbability } from "../calculateAdmissionProbability";
+import { calculateAdmissionProbability } from "@/lib/calculators/calculateAdmissionProbability";
 
 describe("calculateAdmissionProbability", () => {
   it("returns 적정 when score is within ±5 range", () => {

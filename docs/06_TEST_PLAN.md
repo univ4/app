@@ -1,6 +1,6 @@
 # Test Plan: univ
 
-`docs/01_PRD.md`, `docs/02_SYSTEM_DESIGN.md`, `docs/03_DB_SCHEMA.md`, `docs/04_API_SPEC.md`, `docs/05_AI_PIPELINE.md`를 기준으로 작성한 통합 테스트 계획서입니다.
+`docs/01_PRD.md`, `docs/02_SYSTEM_DESIGN.md`, `docs/02_SYSTEM_ARCHITECTURE.md`, `docs/03_DB_SCHEMA.md`, `docs/03_DATA_MODEL.md`, `docs/04_API_SPEC.md`, `docs/05_AI_PIPELINE.md`, `docs/05_ROADMAP.md`, `docs/06_TEST_SPEC.md`를 기준으로 작성한 통합 테스트 계획서입니다.
 
 ## 1. 테스트 전략 개요
 
@@ -28,7 +28,7 @@ univ 프로젝트는 3단계 테스트 전략으로 운영합니다.
 테스트 파일:
 
 ```txt
-src/lib/calculators/__tests__/calculateZScore.test.ts
+src/__tests__/calculators/calculateZScore.test.ts
 ```
 
 Happy Path (정상 2개):
@@ -61,7 +61,7 @@ describe("calculateZScore", () => {
 테스트 파일:
 
 ```txt
-src/lib/calculators/__tests__/calculateSuneungScore.test.ts
+src/__tests__/calculators/calculateSuneungScore.test.ts
 ```
 
 Happy Path (정상 2개):
@@ -96,7 +96,7 @@ describe("calculateSuneungScore", () => {
 테스트 파일:
 
 ```txt
-src/lib/calculators/__tests__/calculateSusiGPA.test.ts
+src/__tests__/calculators/calculateSusiGPA.test.ts
 ```
 
 Happy Path (정상 2개):
@@ -129,7 +129,7 @@ describe("calculateSusiGPA", () => {
 테스트 파일:
 
 ```txt
-src/lib/calculators/__tests__/calculateAdmissionProbability.test.ts
+src/__tests__/calculators/calculateAdmissionProbability.test.ts
 ```
 
 판정 기준(고정):
@@ -160,6 +160,16 @@ describe("calculateAdmissionProbability", () => {
   it("throws ValidationError for invalid number input", () => {});
 });
 ```
+
+---
+
+### 2-5. P1-11~14 / P2-6 Track 1 신규 함수
+
+상세 케이스 ID·시나리오는 [`docs/06_TEST_SPEC.md`](./06_TEST_SPEC.md)에 정의합니다.
+
+포함 예정 함수:
+- `checkSubjectEligibility`, `analyzeSubjectAdvantage` (기존 구현 + SE-01 보강)
+- `calcSuneungMinimumProbability`, `detectGibupGap`, `calcDDay`, `calcSuneungNapchiRisk` (구현 후 동 문서 기준으로 Jest 추가)
 
 ---
 

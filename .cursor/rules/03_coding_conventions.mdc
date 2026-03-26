@@ -1,0 +1,35 @@
+---
+description: Project coding conventions and API contracts
+alwaysApply: true
+---
+
+# Coding Conventions
+
+## Naming And Locations
+
+- Components: PascalCase under `src/components/`.
+- API routes: `src/app/api/[route]/route.ts`.
+- Calculators: `src/lib/calculators/calculate[Name].ts`.
+- Prompts: `src/lib/prompts/[type].ts`.
+
+## Response Contract
+
+- Success response:
+  - `{ data: { ... }, error: null }`
+- Error response:
+  - `{ data: null, error: { code, message } }`
+
+## Rendering Model
+
+- Default: Server Component.
+- Use Client Component only when required, and add `"use client"` explicitly.
+
+## Supabase Client Split
+
+- Server-side access: `src/lib/supabase/server.ts`.
+- Browser-side access: `src/lib/supabase/client.ts`.
+
+## API And Validation Style
+
+- Validate inputs explicitly (zod preferred for API boundaries).
+- Return stable error codes (`UNAUTHORIZED`, `VALIDATION_ERROR`, etc.) per API spec.

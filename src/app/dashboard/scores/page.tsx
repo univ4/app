@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -74,7 +74,7 @@ export default function ScoresPage() {
   const [apiError, setApiError] = useState<string | null>(null);
 
   const mockForm = useForm<MockExamFormValues>({
-    resolver: zodResolver(mockExamSchema) as any,
+    resolver: zodResolver(mockExamSchema) as unknown as Resolver<MockExamFormValues>,
     defaultValues: {
       exam_date: "",
       sci1_subject: "",
@@ -83,7 +83,7 @@ export default function ScoresPage() {
   });
 
   const schoolForm = useForm<SchoolGpaFormValues>({
-    resolver: zodResolver(schoolGpaSchema) as any,
+    resolver: zodResolver(schoolGpaSchema) as unknown as Resolver<SchoolGpaFormValues>,
     defaultValues: {
       exam_date: "",
       subject_name: "",

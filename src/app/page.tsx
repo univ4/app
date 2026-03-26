@@ -8,5 +8,15 @@ export default async function Home() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  redirect(user ? "/dashboard" : "/login");
+  if (!user) {
+    redirect("/login");
+  }
+
+  const { data: student } = await supabase
+    .from("students")
+    .select("id")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  redirect(student ? "/dashboard" : "/onboarding");
 }

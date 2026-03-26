@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  test:
+    name: 테스트 및 타입 검사
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: 의존성 설치
+        run: npm ci
+
+      - name: 타입 검사
+        run: npm run type-check
+
+      - name: 린트
+        run: npm run lint
+
+      - name: 테스트 실행
+        run: npm run test:coverage
+
+      - name: 커버리지 리포트 업로드
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+
+  doc-sync-check:
+    name: 문서 싱크 검증
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 마이그레이션-DATA_MODEL 싱크 확인
+        run: |
+          MIGRATION_COUNT=$(find supabase/migrations -name "*.sql" | wc -l)
+          echo "마이그레이션 파일 수: $MIGRATION_COUNT"
+          LATEST_MIGRATION=$(find supabase/migrations -name "*.sql" -newer docs/03_DATA_MODEL.md 2>/dev/null | wc -l)
+          if [ "$LATEST_MIGRATION" -gt 0 ]; then
+            echo "WARNING: 최신 마이그레이션보다 DATA_MODEL.md 가 오래되었습니다. 문서를 업데이트하세요."
+            exit 1
+          fi
+
+      - name: calculators 함수 테스트 존재 확인
+        run: |
+          MISSING=0
+          for func_file in src/lib/calculators/*.ts; do
+            [ -e "$func_file" ] || continue
+            func_name=$(basename "$func_file" .ts)
+            test_file="src/__tests__/calculators/${func_name}.test.ts"
+            if [ ! -f "$test_file" ]; then
+              echo "WARNING: 테스트 없음 → $test_file"
+              MISSING=$((MISSING + 1))
+            fi
+          done
+          if [ "$MISSING" -gt 0 ]; then
+            echo "ERROR: 테스트 없는 계산 함수 ${MISSING}개 발견"
+            exit 1
+          fi

@@ -1,8 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   ProbabilitySignal,
   type ProbabilitySignalItem,
@@ -48,6 +50,17 @@ export default function AnalysisPage() {
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6 p-6">
+      <Link href="/dashboard/analysis/minimum-check" className="block">
+        <Card>
+          <CardHeader>
+            <CardTitle>수능최저 충족 분석</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground">
+            현재 등급 기준 충족 여부 확인 및 슬라이더 시뮬레이션
+          </CardContent>
+        </Card>
+      </Link>
+
       {loading ? (
         <div className="flex flex-col gap-4 lg:flex-row">
           {[0, 1, 2].map((i) => (

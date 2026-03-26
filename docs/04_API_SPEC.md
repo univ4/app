@@ -1,6 +1,6 @@
 # API Specification (Next.js App Router)
 
-`docs/01_PRD.md`, `docs/02_SYSTEM_DESIGN.md`, `docs/03_DB_SCHEMA.md`를 기준으로 작성한 API 명세서입니다.
+`docs/01_PRD.md`, `docs/02_SYSTEM_DESIGN.md`, `docs/02_SYSTEM_ARCHITECTURE.md`, `docs/03_DB_SCHEMA.md`, `docs/03_DATA_MODEL.md`를 기준으로 작성한 API 명세서입니다.
 
 ## 1. 공통 사항
 
@@ -527,7 +527,191 @@ university=서강대
 
 ---
 
-## 7. 구현 메모 (권장)
+## 7. 선택과목·D-Day·수능최저·생기부·전략 API (P1-11~14, P2-6)
+
+공통: 세션 필수. `studentId` 경로는 **본인(`auth.uid()`)과 일치할 때만** 허용; 아니면 `FORBIDDEN`.
+
+### POST `/api/subject-profile`
+
+설명: 선택과목 프로필 저장(upsert: `student_id`+`year` 유니크).
+
+요청 Body:
+
+```json
+{
+  "year": 2027,
+  "korean_subject": "언어와매체",
+  "math_subject": "미적분",
+  "science1": "지구과학Ⅰ",
+  "science2": null,
+  "social1": "사회문화",
+  "social2": null,
+  "second_foreign": null
+}
+```
+
+성공 응답:
+
+```json
+{
+  "data": {
+    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "student_id": "f8b9f0f1-1111-2222-3333-444444444444",
+    "year": 2027,
+    "updated_at": "2026-03-27T12:00:00.000Z"
+  },
+  "error": null
+}
+```
+
+---
+
+### GET `/api/subject-profile/[studentId]/eligibility`
+
+설명: 저장된 프로필 + `univ_subject_requirements` 기준 지원 가능 대학 목록(Track1 `checkSubjectEligibility` / `analyzeSubjectAdvantage` 결과).
+
+Query (optional): `year=2027`
+
+성공 응답:
+
+```json
+{
+  "data": {
+    "profile": { "year": 2027, "math_subject": "미적분", "korean_subject": "언어와매체" },
+    "advantageous": [{ "university_id": "…", "department_id": "…", "name": "서강대 자연계열" }],
+    "disadvantageous": [],
+    "ineligible": [{ "university_id": "…", "department_id": "…", "name": "OO대 OO학과", "reasons": ["필수 수학 과목 조건 불충족"] }]
+  },
+  "error": null
+}
+```
+
+---
+
+### GET `/api/dday`
+
+설명: 2027학년도 기준 주요 입시 일정별 D-Day(오늘 날짜 기준). Track1 `calcDDay`.
+
+Query (optional): `reference_date=2026-03-27`(ISO 날짜, 테스트용)
+
+성공 응답:
+
+```json
+{
+  "data": {
+    "reference_date": "2026-03-27",
+    "events": [
+      { "id": "susi_apply_start", "label": "수시 원서접수 시작", "event_date": "2026-09-07", "dday": 164 },
+      { "id": "suneung", "label": "수능", "event_date": "2026-11-12", "dday": 230 }
+    ]
+  },
+  "error": null
+}
+```
+
+---
+
+### GET `/api/dday/todos`
+
+설명: 역산 주간 TO-DO(템플릿 + Track2 문구 생성 결과 병합 가능). 최소 5개 항목 목표.
+
+Query (optional): `week_of=2026-09-01`
+
+성공 응답:
+
+```json
+{
+  "data": {
+    "week_start": "2026-09-01",
+    "todos": [
+      { "id": "1", "due_date": "2026-09-05", "title": "수시 지원 대학 최종 점검", "source": "track1_template" },
+      { "id": "2", "due_date": "2026-09-06", "title": "자소서 제출 전 교내 검토", "source": "track2_llm" }
+    ]
+  },
+  "error": null
+}
+```
+
+---
+
+### GET `/api/suneung-minimum/[studentId]/probability`
+
+설명: 최신 모의고사 + `susi_gpa_rules.suneung_minimum` 기준 충족 확률(%). Track1 `calcSuneungMinimumProbability`.
+
+Query (optional): `year=2027`
+
+성공 응답:
+
+```json
+{
+  "data": {
+    "universities": [
+      {
+        "university_name": "서강대",
+        "admission_type": "학생부교과",
+        "probability_percent": 72.5,
+        "warning": null
+      },
+      {
+        "university_name": "한양대",
+        "admission_type": "학생부교과",
+        "probability_percent": 38.0,
+        "warning": "BELOW_50_PERCENT"
+      }
+    ],
+    "simulations": [
+      { "scenario": "국어 1등급 상승", "delta_percent": 12.3 }
+    ]
+  },
+  "error": null
+}
+```
+
+---
+
+### GET `/api/gibup/[studentId]/gaps`
+
+설명: 생기부(세특·수상·봉사·독서 등) 공백·미달 탐지. Track1 `detectGibupGap`.
+
+성공 응답:
+
+```json
+{
+  "data": {
+    "items": [
+      { "category": "세특", "subject": "수학Ⅰ", "status": "SHORT", "char_count": 120, "threshold": 500, "severity": "critical" }
+    ],
+    "university_signals": [
+      { "university_name": "서강대", "level": "warn", "summary": "보완 권장" }
+    ],
+    "consistency_score": 62
+  },
+  "error": null
+}
+```
+
+---
+
+### GET `/api/strategy/napchi-risk/[studentId]`
+
+설명: 수시 6장·정시 포트폴리오 기반 납치 리스크. Track1 `calcSuneungNapchiRisk`(P2-6).
+
+성공 응답:
+
+```json
+{
+  "data": {
+    "risk_level": "HIGH",
+    "reasons": ["수시 안정권 1장만 선택 → 상위권 정시 옵션 축소"],
+    "opportunity_cost_estimate": { "currency": "ordinal", "note": "정시 지원 가능 대학 수 감소" }
+  },
+  "error": null
+}
+```
+
+---
+
+## 8. 구현 메모 (권장)
 
 ```txt
 src/app/api/scores/route.ts
@@ -538,6 +722,13 @@ src/app/api/chat/route.ts
 src/app/api/schedules/route.ts
 src/app/api/schedules/[id]/route.ts
 src/app/api/ingest/guideline/route.ts
+src/app/api/subject-profile/route.ts
+src/app/api/subject-profile/[studentId]/eligibility/route.ts
+src/app/api/dday/route.ts
+src/app/api/dday/todos/route.ts
+src/app/api/suneung-minimum/[studentId]/probability/route.ts
+src/app/api/gibup/[studentId]/gaps/route.ts
+src/app/api/strategy/napchi-risk/[studentId]/route.ts
 src/middleware.ts
 ```
 

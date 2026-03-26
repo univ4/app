@@ -35,12 +35,39 @@ export async function proxy(request: NextRequest) {
       request.nextUrl.pathname === route ||
       request.nextUrl.pathname.startsWith(`${route}/`),
   );
+  const isDashboardRoute =
+    request.nextUrl.pathname === "/dashboard" ||
+    request.nextUrl.pathname.startsWith("/dashboard/");
+  const isOnboardingRoute =
+    request.nextUrl.pathname === "/onboarding" ||
+    request.nextUrl.pathname.startsWith("/onboarding/");
 
   if (!user && isProtectedRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("next", request.nextUrl.pathname);
     return NextResponse.redirect(url);
+  }
+
+  if (!user && isOnboardingRoute) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/login";
+    url.searchParams.set("next", request.nextUrl.pathname);
+    return NextResponse.redirect(url);
+  }
+
+  if (user && isDashboardRoute) {
+    const { data: student } = await supabase
+      .from("students")
+      .select("id")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (!student) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/onboarding";
+      return NextResponse.redirect(url);
+    }
   }
 
   return response;

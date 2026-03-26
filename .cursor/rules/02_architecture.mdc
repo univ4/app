@@ -1,0 +1,37 @@
+---
+description: Two-track architecture and data boundaries
+alwaysApply: true
+---
+
+# Architecture Rules
+
+## Two-Track Engine (Mandatory Separation)
+
+- Track 1: deterministic calculation engine
+  - Location: `src/lib/calculators/`
+  - Must be pure TypeScript functions (input -> output).
+  - No DB/API side effects, no LLM-based numeric calculation.
+  - Include (extend as implemented): `calculateSuneungScore`, `calculateSusiGPA`, `calculateZScore`, `calculateAdmissionProbability`, `checkSuneungMinimum`, `checkSubjectEligibility`, `analyzeSubjectAdvantage`, `calcSuneungMinimumProbability`, `detectGibupGap`, `calcDDay`, `calcSuneungNapchiRisk`.
+- Track 2: RAG/LLM intelligence engine
+  - Location: `src/app/api/chat/`
+  - Uses retrieval + Claude; when numeric logic is required, call Track 1 functions as tools.
+
+## Data Model Baseline
+
+- Core tables include:
+  - `students`
+  - `academic_records`
+  - `student_records_text`
+  - `university_scoring_rules`
+  - `susi_gpa_rules`
+  - `converted_standard_scores`
+  - `guideline_chunks`
+  - `admission_schedules`
+  - `subject_profiles` (P1-11, per-student CSAT elective profile)
+  - `univ_subject_requirements` (P1-11, per-university/dept rules; plus `universities`, `departments` FKs)
+
+## Access Control
+
+- RLS applies to all tables.
+- User-owned data tables must enforce `auth.uid()` scope (e.g., `id` or `student_id`).
+- Shared reference tables are read-only for authenticated users.

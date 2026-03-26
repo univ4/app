@@ -2,7 +2,7 @@ import {
   calculateSuneungScore,
   type SuneungScores,
   type UniversityScoringRules,
-} from "../calculateSuneungScore";
+} from "@/lib/calculators/calculateSuneungScore";
 
 const baseScores: SuneungScores = {
   korean_standard_score: 131,
@@ -67,5 +67,31 @@ describe("calculateSuneungScore", () => {
         math_ratio: Number.NaN,
       }),
     ).toThrow("ValidationError");
+  });
+
+  describe("엣지: 표준점수 경계값", () => {
+    it("국어·수학·과탐 표준점수 0이어도 유한 환산점수 반환", () => {
+      const zeroSci: SuneungScores = {
+        korean_standard_score: 0,
+        math_standard_score: 0,
+        english_grade: 2,
+        sci1_standard_score: 0,
+        sci2_standard_score: 0,
+        sci2_is_type_two: false,
+      };
+      const v = calculateSuneungScore(zeroSci, baseRules);
+      expect(Number.isFinite(v)).toBe(true);
+      expect(v).toBeGreaterThanOrEqual(0);
+    });
+
+    it("과탐 만점에 가까운 값에서도 유한값", () => {
+      const high: SuneungScores = {
+        ...baseScores,
+        sci1_standard_score: 70,
+        sci2_standard_score: 70,
+        sci2_is_type_two: true,
+      };
+      expect(Number.isFinite(calculateSuneungScore(high, baseRules))).toBe(true);
+    });
   });
 });

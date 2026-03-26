@@ -1,7 +1,8 @@
 # DB Schema Design (Supabase PostgreSQL + pgvector)
 
 `docs/01_PRD.md`, `docs/02_SYSTEM_DESIGN.md`를 기준으로 작성한 DB 설계 문서입니다.  
-실제 적용 SQL은 `supabase/migrations/20260325000000_init.sql`에 동일하게 포함되어 있으며, Supabase SQL Editor에서 바로 실행 가능합니다.
+실제 적용 SQL은 `supabase/migrations/20260325000000_init.sql`, `20260326000000_multi_student.sql`, `20260327000000_subject_profiles.sql` 등에 포함됩니다.  
+P1-11 확장 테이블 상세는 [`docs/03_DATA_MODEL.md`](./03_DATA_MODEL.md)를 참조합니다.
 
 ## 1) ER 다이어그램
 
@@ -98,8 +99,56 @@ erDiagram
     boolean is_completed
   }
 
+  universities {
+    uuid id PK
+    text name UK
+    timestamptz created_at
+    timestamptz updated_at
+  }
+
+  departments {
+    uuid id PK
+    uuid university_id FK
+    text name
+    timestamptz created_at
+    timestamptz updated_at
+  }
+
+  subject_profiles {
+    uuid id PK
+    uuid student_id FK
+    int year "2027 check"
+    text korean_subject
+    text math_subject
+    text science1
+    text science2
+    text social1
+    text social2
+    text second_foreign
+    timestamptz created_at
+    timestamptz updated_at
+  }
+
+  univ_subject_requirements {
+    uuid id PK
+    uuid univ_id FK
+    uuid dept_id FK
+    int year "2027 check"
+    text[] required_math
+    text[] required_science
+    jsonb preferred_subjects
+    text[] disqualified_subjects
+    text notes
+    timestamptz created_at
+    timestamptz updated_at
+  }
+
   students ||--o{ academic_records : "student_id"
   students ||--o{ student_records_text : "student_id"
+  students ||--o| subject_profiles : "student_id year"
+  universities ||--o{ departments : "university_id"
+  universities ||--o{ univ_subject_requirements : "univ_id"
+  departments ||--o{ univ_subject_requirements : "dept_id"
 ```
 
 ## 2) 테이블별 상세 정의
@@ -380,6 +429,74 @@ create table if not exists public.admission_schedules (
 );
 ```
 
+---
+
+### 2.9 `universities` (P1-11 FK용)
+
+| 컬럼명 | 타입 | 제약조건 | 설명 |
+|---|---|---|---|
+| id | uuid | PK, default gen_random_uuid() | 대학 식별자 |
+| name | text | not null, unique | 대학명 |
+| created_at | timestamptz | not null, default now() | |
+| updated_at | timestamptz | not null, default now() | |
+
+- RLS: `authenticated` SELECT (`20260327000000_subject_profiles.sql` 참조)
+
+---
+
+### 2.10 `departments` (P1-11 FK용)
+
+| 컬럼명 | 타입 | 제약조건 | 설명 |
+|---|---|---|---|
+| id | uuid | PK, default gen_random_uuid() | 모집단위 식별자 |
+| university_id | uuid | FK → universities(id), not null | 소속 대학 |
+| name | text | not null | 모집단위명 |
+| created_at | timestamptz | not null, default now() | |
+| updated_at | timestamptz | not null, default now() | |
+
+- 고유: `(university_id, name)`
+- RLS: `authenticated` SELECT
+
+---
+
+### 2.11 `subject_profiles` (P1-11)
+
+| 컬럼명 | 타입 | 제약조건 | 설명 |
+|---|---|---|---|
+| id | uuid | PK | |
+| student_id | uuid | FK → students(id), not null | |
+| year | integer | not null, default 2027, check(year=2027) | |
+| korean_subject | text | not null, check | `언어와매체` / `화법과작문` |
+| math_subject | text | not null, check | `미적분` / `기하` / `확률과통계` |
+| science1, science2 | text | nullable | 탐구(과학 슬롯) 과목명 |
+| social1, social2 | text | nullable | 탐구(사회 슬롯) 과목명 |
+| second_foreign | text | nullable | |
+| created_at, updated_at | timestamptz | not null | |
+
+- 고유: `(student_id, year)`
+- RLS: `auth.uid() = student_id` (소유 데이터만 CRUD)
+
+---
+
+### 2.12 `univ_subject_requirements` (P1-11)
+
+| 컬럼명 | 타입 | 제약조건 | 설명 |
+|---|---|---|---|
+| id | uuid | PK | |
+| univ_id | uuid | FK → universities(id), not null | |
+| dept_id | uuid | FK → departments(id), not null | |
+| year | integer | not null, check(year=2027) | |
+| required_math | text[] | nullable | 필수 수학 허용 목록 |
+| required_science | text[] | nullable | 필수 탐구 과목명 |
+| preferred_subjects | jsonb | not null, default `{}` | 우대·가산 |
+| disqualified_subjects | text[] | nullable | 지원 불가 과목 |
+| notes | text | nullable | |
+| created_at, updated_at | timestamptz | not null | |
+
+- RLS: `authenticated` SELECT (참조 데이터)
+
+---
+
 ## 3) pgvector 설정 및 인덱스
 
 ```sql
@@ -464,12 +581,9 @@ create policy admission_schedules_read_all on public.admission_schedules
 
 ## 5) 마이그레이션 파일 안내
 
-- 실제 파일 경로: `supabase/migrations/20260325000000_init.sql`
-- 포함 범위:
-  - `create extension if not exists vector;`
-  - 8개 테이블 `CREATE TABLE`
-  - 주요 인덱스(HNSW 포함)
-  - RLS 활성화 + 정책 전체
+- `supabase/migrations/20260325000000_init.sql` — 초기 스키마 + 8개 테이블 + RLS
+- `supabase/migrations/20260326000000_multi_student.sql` — students 컬럼·RLS 보강
+- `supabase/migrations/20260327000000_subject_profiles.sql` — `universities`, `departments`, `subject_profiles`, `univ_subject_requirements` + RLS
 
 ## 6) 초기 시드 데이터(Seed Data) 안내
 

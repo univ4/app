@@ -1,0 +1,58 @@
+---
+description: Admission-domain formulas and decision semantics
+alwaysApply: true
+---
+
+# Domain Knowledge Rules
+
+## Admission Types
+
+- Early admission (`수시`): `학생부교과`, `학생부종합`, `논술전형`.
+- Regular admission (`정시`): CSAT-based weighted conversion.
+
+## Track Mapping
+
+- `정시` calculations: Track 1 (`calculateSuneungScore` etc.).
+- `학생부교과` calculations: Track 1 (`calculateSusiGPA`).
+- `학생부종합` interpretation/feedback: Track 2 (RAG + LLM, with evidence).
+
+## Key Calculation Policies
+
+- CSAT minimum check:
+  - Parse `condition` and evaluate with `checkSuneungMinimum()`.
+- Admission probability bands:
+  - `안정`: score > adjustedCutline + 5
+  - `적정`: adjustedCutline - 5 <= score <= adjustedCutline + 5
+  - `도전`: score < adjustedCutline - 5
+- Medical expansion adjustment:
+  - Apply `discountFactor` to cutline before banding.
+- Z-score interpretation:
+  - Based on raw score / mean / stddev for school-level relative context.
+
+## Target University Universe
+
+- Includes SKY, 서성한, 중경외시건, medical/veterinary tracks, and major specialized schools (roughly ~30 targets in roadmap/seed scope).
+
+## High school elective profile (CSAT subject choices)
+
+- Store per-area choices (e.g. Korean track, Math course, two inquiry subjects) as student profile data for the target admission year (e.g. 2027).
+- **Eligibility / fit** vs universities: combine Track 1 rules (where exam subjects and weights are fixed) with Track 2 RAG over official brochures for unit-specific wording; always cite source and admission year.
+- Never imply guaranteed admission or fixed “best” choices without brochure evidence.
+- Some nature-science tracks require **미적분/기하** (not 확통): enforce via `required_math` and `disqualified_subjects` in `univ_subject_requirements`; Track 1 `checkSubjectEligibility` must evaluate these before any “유리/불리” narrative.
+- **Inquiry subject pools**: standard-score advantage/disadvantage varies by cohort size and mean by subject; Track 1 stats (when data exists) quantify; Track 2 only explains with evidence.
+
+## Suneung minimum pass probability (P1-13)
+
+- Use per-subject mock-exam **mean and stddev** (or grade distribution model) to approximate P(pass) under each university’s `suneung_minimum` rule.
+- Prefer **normal approximation** for continuous scores mapped to grades when policy allows; document assumptions in API/tool output.
+- Multi-subject **sum conditions** (e.g. “3개합6”): combine as **joint probability** / convolution-style logic in Track 1 (no LLM for the number).
+
+## Susi “napchi” (수시 납치)
+
+- If admitted early round and **enrolls**, the student **cannot** apply 정시 in the same year (policy constraint).
+- Accepting a **safe** early offer often means **giving up** higher-tier 정시 upside; Track 1 can score “opportunity cost” / risk bands; Track 2 explains trade-offs with brochure-backed wording.
+
+## Output Principle
+
+- Always present interpretable evidence (scores, gaps, conditions, sources).
+- Never present speculative guarantees.

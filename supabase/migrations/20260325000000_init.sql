@@ -7,6 +7,9 @@ create extension if not exists vector;
 create table if not exists public.students (
   id uuid primary key references auth.users(id) on delete cascade,
   name text not null,
+  display_name text,
+  school_name text,
+  grade integer default 3,
   role text not null check (role in ('admin', 'viewer')),
   target_universities text[] not null default '{}',
   target_major text,

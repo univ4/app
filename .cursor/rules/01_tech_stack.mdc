@@ -1,0 +1,30 @@
+---
+description: Core stack and framework constraints
+alwaysApply: true
+---
+
+# Tech Stack And Runtime Rules
+
+- Frontend: Next.js 16 App Router with `src/` directory structure.
+- DB/Auth/Vector: Supabase (`PostgreSQL + pgvector`) via `@supabase/ssr`.
+- AI:
+  - LLM: Claude 3.5 Sonnet
+  - Embedding: OpenAI `text-embedding-3-small`
+- UI: Shadcn UI (Nova preset) + Tailwind CSS.
+- Deploy: Vercel.
+- Test: Jest (+ ts-jest), with calculator unit tests first.
+
+## Next.js 16 Specifics
+
+- Use `proxy.ts` (not legacy `middleware.ts`) for request guard/session refresh behavior.
+- Prefer Server Components; use `"use client"` only when interactive state/event handling is needed.
+
+## Server Action Constraint
+
+- In `"use server"` files, export only `export async function ...`.
+- Do not export objects/constants/defaults from server-action-only modules.
+
+## TypeScript
+
+- Keep strict-mode-friendly code.
+- Avoid `any`; use explicit interfaces/types and narrow unknown data safely.

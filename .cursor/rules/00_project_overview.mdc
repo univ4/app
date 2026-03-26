@@ -1,0 +1,24 @@
+---
+description: Project identity, users, and MVP scope
+alwaysApply: true
+---
+
+# Univ Project Overview
+
+- Project: `univ` ([github.com/univ4/app](https://github.com/univ4/app))
+- Goal: Family-only AI college admission consulting dashboard for a Korean high school senior.
+- Student profile: mock exam grade 1-2, school grade 2-3, target `서강대/성균관대/한양대` engineering track.
+- Core users:
+  - Dad: `Admin` (data input, strategy decisions)
+  - Son: `Viewer` (results, chatbot, schedule)
+  - Mom: `Viewer` (monitoring)
+  - Friends: `Viewer` (read-only share scope when allowed)
+- Team and schedule:
+  - Single developer (dad)
+  - 4-week MVP focused on P0 features
+
+## Product Principles
+
+- This is a practical family decision-support tool, not a commercial SaaS.
+- Show evidence and explain uncertainty; do not imply guaranteed admission.
+- Prefer fast iteration and clear UX over over-engineering.

@@ -1,4 +1,4 @@
-import { calculateZScore } from "../calculateZScore";
+import { calculateZScore } from "@/lib/calculators/calculateZScore";
 
 describe("calculateZScore", () => {
   it("returns 1.55 for (92, 68.4, 15.2)", () => {

@@ -1,5 +1,7 @@
 # System Design: univ (가족 전용 AI 대입 컨설팅)
 
+PRD P1-11~14·P2-6~8 반영 스키마/Track1·2 확장 요약은 [`docs/02_SYSTEM_ARCHITECTURE.md`](./02_SYSTEM_ARCHITECTURE.md)를 참조합니다.
+
 ## 1) 시스템 전체 구조 (High-Level Architecture)
 
 핵심 경로는 다음과 같습니다.

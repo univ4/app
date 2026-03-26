@@ -2,7 +2,7 @@ import {
   calculateSusiGPA,
   type AcademicRecord,
   type SusiGpaRules,
-} from "../calculateSusiGPA";
+} from "@/lib/calculators/calculateSusiGPA";
 
 const rules: SusiGpaRules = {
   include_subjects: ["수학I", "영어I", "물리학I"],
