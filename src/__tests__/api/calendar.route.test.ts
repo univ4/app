@@ -1,6 +1,7 @@
 /**
  * /api/calendar, /api/calendar/[id] — P0-5 가족 입시 캘린더, docs/04_API_SPEC §5b
  */
+import { NextRequest } from "next/server";
 import { DELETE, PUT } from "@/app/api/calendar/[id]/route";
 import { GET, POST } from "@/app/api/calendar/route";
 
@@ -113,7 +114,7 @@ describe("/api/calendar", () => {
     it("비로그인 시 401", async () => {
       mockUnauthedClient();
       const res = await POST(
-        new Request("http://localhost/api/calendar", {
+        new NextRequest("http://localhost/api/calendar", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(validBody),
@@ -132,7 +133,7 @@ describe("/api/calendar", () => {
         }),
       });
       const res = await POST(
-        new Request("http://localhost/api/calendar", {
+        new NextRequest("http://localhost/api/calendar", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(validBody),
@@ -171,7 +172,7 @@ describe("/api/calendar", () => {
         }),
       });
       const res = await POST(
-        new Request("http://localhost/api/calendar", {
+        new NextRequest("http://localhost/api/calendar", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(validBody),
@@ -191,7 +192,7 @@ describe("/api/calendar", () => {
         }),
       });
       const res = await POST(
-        new Request("http://localhost/api/calendar", {
+        new NextRequest("http://localhost/api/calendar", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -219,7 +220,7 @@ describe("/api/calendar/[id]", () => {
     it("비로그인 시 401", async () => {
       mockUnauthedClient();
       const res = await PUT(
-        new Request("http://localhost/api/calendar/" + EVENT_ID, {
+        new NextRequest("http://localhost/api/calendar/" + EVENT_ID, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ title: "변경" }),
@@ -239,7 +240,7 @@ describe("/api/calendar/[id]", () => {
         }),
       });
       const res = await PUT(
-        new Request("http://localhost/api/calendar/" + EVENT_ID, {
+        new NextRequest("http://localhost/api/calendar/" + EVENT_ID, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ title: "변경" }),
@@ -285,7 +286,7 @@ describe("/api/calendar/[id]", () => {
         }),
       });
       const res = await PUT(
-        new Request("http://localhost/api/calendar/" + EVENT_ID, {
+        new NextRequest("http://localhost/api/calendar/" + EVENT_ID, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ title: "변경된 제목" }),
@@ -303,7 +304,7 @@ describe("/api/calendar/[id]", () => {
     it("비로그인 시 401", async () => {
       mockUnauthedClient();
       const res = await DELETE(
-        new Request("http://localhost/api/calendar/" + EVENT_ID, {
+        new NextRequest("http://localhost/api/calendar/" + EVENT_ID, {
           method: "DELETE",
         }),
         { params },
@@ -321,7 +322,7 @@ describe("/api/calendar/[id]", () => {
         }),
       });
       const res = await DELETE(
-        new Request("http://localhost/api/calendar/" + EVENT_ID, {
+        new NextRequest("http://localhost/api/calendar/" + EVENT_ID, {
           method: "DELETE",
         }),
         { params },
@@ -354,7 +355,7 @@ describe("/api/calendar/[id]", () => {
         }),
       });
       const res = await DELETE(
-        new Request("http://localhost/api/calendar/" + EVENT_ID, {
+        new NextRequest("http://localhost/api/calendar/" + EVENT_ID, {
           method: "DELETE",
         }),
         { params },

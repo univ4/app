@@ -143,7 +143,7 @@ NEIS 파싱 JSON 적재 스크립트 `scripts/ingest/load_neis_grades.ts`의 ups
 | `student_certificates` | 자격증·인증 — 다건, `created_at` |
 | `student_school_violence` | 학교폭력 조치 — 다건, `created_at` |
 
-- **적재**: `scripts/ingest/load_student_record.ts` — `record/student_record.json` → 위 7테이블. 검증 배치(2026-03-29): `student_attendance` 3건, `student_awards` 3건, `student_activities` 6건, `student_volunteer` 14건, `student_subject_notes` 23건, `student_behavior` 2건(`student_reading`은 해당 배치에서 미적재 또는 0건).
+- **적재**: `scripts/ingest/load_student_record.ts` — `record/student_record.json` → 위 9테이블. 검증 배치(2026-03-29): `student_attendance` 3건, `student_awards` 3건, `student_activities` 6건, `student_volunteer` 14건, `student_subject_notes` 23건, `student_behavior` 2건(`student_reading`은 해당 배치에서 미적재 또는 0건).
 - **RLS**: SELECT는 본인 `student_id` 또는 `students.role = 'admin'`; INSERT/UPDATE/DELETE는 admin만(§2.15와 동일).
 
 ---
@@ -179,3 +179,21 @@ NEIS 파싱 JSON 적재 스크립트 `scripts/ingest/load_neis_grades.ts`의 ups
 ## 7) CI 문서 동기화
 
 GitHub Actions `doc-sync-check`는 `supabase/migrations/*.sql` 중 **`docs/03_DATA_MODEL.md`보다 최근에 수정된 파일**이 있으면 실패합니다. 마이그레이션을 추가·변경한 커밋에서는 반드시 본 문서를 함께 갱신하세요.
+
+**현재 마이그레이션 파일 목록 (13개, `find supabase/migrations -name "*.sql" | sort` 기준)**
+
+| 순서 | 파일명 |
+| ---: | --- |
+| 1 | `20260325000000_init.sql` |
+| 2 | `20260326000000_multi_student.sql` |
+| 3 | `20260327000000_subject_profiles.sql` |
+| 4 | `20260329000001_admission_records.sql` |
+| 5 | `20260329000002_admission_records.sql` |
+| 6 | `20260329120000_chat_rag.sql` |
+| 7 | `20260329140000_academic_records_neis.sql` |
+| 8 | `20260329140000_match_guideline_chunks_threshold.sql` |
+| 9 | `20260329150000_academic_records_neis_upsert_unique.sql` |
+| 10 | `20260329160000_student_record_tables.sql` |
+| 11 | `20260329170000_academic_records_fix_unique.sql` |
+| 12 | `20260330180000_calendar_events.sql` |
+| 13 | `20260330190000_student_certificates_school_violence.sql` |
