@@ -1,15 +1,17 @@
 /**
  * /api/analysis/minimum-check
  */
-import { GET } from "@/app/api/analysis/minimum-check/route";
+import { GET, POST } from "@/app/api/analysis/minimum-check/route";
 
 jest.mock("@/lib/supabase/server", () => ({
   createClient: jest.fn(),
+  getAuthUser: jest.fn(),
 }));
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getAuthUser } from "@/lib/supabase/server";
 
 const mockCreateClient = createClient as jest.MockedFunction<typeof createClient>;
+const mockGetAuthUser = getAuthUser as jest.MockedFunction<typeof getAuthUser>;
 
 describe("/api/analysis/minimum-check", () => {
   beforeEach(() => {
@@ -18,23 +20,17 @@ describe("/api/analysis/minimum-check", () => {
 
   describe("AC: 인증·모의고사 필수", () => {
     it("비로그인 401", async () => {
-      mockCreateClient.mockResolvedValue({
-        auth: {
-          getUser: jest.fn().mockResolvedValue({ data: { user: null }, error: null }),
-        },
-      } as never);
+      mockCreateClient.mockResolvedValue({} as never);
+      mockGetAuthUser.mockResolvedValue(null);
       const res = await GET();
       expect(res.status).toBe(401);
+      const body = await res.json();
+      expect(body.error?.code).toBe("UNAUTHORIZED");
     });
 
     it("모의고사 없으면 404", async () => {
+      mockGetAuthUser.mockResolvedValue({ id: "u1" } as never);
       mockCreateClient.mockResolvedValue({
-        auth: {
-          getUser: jest.fn().mockResolvedValue({
-            data: { user: { id: "u1" } },
-            error: null,
-          }),
-        },
         from: jest.fn(() => ({
           select: () => ({
             eq: () => ({
@@ -54,6 +50,8 @@ describe("/api/analysis/minimum-check", () => {
       } as never);
       const res = await GET();
       expect(res.status).toBe(404);
+      const body = await res.json();
+      expect(body.error?.code).toBe("NOT_FOUND");
     });
   });
 
@@ -71,13 +69,8 @@ describe("/api/analysis/minimum-check", () => {
           },
         },
       ];
+      mockGetAuthUser.mockResolvedValue({ id: "u1" } as never);
       mockCreateClient.mockResolvedValue({
-        auth: {
-          getUser: jest.fn().mockResolvedValue({
-            data: { user: { id: "u1" } },
-            error: null,
-          }),
-        },
         from: jest.fn((table: string) => {
           if (table === "academic_records") {
             return {
@@ -119,10 +112,12 @@ describe("/api/analysis/minimum-check", () => {
       const res = await GET();
       expect(res.status).toBe(200);
       const body = await res.json();
-      expect(body.results).toHaveLength(1);
-      expect(body.results[0].university).toBe("테스트대");
-      expect(body.results[0].satisfied).toBe(true);
-      expect(body.results[0].best_combination.length).toBeGreaterThan(0);
+      expect(body.data.results).toHaveLength(1);
+      expect(body.data.results[0].university).toBe("테스트대");
+      expect(body.data.results[0].satisfied).toBe(true);
+      expect(body.data.results[0].best_combination.length).toBeGreaterThan(0);
+      expect(typeof body.data.results[0].probability).toBe("number");
+      expect(body.data.results[0].risk_level).toMatch(/^(safe|caution|danger)$/);
     });
 
     it("엣지: condition/subjects 비어 있으면 satisfied=false 고정 객체", async () => {
@@ -137,13 +132,8 @@ describe("/api/analysis/minimum-check", () => {
           },
         },
       ];
+      mockGetAuthUser.mockResolvedValue({ id: "u1" } as never);
       mockCreateClient.mockResolvedValue({
-        auth: {
-          getUser: jest.fn().mockResolvedValue({
-            data: { user: { id: "u1" } },
-            error: null,
-          }),
-        },
         from: jest.fn((table: string) => {
           if (table === "academic_records") {
             return {
@@ -184,18 +174,14 @@ describe("/api/analysis/minimum-check", () => {
       } as never);
       const res = await GET();
       const body = await res.json();
-      expect(body.results[0].satisfied).toBe(false);
-      expect(body.results[0].best_combination).toEqual([]);
+      expect(body.data.results[0].satisfied).toBe(false);
+      expect(body.data.results[0].best_combination).toEqual([]);
+      expect(body.data.results[0].probability).toBeNull();
     });
 
     it("suneung_minimum 행이 없으면 results 빈 배열", async () => {
+      mockGetAuthUser.mockResolvedValue({ id: "u1" } as never);
       mockCreateClient.mockResolvedValue({
-        auth: {
-          getUser: jest.fn().mockResolvedValue({
-            data: { user: { id: "u1" } },
-            error: null,
-          }),
-        },
         from: jest.fn((table: string) => {
           if (table === "academic_records") {
             return {
@@ -240,18 +226,13 @@ describe("/api/analysis/minimum-check", () => {
       const res = await GET();
       expect(res.status).toBe(200);
       const body = await res.json();
-      expect(body.results).toEqual([]);
-      expect(body.student_grades.korean).toBe(1);
+      expect(body.data.results).toEqual([]);
+      expect(body.data.student_grades.korean).toBe(1);
     });
 
     it("엣지: 최신 모의고사 조회 DB 에러 시 500", async () => {
+      mockGetAuthUser.mockResolvedValue({ id: "u1" } as never);
       mockCreateClient.mockResolvedValue({
-        auth: {
-          getUser: jest.fn().mockResolvedValue({
-            data: { user: { id: "u1" } },
-            error: null,
-          }),
-        },
         from: jest.fn(() => ({
           select: () => ({
             eq: () => ({
@@ -279,13 +260,8 @@ describe("/api/analysis/minimum-check", () => {
     });
 
     it("엣지: susi_gpa_rules 조회 에러 시 500", async () => {
+      mockGetAuthUser.mockResolvedValue({ id: "u1" } as never);
       mockCreateClient.mockResolvedValue({
-        auth: {
-          getUser: jest.fn().mockResolvedValue({
-            data: { user: { id: "u1" } },
-            error: null,
-          }),
-        },
         from: jest.fn((table: string) => {
           if (table === "academic_records") {
             return {
@@ -329,6 +305,40 @@ describe("/api/analysis/minimum-check", () => {
       } as never);
       const res = await GET();
       expect(res.status).toBe(500);
+    });
+
+    it("POST: calcSuneungMinimumProbability 연동·성공 envelope", async () => {
+      mockCreateClient.mockResolvedValue({} as never);
+      mockGetAuthUser.mockResolvedValue({ id: "u1" } as never);
+      const req = new Request("http://localhost/api/analysis/minimum-check", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          scores: [
+            { subject: "korean", grade: 1 },
+            { subject: "math", grade: 2 },
+            { subject: "english", grade: 2 },
+            { subject: "sci1", grade: 2 },
+            { subject: "sci2", grade: 2 },
+          ],
+          requirement: {
+            minGradeSum: 6,
+            subjectCount: 3,
+            hankoSaRequired: false,
+            englishMaxGrade: 2,
+          },
+          sampleCount: 2000,
+          seed: 1,
+        }),
+      });
+      const res = await POST(req as never);
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.error).toBeNull();
+      expect(body.data.probability).toBeGreaterThanOrEqual(0);
+      expect(body.data.probability).toBeLessThanOrEqual(1);
+      expect(typeof body.data.expectedGradeSum).toBe("number");
+      expect(body.data.riskLevel).toMatch(/^(safe|caution|danger)$/);
     });
   });
 });

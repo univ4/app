@@ -51,7 +51,9 @@ univ는 고3 수험생 자녀의 성적, 요강, 일정, 지원전략을 한 곳
 | [03 DB 스키마](./docs/03_DB_SCHEMA.md) | Supabase 테이블 정의, ER 다이어그램, SQL |
 | [04 API 명세](./docs/04_API_SPEC.md) | API Route 엔드포인트, 요청/응답 스키마 |
 | [05 AI 파이프라인](./docs/05_AI_PIPELINE.md) | RAG 설계, 프롬프트 전략, 비용 추정 |
-| [06 테스트 계획](./docs/06_TEST_PLAN.md) | Unit/Integration/E2E 테스트 케이스 |
+| [06 테스트 계획](./docs/06_TEST_PLAN.md) | Unit/Integration/E2E 전략·케이스 개요 |
+| [07 테스트 스펙](./docs/07_TEST_SPEC.md) | Track 1·챗봇 단위·라우트 테스트 케이스 ID |
+| [08 사용자 매뉴얼](./docs/08_USER_MANUAL.md) | 최종 사용자 기능 안내 |
 
 ## 개발 로드맵
 

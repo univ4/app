@@ -1,13 +1,14 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getAuthUser } from "@/lib/supabase/server";
 import { calculateAdmissionProbability } from "@/lib/calculators/calculateAdmissionProbability";
 import {
   calculateSuneungScore,
   type SuneungScores,
   type UniversityScoringRules,
 } from "@/lib/calculators/calculateSuneungScore";
+import { parseSci2IsTypeTwo } from "@/lib/signals/mockExamSci2";
 
 const querySchema = z.object({
   universities: z.string().min(1),
@@ -24,17 +25,17 @@ type ProbabilityResponseItem = {
   discount_reason: string;
 };
 
-function parseSci2IsTypeTwo(subjectName: string | null) {
-  if (!subjectName) return false;
-
-  // MOCK_EXAM 저장 시 `subject_name = "sci1:${sci1Subject}|sci2:${sci2Subject}"` 형태로 저장합니다.
-  // 여기서 sci2Subject만 추출해 "II" 포함 여부로 과탐II 여부를 추정합니다.
-  const parts = subjectName.split("|").map((s) => s.trim());
-  const sci2Part = parts.find((p) => p.startsWith("sci2:"));
-  const sci2Subject = (sci2Part?.slice("sci2:".length) ?? "").trim();
-  if (!sci2Subject) return false;
-
-  return sci2Subject.includes("II");
+function getThrownMessage(e: unknown): string {
+  if (e instanceof Error) return e.message;
+  if (
+    typeof e === "object" &&
+    e !== null &&
+    "message" in e &&
+    typeof (e as { message: unknown }).message === "string"
+  ) {
+    return (e as { message: string }).message;
+  }
+  return String(e);
 }
 
 async function getCutline70({
@@ -69,9 +70,7 @@ async function getCutline70({
 
 export async function GET(request: NextRequest) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getAuthUser(supabase);
 
   if (!user) {
     return NextResponse.json(
@@ -199,11 +198,20 @@ export async function GET(request: NextRequest) {
         university: uni,
         admissionYear,
       });
-    } catch {
-      // 초기/로컬 데이터에서 cutline_70이 없을 수 있습니다.
-      // 이 경우 분석 페이지는 최소한의 시각적 피드백을 위해
-      // score를 기준으로 폴백 처리합니다.
-      cutline_70 = converted_score;
+    } catch (e) {
+      const msg = getThrownMessage(e);
+      // `getCutline70`: 데이터 없음(NOT_FOUND)만 환산점수로 폴백; Supabase 쿼리 오류는 500.
+      if (msg.startsWith("NOT_FOUND:")) {
+        cutline_70 = converted_score;
+      } else {
+        return NextResponse.json(
+          {
+            data: null,
+            error: { code: "INTERNAL_ERROR", message: msg },
+          },
+          { status: 500 },
+        );
+      }
     }
 
     const probability = calculateAdmissionProbability(

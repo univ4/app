@@ -11,6 +11,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  NEIS_SEMESTERS,
+  SUBJECT_CATEGORIES,
+  schoolGpaFormSchema,
+  type SchoolGpaFormValues,
+  type SubjectCategory,
+} from "@/lib/validation/schoolGpaScore";
 
 const mockExamSchema = z.object({
   exam_date: z.string().min(1, "시험 날짜를 입력하세요."),
@@ -29,20 +36,13 @@ const mockExamSchema = z.object({
   sci2_percentile: z.coerce.number({ message: "숫자를 입력하세요." }),
 });
 
-const schoolGpaSchema = z.object({
-  exam_date: z.string().min(1, "시험 날짜를 입력하세요."),
-  subject_name: z.string().min(1, "과목명을 입력하세요."),
-  raw_score: z.coerce.number({ message: "숫자를 입력하세요." }),
-  avg_score: z.coerce.number({ message: "숫자를 입력하세요." }),
-  stddev_score: z.coerce.number({ message: "숫자를 입력하세요." }),
-  student_count: z.coerce.number().int().positive("1 이상 입력하세요."),
-  credit_unit: z.coerce.number().int().positive("1 이상 입력하세요."),
-  school_grade: z.coerce.number().min(1).max(9),
-  achievement_level: z.enum(["A", "B", "C", ""]),
-});
-
 type MockExamFormValues = z.infer<typeof mockExamSchema>;
-type SchoolGpaFormValues = z.infer<typeof schoolGpaSchema>;
+
+const SUBJECT_CATEGORY_LABEL: Record<SubjectCategory, string> = {
+  general: "보통교과 (석차등급 있음)",
+  career_choice: "진로선택과목 (성취도만, 석차등급 없음)",
+  pe_art: "체육·예술과목 (원점수+성취도만)",
+};
 
 type AcademicRecord = {
   id: number;
@@ -55,6 +55,11 @@ type AcademicRecord = {
   raw_score: number | null;
   avg_score: number | null;
   school_grade: number | null;
+  semester: string | null;
+  subject_category: SubjectCategory | null;
+  achievement_level: string | null;
+  class_rank: number | null;
+  rank_total: number | null;
 };
 
 function parseScienceLabel(subjectName: string | null) {
@@ -83,13 +88,37 @@ export default function ScoresPage() {
   });
 
   const schoolForm = useForm<SchoolGpaFormValues>({
-    resolver: zodResolver(schoolGpaSchema) as unknown as Resolver<SchoolGpaFormValues>,
+    resolver: zodResolver(schoolGpaFormSchema) as unknown as Resolver<SchoolGpaFormValues>,
     defaultValues: {
-      exam_date: "",
+      semester: "3-1",
+      subject_category: "general",
       subject_name: "",
+      credit_unit: 4,
       achievement_level: "",
-    },
+    } as unknown as SchoolGpaFormValues,
   });
+
+  const schoolCategory = schoolForm.watch("subject_category");
+  const schoolErrors = schoolForm.formState.errors as Record<
+    string,
+    { message?: string } | undefined
+  >;
+
+  useEffect(() => {
+    if (schoolCategory === "career_choice") {
+      schoolForm.unregister(["class_rank", "rank_total", "school_grade"]);
+    } else if (schoolCategory === "pe_art") {
+      schoolForm.unregister([
+        "total_score",
+        "avg_score",
+        "stddev_score",
+        "student_count",
+        "class_rank",
+        "rank_total",
+        "school_grade",
+      ]);
+    }
+  }, [schoolCategory, schoolForm]);
 
   const filteredRecords = useMemo(
     () => records.filter((record) => record.record_type === activeTab),
@@ -173,15 +202,17 @@ export default function ScoresPage() {
     }
 
     schoolForm.reset({
-      exam_date: "",
+      semester: values.semester,
+      subject_category: "general",
       subject_name: "",
+      credit_unit: 4,
       achievement_level: "",
-    });
+    } as unknown as SchoolGpaFormValues);
     await fetchRecords();
   }
 
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-6 p-6">
+    <div className="mx-auto w-full min-w-0 max-w-6xl space-y-6 p-4 sm:p-6">
       <ScoreTrendChart records={mockTrendRecords} />
 
       <Card>
@@ -193,50 +224,93 @@ export default function ScoresPage() {
             value={activeTab}
             onValueChange={(value) => setActiveTab(value as "MOCK_EXAM" | "SCHOOL_GPA")}
           >
-            <TabsList>
-              <TabsTrigger value="MOCK_EXAM">모의고사</TabsTrigger>
-              <TabsTrigger value="SCHOOL_GPA">내신</TabsTrigger>
+            <TabsList className="h-auto min-h-0 w-full flex-wrap justify-start gap-1 sm:w-fit">
+              <TabsTrigger value="MOCK_EXAM" className="min-h-11 flex-none sm:min-h-0">
+                모의고사
+              </TabsTrigger>
+              <TabsTrigger value="SCHOOL_GPA" className="min-h-11 flex-none sm:min-h-0">
+                내신
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="MOCK_EXAM" className="mt-4">
               <form onSubmit={mockForm.handleSubmit(submitMock)} className="space-y-4">
                 <Field label="시험 날짜" error={mockForm.formState.errors.exam_date?.message}>
-                  <Input type="date" {...mockForm.register("exam_date")} />
+                  <Input type="date" autoComplete="off" {...mockForm.register("exam_date")} />
                 </Field>
                 <div className="grid gap-4 md:grid-cols-3">
                   <Field label="국어 표준점수" error={mockForm.formState.errors.korean_standard_score?.message}>
-                    <Input type="number" {...mockForm.register("korean_standard_score")} />
+                    <Input
+                      type="number"
+                      inputMode="decimal"
+                      {...mockForm.register("korean_standard_score")}
+                    />
                   </Field>
                   <Field label="국어 백분위" error={mockForm.formState.errors.korean_percentile?.message}>
-                    <Input type="number" {...mockForm.register("korean_percentile")} />
+                    <Input
+                      type="number"
+                      inputMode="decimal"
+                      {...mockForm.register("korean_percentile")}
+                    />
                   </Field>
                   <Field label="국어 등급" error={mockForm.formState.errors.korean_grade?.message}>
-                    <Input type="number" {...mockForm.register("korean_grade")} />
+                    <Input
+                      type="number"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      {...mockForm.register("korean_grade")}
+                    />
                   </Field>
                 </div>
                 <div className="grid gap-4 md:grid-cols-3">
                   <Field label="수학 표준점수" error={mockForm.formState.errors.math_standard_score?.message}>
-                    <Input type="number" {...mockForm.register("math_standard_score")} />
+                    <Input
+                      type="number"
+                      inputMode="decimal"
+                      {...mockForm.register("math_standard_score")}
+                    />
                   </Field>
                   <Field label="수학 백분위" error={mockForm.formState.errors.math_percentile?.message}>
-                    <Input type="number" {...mockForm.register("math_percentile")} />
+                    <Input
+                      type="number"
+                      inputMode="decimal"
+                      {...mockForm.register("math_percentile")}
+                    />
                   </Field>
                   <Field label="수학 등급" error={mockForm.formState.errors.math_grade?.message}>
-                    <Input type="number" {...mockForm.register("math_grade")} />
+                    <Input
+                      type="number"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      {...mockForm.register("math_grade")}
+                    />
                   </Field>
                 </div>
                 <Field label="영어 등급" error={mockForm.formState.errors.english_grade?.message}>
-                  <Input type="number" {...mockForm.register("english_grade")} />
+                  <Input
+                    type="number"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    {...mockForm.register("english_grade")}
+                  />
                 </Field>
                 <div className="grid gap-4 md:grid-cols-3">
                   <Field label="과탐1 과목명" error={mockForm.formState.errors.sci1_subject?.message}>
                     <Input {...mockForm.register("sci1_subject")} />
                   </Field>
                   <Field label="과탐1 표준점수" error={mockForm.formState.errors.sci1_standard_score?.message}>
-                    <Input type="number" {...mockForm.register("sci1_standard_score")} />
+                    <Input
+                      type="number"
+                      inputMode="decimal"
+                      {...mockForm.register("sci1_standard_score")}
+                    />
                   </Field>
                   <Field label="과탐1 백분위" error={mockForm.formState.errors.sci1_percentile?.message}>
-                    <Input type="number" {...mockForm.register("sci1_percentile")} />
+                    <Input
+                      type="number"
+                      inputMode="decimal"
+                      {...mockForm.register("sci1_percentile")}
+                    />
                   </Field>
                 </div>
                 <div className="grid gap-4 md:grid-cols-3">
@@ -244,10 +318,18 @@ export default function ScoresPage() {
                     <Input {...mockForm.register("sci2_subject")} />
                   </Field>
                   <Field label="과탐2 표준점수" error={mockForm.formState.errors.sci2_standard_score?.message}>
-                    <Input type="number" {...mockForm.register("sci2_standard_score")} />
+                    <Input
+                      type="number"
+                      inputMode="decimal"
+                      {...mockForm.register("sci2_standard_score")}
+                    />
                   </Field>
                   <Field label="과탐2 백분위" error={mockForm.formState.errors.sci2_percentile?.message}>
-                    <Input type="number" {...mockForm.register("sci2_percentile")} />
+                    <Input
+                      type="number"
+                      inputMode="decimal"
+                      {...mockForm.register("sci2_percentile")}
+                    />
                   </Field>
                 </div>
                 <Button type="submit" disabled={mockForm.formState.isSubmitting}>
@@ -258,43 +340,150 @@ export default function ScoresPage() {
 
             <TabsContent value="SCHOOL_GPA" className="mt-4">
               <form onSubmit={schoolForm.handleSubmit(submitSchool)} className="space-y-4">
-                <Field label="시험 날짜" error={schoolForm.formState.errors.exam_date?.message}>
-                  <Input type="date" {...schoolForm.register("exam_date")} />
+                <Field label="학년·학기" error={schoolErrors.semester?.message}>
+                  <select
+                    className="border-input bg-background min-h-11 w-full rounded-md border px-3 text-sm sm:h-10 sm:min-h-10"
+                    {...schoolForm.register("semester")}
+                  >
+                    {NEIS_SEMESTERS.map((s) => (
+                      <option key={s} value={s}>
+                        {s}
+                      </option>
+                    ))}
+                  </select>
                 </Field>
-                <Field label="과목명" error={schoolForm.formState.errors.subject_name?.message}>
+                <Field label="과목 구분" error={schoolErrors.subject_category?.message}>
+                  <select
+                    className="border-input bg-background min-h-11 w-full rounded-md border px-3 text-sm sm:h-10 sm:min-h-10"
+                    {...schoolForm.register("subject_category")}
+                  >
+                    {SUBJECT_CATEGORIES.map((c) => (
+                      <option key={c} value={c}>
+                        {SUBJECT_CATEGORY_LABEL[c]}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+                <Field label="과목명" error={schoolErrors.subject_name?.message}>
                   <Input {...schoolForm.register("subject_name")} />
                 </Field>
-                <div className="grid gap-4 md:grid-cols-2">
-                  <Field label="원점수" error={schoolForm.formState.errors.raw_score?.message}>
-                    <Input type="number" {...schoolForm.register("raw_score")} />
+                <Field label="단위수 (이수학점)" error={schoolErrors.credit_unit?.message}>
+                  <Input
+                    type="number"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    {...schoolForm.register("credit_unit")}
+                  />
+                </Field>
+
+                {schoolCategory !== "pe_art" ? (
+                  <>
+                    {(schoolCategory === "general" || schoolCategory === "career_choice") && (
+                      <Field
+                        label="합계"
+                        description={schoolCategory === "career_choice" ? "지필+수행 가중합산 (선택)" : "지필+수행 가중합산"}
+                        error={schoolErrors.total_score?.message}
+                      >
+                        <Input
+                          type="number"
+                          inputMode="decimal"
+                          step="any"
+                          {...schoolForm.register("total_score")}
+                        />
+                      </Field>
+                    )}
+                    <Field label="원점수" error={schoolErrors.raw_score?.message}>
+                      <Input
+                        type="number"
+                        inputMode="decimal"
+                        step="any"
+                        {...schoolForm.register("raw_score")}
+                      />
+                    </Field>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <Field label="과목평균" error={schoolErrors.avg_score?.message}>
+                        <Input
+                          type="number"
+                          inputMode="decimal"
+                          step="any"
+                          {...schoolForm.register("avg_score")}
+                        />
+                      </Field>
+                      <Field label="표준편차" error={schoolErrors.stddev_score?.message}>
+                        <Input
+                          type="number"
+                          inputMode="decimal"
+                          step="any"
+                          {...schoolForm.register("stddev_score")}
+                        />
+                      </Field>
+                      <Field label="수강자수" error={schoolErrors.student_count?.message}>
+                        <Input
+                          type="number"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                          {...schoolForm.register("student_count")}
+                        />
+                      </Field>
+                    </div>
+                  </>
+                ) : (
+                  <Field label="원점수" error={schoolErrors.raw_score?.message}>
+                    <Input
+                      type="number"
+                      inputMode="decimal"
+                      step="any"
+                      {...schoolForm.register("raw_score")}
+                    />
                   </Field>
-                  <Field label="평균" error={schoolForm.formState.errors.avg_score?.message}>
-                    <Input type="number" {...schoolForm.register("avg_score")} />
-                  </Field>
-                  <Field label="표준편차" error={schoolForm.formState.errors.stddev_score?.message}>
-                    <Input type="number" {...schoolForm.register("stddev_score")} />
-                  </Field>
-                  <Field label="수강자수" error={schoolForm.formState.errors.student_count?.message}>
-                    <Input type="number" {...schoolForm.register("student_count")} />
-                  </Field>
-                  <Field label="단위수" error={schoolForm.formState.errors.credit_unit?.message}>
-                    <Input type="number" {...schoolForm.register("credit_unit")} />
-                  </Field>
-                  <Field label="등급" error={schoolForm.formState.errors.school_grade?.message}>
-                    <Input type="number" step="0.1" {...schoolForm.register("school_grade")} />
-                  </Field>
-                </div>
-                <Field label="성취도 (선택)" error={schoolForm.formState.errors.achievement_level?.message}>
+                )}
+
+                {schoolCategory === "general" ? (
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <Field label="석차" error={schoolErrors.class_rank?.message}>
+                      <Input
+                        type="number"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        {...schoolForm.register("class_rank")}
+                      />
+                    </Field>
+                    <Field label="전체인원" error={schoolErrors.rank_total?.message}>
+                      <Input
+                        type="number"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        {...schoolForm.register("rank_total")}
+                      />
+                    </Field>
+                    <Field label="석차등급" error={schoolErrors.school_grade?.message}>
+                      <Input
+                        type="number"
+                        inputMode="decimal"
+                        step="0.1"
+                        {...schoolForm.register("school_grade")}
+                      />
+                    </Field>
+                  </div>
+                ) : null}
+
+                <Field
+                  label={schoolCategory === "general" ? "성취도 (선택)" : "성취도"}
+                  error={schoolErrors.achievement_level?.message}
+                >
                   <select
-                    className="h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm"
+                    className="border-input bg-background min-h-11 w-full rounded-md border px-3 text-sm sm:h-10 sm:min-h-10"
                     {...schoolForm.register("achievement_level")}
                   >
-                    <option value="">선택 안 함</option>
+                    {schoolCategory === "general" ? <option value="">선택 안 함</option> : null}
                     <option value="A">A</option>
                     <option value="B">B</option>
                     <option value="C">C</option>
+                    <option value="D">D</option>
+                    <option value="E">E</option>
                   </select>
                 </Field>
+
                 <Button type="submit" disabled={schoolForm.formState.isSubmitting}>
                   저장
                 </Button>
@@ -311,9 +500,10 @@ export default function ScoresPage() {
         </CardHeader>
         <CardContent>
           {loading ? (
-            <p className="text-sm text-gray-600">불러오는 중...</p>
+            <p className="text-muted-foreground text-sm">불러오는 중...</p>
           ) : (
-            <Table>
+            <div className="-mx-4 overflow-x-auto px-4 [-webkit-overflow-scrolling:touch] sm:mx-0 sm:px-0">
+              <Table className="min-w-[520px]">
               <TableHeader>
                 <TableRow>
                   {activeTab === "MOCK_EXAM" ? (
@@ -326,9 +516,10 @@ export default function ScoresPage() {
                     </>
                   ) : (
                     <>
-                      <TableHead>날짜</TableHead>
+                      <TableHead>학기</TableHead>
+                      <TableHead>구분</TableHead>
                       <TableHead>과목명</TableHead>
-                      <TableHead>등급</TableHead>
+                      <TableHead>석차등급·성취</TableHead>
                       <TableHead>원점수/평균</TableHead>
                     </>
                   )}
@@ -337,7 +528,7 @@ export default function ScoresPage() {
               <TableBody>
                 {filteredRecords.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={activeTab === "MOCK_EXAM" ? 5 : 4}>
+                    <TableCell colSpan={activeTab === "MOCK_EXAM" ? 5 : 5}>
                       입력된 성적이 없습니다.
                     </TableCell>
                   </TableRow>
@@ -353,9 +544,19 @@ export default function ScoresPage() {
                       </TableRow>
                     ) : (
                       <TableRow key={record.id}>
-                        <TableCell>{record.exam_date}</TableCell>
+                        <TableCell>{record.semester ?? record.exam_date}</TableCell>
+                        <TableCell>
+                          {record.subject_category &&
+                          record.subject_category in SUBJECT_CATEGORY_LABEL
+                            ? SUBJECT_CATEGORY_LABEL[record.subject_category]
+                            : "-"}
+                        </TableCell>
                         <TableCell>{record.subject_name ?? "-"}</TableCell>
-                        <TableCell>{record.school_grade ?? "-"}</TableCell>
+                        <TableCell>
+                          {[record.school_grade != null ? `등급 ${record.school_grade}` : null, record.achievement_level ?? null]
+                            .filter(Boolean)
+                            .join(" · ") || "-"}
+                        </TableCell>
                         <TableCell>
                           {record.raw_score ?? "-"} / {record.avg_score ?? "-"}
                         </TableCell>
@@ -365,6 +566,7 @@ export default function ScoresPage() {
                 )}
               </TableBody>
             </Table>
+            </div>
           )}
         </CardContent>
       </Card>
@@ -374,16 +576,19 @@ export default function ScoresPage() {
 
 function Field({
   label,
+  description,
   error,
   children,
 }: {
   label: string;
+  description?: string;
   error?: string;
   children: React.ReactNode;
 }) {
   return (
     <div className="space-y-1">
-      <label className="text-sm font-medium text-gray-700">{label}</label>
+      <label className="text-sm font-medium text-foreground">{label}</label>
+      {description ? <p className="text-muted-foreground text-xs">{description}</p> : null}
       {children}
       {error ? <p className="text-xs text-red-600">{error}</p> : null}
     </div>

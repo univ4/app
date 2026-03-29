@@ -5,13 +5,15 @@ alwaysApply: true
 
 # Architecture Rules
 
+Product baseline: `docs/01_PRD_v2.md`, roadmap: `docs/05_ROADMAP.md`.
+
 ## Two-Track Engine (Mandatory Separation)
 
 - Track 1: deterministic calculation engine
   - Location: `src/lib/calculators/`
   - Must be pure TypeScript functions (input -> output).
   - No DB/API side effects, no LLM-based numeric calculation.
-  - Include (extend as implemented): `calculateSuneungScore`, `calculateSusiGPA`, `calculateZScore`, `calculateAdmissionProbability`, `checkSuneungMinimum`, `checkSubjectEligibility`, `analyzeSubjectAdvantage`, `calcSuneungMinimumProbability`, `detectGibupGap`, `calcDDay`, `calcSuneungNapchiRisk`.
+  - Include (extend as implemented): `calculateSuneungScore`, `calculateSusiGPA`, `calculateZScore`, `calculateAdmissionProbability`, `checkSuneungMinimum`, `checkSubjectEligibility`, `analyzeSubjectAdvantage`, `calcSuneungMinimumProbability`, `calcAdmissionSignal` (P0-4 / P1-17 대표 확률), `detectGibupGap`, `calcDDay`, `calcSuneungNapchiRisk`, and PRD v2 additions as named in `docs/02_SYSTEM_ARCHITECTURE.md` §2 (e.g. admission scan / explorer filters — final names TBD).
 - Track 2: RAG/LLM intelligence engine
   - Location: `src/app/api/chat/`
   - Uses retrieval + Claude; when numeric logic is required, call Track 1 functions as tools.
@@ -27,8 +29,27 @@ alwaysApply: true
   - `converted_standard_scores`
   - `guideline_chunks`
   - `admission_schedules`
+  - `admission_records` (data-collector 전형·입결 적재)
+  - `calendar_events` (P0-5 가족 입시 일정; RPC `ensure_default_admission_calendar_2027`)
+  - NEIS 생활기록부 구조화: `student_awards`, `student_attendance`, `student_activities`, `student_volunteer`, `student_subject_notes`, `student_reading`, `student_behavior`, `student_certificates`, `student_school_violence`
   - `subject_profiles` (P1-11, per-student CSAT elective profile)
   - `univ_subject_requirements` (P1-11, per-university/dept rules; plus `universities`, `departments` FKs)
+
+## data-collector 연동
+
+- **저장소**: [github.com/univ4/data-collector](https://github.com/univ4/data-collector)
+- **GitHub Releases**: `admission_db.json` / `admission_db.jsonl` / `run_summary.json`
+- **ingest 스크립트 위치**: `scripts/ingest/` (app 레포 기준)
+- **테이블 매핑**:
+  - `admission_records` ← `admission_db.jsonl` (전형·입결 전체)
+  - `university_scoring_rules` ← 수능반영비율 필드
+  - `susi_gpa_rules` ← 반영교과·학년별반영비율 필드
+  - `guideline_chunks` ← 전형계획 Markdown (18개 대학 + 정시자료 4개)
+- **갱신 주기**: 연 1회 (4~5월 신규 데이터 공개 시)
+- **ingest 실행 방법**:
+  - `admission_db.jsonl` → `admission_records`: `./node_modules/.bin/tsx scripts/ingest/load_admission_db.ts`
+  - 모집요강·정시 MD → 청크·임베딩·`guideline_chunks`: `./node_modules/.bin/tsx scripts/ingest/embed_and_store.ts` (OpenAI·Supabase 환경변수 필요)
+- **Release 자산 fetch(선택)**: `scripts/ingest/githubReleaseFetch.ts` — `api.github.com`, `GITHUB_TOKEN` 인증
 
 ## Access Control
 

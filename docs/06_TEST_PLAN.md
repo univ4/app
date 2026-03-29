@@ -1,10 +1,28 @@
-# Test Plan: univ
+# Test Plan: univ4
 
-`docs/01_PRD.md`, `docs/02_SYSTEM_DESIGN.md`, `docs/02_SYSTEM_ARCHITECTURE.md`, `docs/03_DB_SCHEMA.md`, `docs/03_DATA_MODEL.md`, `docs/04_API_SPEC.md`, `docs/05_AI_PIPELINE.md`, `docs/05_ROADMAP.md`, `docs/06_TEST_SPEC.md`를 기준으로 작성한 통합 테스트 계획서입니다.
+**근거 PRD**: [`docs/01_PRD_v2.md`](./01_PRD_v2.md) · **로드맵 정본**: [`docs/05_ROADMAP.md`](./05_ROADMAP.md)  
+**테스트 스펙(07)**: [`docs/07_TEST_SPEC.md`](./07_TEST_SPEC.md) · **사용자 매뉴얼(08)**: [`docs/08_USER_MANUAL.md`](./08_USER_MANUAL.md)  
+참고: [`docs/02_SYSTEM_DESIGN.md`](./02_SYSTEM_DESIGN.md), [`docs/02_SYSTEM_ARCHITECTURE.md`](./02_SYSTEM_ARCHITECTURE.md), [`docs/03_DB_SCHEMA.md`](./03_DB_SCHEMA.md), [`docs/03_DATA_MODEL.md`](./03_DATA_MODEL.md), [`docs/04_API_SPEC.md`](./04_API_SPEC.md), [`docs/05_AI_PIPELINE.md`](./05_AI_PIPELINE.md)
+
+**자동 테스트 스냅샷 (2026-03-30):** `npm test` — **173** tests, **18** suites, FAIL 0. 상세 스펙·케이스 ID는 [`docs/07_TEST_SPEC.md`](./07_TEST_SPEC.md)를 따른다.
+
+### 커버리지·목표 (Jest `--coverage`, 동일 날짜 기준)
+
+| 구간 | 현재(대략) | 목표 |
+|---|---|---|
+| **전체** (instrumented: `app/api/**` + `lib/calculators/**`) | 라인 **~74.7%**, 구문 **~73.9%** | 지속 상승 (이전 보고 **56.56%** 대비 개선) |
+| **Track 1** (`lib/calculators/*`) | 라인 **~93%** | **≥ 90%** 유지 |
+| **API routes** (`app/api/*`) | 라인 가중 평균은 파일별 편차 큼 | **≥ 70%** (캘린더·미구현 POST 분기 등 제외 시 우선 달성) |
+
+**상대적으로 낮거나 0%에 가까운 영역 (보강 후보):**
+
+- `app/api/calendar/*`, `app/api/calendar/[id]/*` — 단위 테스트 없음(통합은 `calendarDday.integration.test.ts`가 계산기·일정 데이터 중심).
+- `student-record` 일부: `certificates`·`reading`·`volunteer`의 **POST**, `school-violence` **POST** 등 아직 모킹 분기 미흡.
+- `GET /api/signals` — 해피·401·`medShift=1` 위주; `403`/`422`/DB 오류 분기는 미커버.
 
 ## 1. 테스트 전략 개요
 
-univ 프로젝트는 3단계 테스트 전략으로 운영합니다.
+univ4 프로젝트는 3단계 테스트 전략으로 운영합니다.
 
 - **Unit Test**
   - 대상: Track 1 계산 함수(`src/lib/calculators/*`)
@@ -15,7 +33,7 @@ univ 프로젝트는 3단계 테스트 전략으로 운영합니다.
   - 환경: Supabase 로컬 에뮬레이터(`supabase start`)
   - 목표: 인증/권한/RLS/응답 포맷/DB 반영 검증
 - **Manual E2E Test**
-  - 대상: 실제 가족 사용 시나리오(아빠/아들/엄마)
+  - 대상: Admin / 수험생 Viewer / 학부모 Viewer 시나리오 (PRD v2)
   - 목표: 사용자 관점 기능 검증 및 모바일 사용성 확인
   - 비고: Playwright 자동화는 P2 단계에서 도입
 
@@ -163,13 +181,14 @@ describe("calculateAdmissionProbability", () => {
 
 ---
 
-### 2-5. P1-11~14 / P2-6 Track 1 신규 함수
+### 2-5. P1-11~16 / P2-6 Track 1 신규 함수
 
-상세 케이스 ID·시나리오는 [`docs/06_TEST_SPEC.md`](./06_TEST_SPEC.md)에 정의합니다.
+상세 케이스 ID·시나리오는 [`docs/07_TEST_SPEC.md`](./07_TEST_SPEC.md)에 정의합니다.
 
 포함 예정 함수:
 - `checkSubjectEligibility`, `analyzeSubjectAdvantage` (기존 구현 + SE-01 보강)
 - `calcSuneungMinimumProbability`, `detectGibupGap`, `calcDDay`, `calcSuneungNapchiRisk` (구현 후 동 문서 기준으로 Jest 추가)
+- **PRD v2**: 199개 스캔·탐색·조건 필터 — `scanAdmissionSignals` / `filterUniversitiesByAdmissionCriteria` 등(가칭, [`docs/02_SYSTEM_ARCHITECTURE.md`](./02_SYSTEM_ARCHITECTURE.md) §2) 구현 시 [`docs/07_TEST_SPEC.md`](./07_TEST_SPEC.md) §6~7 및 대응 `src/__tests__/calculators/*.test.ts` 추가
 
 ---
 

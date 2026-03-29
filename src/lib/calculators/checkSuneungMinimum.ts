@@ -21,7 +21,7 @@ export interface MinimumCheckResult {
   english_satisfied: boolean;
 }
 
-type ParsedCondition =
+export type ParsedMinimumCondition =
   | {
       type: "SUM";
       pickCount: number;
@@ -33,7 +33,7 @@ type ParsedCondition =
       requiredSum: number;
     };
 
-function parseCondition(condition: string): ParsedCondition {
+function parseCondition(condition: string): ParsedMinimumCondition {
   const sumMatch = condition.match(/^(\d+)개합(\d+)$/);
   if (sumMatch) {
     return {
@@ -54,6 +54,19 @@ function parseCondition(condition: string): ParsedCondition {
   }
 
   throw new Error(`Unsupported condition format: ${condition}`);
+}
+
+/** 파싱 불가 시 `null` (Track1·API에서 조건문-only 규칙 처리용). */
+export function parseSuneungMinimumCondition(
+  condition: string,
+): ParsedMinimumCondition | null {
+  const c = condition?.trim();
+  if (!c) return null;
+  try {
+    return parseCondition(c);
+  } catch {
+    return null;
+  }
 }
 
 function getGradeBySubject(grades: SuneungGrades, subject: string): number {

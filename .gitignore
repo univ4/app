@@ -14,12 +14,6 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# env files
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
 # vercel
 .vercel
 
@@ -34,6 +28,31 @@ supabase/.temp
 # misc
 .DS_Store
 
-# jest
+# 개인 데이터 (성적표, 생활기록부 - 절대 커밋 금지)
+# (record/ 단독이면 .gitkeep 재포함 불가 → record/** + 예외)
+record/**
+!record/.gitkeep
+
+# 나이스 PNG 캡처 (개인 데이터)
+*.png
+# 단, public 폴더 내 이미지는 허용
+!public/**/*.png
+!src/**/*.png
+
+# 환경변수 추가
+.env
+.env*.local
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# 테스트 커버리지
 /coverage
 
+# 로컬 Python 가상환경 (레포 루트)
+.venv/
+
+# Supabase 로컬 개발
+supabase/migrations/.cache

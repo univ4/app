@@ -6,9 +6,11 @@ alwaysApply: true
 # Univ Project Overview
 
 - Project: `univ` ([github.com/univ4/app](https://github.com/univ4/app))
-- Goal: Family-only AI college admission consulting dashboard for a Korean high school senior.
+- Goal: 수험생·학부모를 위한 AI 기반 대입 전략 플랫폼.
 - Student profile: mock exam grade 1-2, school grade 2-3, target `서강대/성균관대/한양대` engineering track.
 - Core users:
+  - 일반 수험생: `Viewer` (결과, 챗봇, 일정)
+  - 학부모: `Viewer` (모니터링·조회)
   - Dad: `Admin` (data input, strategy decisions)
   - Son: `Viewer` (results, chatbot, schedule)
   - Mom: `Viewer` (monitoring)
@@ -17,8 +19,18 @@ alwaysApply: true
   - Single developer (dad)
   - 4-week MVP focused on P0 features
 
+## Data coverage
+
+- **어디가 입결**: 199개 대학.
+- **전형계획 상세**: 18개 대학 (2027학년도).
+
+## Out of Scope
+
+- 생기부 자동 작성/대필 기능.
+- 실시간 성적 자동 연동 (학교/평가원 API 직접 연계).
+- 합격 보장/자동 합격 판정 기능.
+
 ## Product Principles
 
-- This is a practical family decision-support tool, not a commercial SaaS.
-- Show evidence and explain uncertainty; do not imply guaranteed admission.
+- Practical decision-support with evidence; do not imply guaranteed admission.
 - Prefer fast iteration and clear UX over over-engineering.

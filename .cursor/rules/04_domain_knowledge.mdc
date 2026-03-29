@@ -31,7 +31,10 @@ alwaysApply: true
 
 ## Target University Universe
 
-- Includes SKY, 서성한, 중경외시건, medical/veterinary tracks, and major specialized schools (roughly ~30 targets in roadmap/seed scope).
+- **어디가 입결 수집**: 199개 대학 (교과/종합/정시 전형별).
+- **전형계획 상세 파싱**: 18개 대학 (2027학년도) — 서울대·연세대·고려대·성균관대·한양대·서강대·중앙대·경희대·서울시립대·건국대·동국대·홍익대·아주대·인하대·세종대·광운대·국민대·숭실대.
+- **P1-15 전국 탐색 범위**: 199개 대학.
+- **P0-4 합격 신호등 자동 스캔**: 199개 대학.
 
 ## High school elective profile (CSAT subject choices)
 

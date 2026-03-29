@@ -1,11 +1,17 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
+import { z } from "zod";
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getAuthUser } from "@/lib/supabase/server";
 import {
   checkSuneungMinimum,
+  parseSuneungMinimumCondition,
   type SuneungGrades,
   type SuneungMinimumRule,
 } from "@/lib/calculators/checkSuneungMinimum";
+import {
+  calcSuneungMinimumProbability,
+  probabilityScoresFromRuleSubjects,
+} from "@/lib/calculators/calcSuneungMinimumProbability";
 
 type MinimumRuleRow = {
   university_name: string;
@@ -18,11 +24,50 @@ type MinimumRuleRow = {
   } | null;
 };
 
-export async function GET() {
+const postBodySchema = z.object({
+  scores: z.array(
+    z.object({
+      subject: z.string().min(1),
+      grade: z.number(),
+    }),
+  ),
+  requirement: z.object({
+    minGradeSum: z.number(),
+    subjectCount: z.number(),
+    hankoSaRequired: z.boolean(),
+    hankoSaMaxGrade: z.number().optional(),
+    englishMaxGrade: z.number().nullable().optional(),
+  }),
+  subjectsForSum: z.array(z.string().min(1)).optional(),
+  trend: z
+    .array(
+      z.object({
+        subject: z.string().min(1),
+        grades: z.array(z.number()).min(1),
+      }),
+    )
+    .optional(),
+  sampleCount: z.number().int().positive().max(1_000_000).optional(),
+  seed: z.number().int().optional(),
+});
+
+function seedFromString(s: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i += 1) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return (h >>> 0) || 1;
+}
+
+function getThrownMessage(e: unknown): string {
+  if (e instanceof Error) return e.message;
+  return String(e);
+}
+
+export async function POST(req: NextRequest) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getAuthUser(supabase);
 
   if (!user) {
     return NextResponse.json(
@@ -31,7 +76,66 @@ export async function GET() {
     );
   }
 
-  // 1) 최신 MOCK_EXAM 성적 조회
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json(
+      { data: null, error: { code: "VALIDATION_ERROR", message: "Invalid JSON body." } },
+      { status: 400 },
+    );
+  }
+
+  const parsed = postBodySchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      {
+        data: null,
+        error: {
+          code: "VALIDATION_ERROR",
+          message: parsed.error.flatten().formErrors.join("; ") || "Invalid body.",
+        },
+      },
+      { status: 400 },
+    );
+  }
+
+  try {
+    const out = calcSuneungMinimumProbability(parsed.data);
+    return NextResponse.json({
+      data: {
+        probability: out.probability,
+        expectedGradeSum: out.expectedGradeSum,
+        riskLevel: out.riskLevel,
+      },
+      error: null,
+    });
+  } catch (e) {
+    const msg = getThrownMessage(e);
+    if (msg.startsWith("ValidationError:")) {
+      return NextResponse.json(
+        { data: null, error: { code: "VALIDATION_ERROR", message: msg } },
+        { status: 400 },
+      );
+    }
+    return NextResponse.json(
+      { data: null, error: { code: "INTERNAL_ERROR", message: msg } },
+      { status: 500 },
+    );
+  }
+}
+
+export async function GET() {
+  const supabase = await createClient();
+  const user = await getAuthUser(supabase);
+
+  if (!user) {
+    return NextResponse.json(
+      { data: null, error: { code: "UNAUTHORIZED", message: "인증이 필요합니다." } },
+      { status: 401 },
+    );
+  }
+
   const { data: latestMock, error: latestMockError } = await supabase
     .from("academic_records")
     .select("korean_grade, math_grade, english_grade, sci1_grade, sci2_grade")
@@ -64,7 +168,6 @@ export async function GET() {
     sci2: Number(latestMock.sci2_grade ?? 9),
   };
 
-  // 2) suneung_minimum이 있는 규칙 전체 조회
   const { data: ruleRows, error: ruleError } = await supabase
     .from("susi_gpa_rules")
     .select("university_name, admission_type, suneung_minimum")
@@ -77,15 +180,16 @@ export async function GET() {
     );
   }
 
-  // suneung_minimum 데이터가 없으면 빈 배열 반환
   if (!ruleRows || ruleRows.length === 0) {
     return NextResponse.json({
-      student_grades,
-      results: [],
+      data: {
+        student_grades,
+        results: [],
+      },
+      error: null,
     });
   }
 
-  // 3) 각 행별 수능최저 충족 여부 계산
   const results = (ruleRows as MinimumRuleRow[]).map((row) => {
     const min = row.suneung_minimum ?? {};
     const rule: SuneungMinimumRule = {
@@ -109,10 +213,59 @@ export async function GET() {
         required_sum: Number.POSITIVE_INFINITY,
         gap: Number.POSITIVE_INFINITY,
         english_satisfied: true,
+        probability: null as number | null,
+        expected_grade_sum: null as number | null,
+        risk_level: null as string | null,
       };
     }
 
     const checked = checkSuneungMinimum(student_grades, rule);
+
+    const parsedCond = parseSuneungMinimumCondition(rule.condition);
+    let probability: number | null = null;
+    let expected_grade_sum: number | null = null;
+    let risk_level: string | null = null;
+
+    if (parsedCond?.type === "SUM") {
+      const sumKeys = rule.subjects.filter((s) =>
+        ["korean", "math", "english", "sci1", "sci2"].includes(s),
+      );
+      let probScores = probabilityScoresFromRuleSubjects(student_grades, rule.subjects);
+      if (
+        rule.english_limit != null &&
+        !probScores.some((p) => p.subject === "english")
+      ) {
+        probScores = [
+          ...probScores,
+          { subject: "english", grade: student_grades.english },
+        ];
+      }
+      if (probScores.length >= parsedCond.pickCount) {
+        try {
+          const pr = calcSuneungMinimumProbability({
+            scores: probScores,
+            subjectsForSum: sumKeys,
+            requirement: {
+              minGradeSum: parsedCond.requiredSum,
+              subjectCount: parsedCond.pickCount,
+              hankoSaRequired: false,
+              englishMaxGrade: rule.english_limit,
+            },
+            sampleCount: 8000,
+            seed: seedFromString(
+              `${row.university_name}|${row.admission_type}|${rule.condition}`,
+            ),
+          });
+          probability = pr.probability;
+          expected_grade_sum = pr.expectedGradeSum;
+          risk_level = pr.riskLevel;
+        } catch {
+          probability = null;
+          expected_grade_sum = null;
+          risk_level = null;
+        }
+      }
+    }
 
     return {
       university: row.university_name,
@@ -125,12 +278,17 @@ export async function GET() {
       required_sum: checked.required_sum,
       gap: checked.gap,
       english_satisfied: checked.english_satisfied,
+      probability,
+      expected_grade_sum,
+      risk_level,
     };
   });
 
   return NextResponse.json({
-    student_grades,
-    results,
+    data: {
+      student_grades,
+      results,
+    },
+    error: null,
   });
 }
-

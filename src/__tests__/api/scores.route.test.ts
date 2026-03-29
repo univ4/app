@@ -5,33 +5,24 @@ import { GET, POST } from "@/app/api/scores/route";
 
 jest.mock("@/lib/supabase/server", () => ({
   createClient: jest.fn(),
+  getAuthUser: jest.fn(),
 }));
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getAuthUser } from "@/lib/supabase/server";
 
 const mockCreateClient = createClient as jest.MockedFunction<typeof createClient>;
+const mockGetAuthUser = getAuthUser as jest.MockedFunction<typeof getAuthUser>;
 
 function mockAuthedClient(chain: Record<string, unknown>) {
   mockCreateClient.mockResolvedValue({
-    auth: {
-      getUser: jest.fn().mockResolvedValue({
-        data: { user: { id: "user-1" } },
-        error: null,
-      }),
-    },
     ...chain,
   } as never);
+  mockGetAuthUser.mockResolvedValue({ id: "user-1" } as never);
 }
 
 function mockUnauthedClient() {
-  mockCreateClient.mockResolvedValue({
-    auth: {
-      getUser: jest.fn().mockResolvedValue({
-        data: { user: null },
-        error: null,
-      }),
-    },
-  } as never);
+  mockCreateClient.mockResolvedValue({} as never);
+  mockGetAuthUser.mockResolvedValue(null);
 }
 
 describe("/api/scores", () => {
@@ -197,13 +188,17 @@ describe("/api/scores", () => {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             record_type: "SCHOOL_GPA",
-            exam_date: "2026-02-01",
+            semester: "3-1",
+            subject_category: "general",
             subject_name: "수학Ⅰ",
+            total_score: 95,
             raw_score: 92,
             avg_score: 68.4,
             stddev_score: 15.2,
             student_count: 187,
             credit_unit: 4,
+            class_rank: 12,
+            rank_total: 187,
             school_grade: 2,
             achievement_level: "",
           }),

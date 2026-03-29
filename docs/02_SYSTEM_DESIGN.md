@@ -1,6 +1,10 @@
-# System Design: univ (가족 전용 AI 대입 컨설팅)
+# System Design: univ4 (수험생·학부모 AI 대입 전략)
 
-PRD P1-11~14·P2-6~8 반영 스키마/Track1·2 확장 요약은 [`docs/02_SYSTEM_ARCHITECTURE.md`](./02_SYSTEM_ARCHITECTURE.md)를 참조합니다.
+**근거 PRD**: [`docs/01_PRD_v2.md`](./01_PRD_v2.md) · **로드맵 정본**: [`docs/05_ROADMAP.md`](./05_ROADMAP.md)  
+PRD v1 보관본: [`docs/01_PRD.md`](./01_PRD.md)
+
+스키마·Track 1/2 확장 요약은 [`docs/02_SYSTEM_ARCHITECTURE.md`](./02_SYSTEM_ARCHITECTURE.md)를 참조합니다.  
+데이터 파이프라인·자산 목록은 PRD v2 **§11 데이터 소스 및 파이프라인**과 동기화한다.
 
 ## 1) 시스템 전체 구조 (High-Level Architecture)
 
@@ -8,7 +12,7 @@ PRD P1-11~14·P2-6~8 반영 스키마/Track1·2 확장 요약은 [`docs/02_SYSTE
 
 ```mermaid
 flowchart LR
-  U[브라우저(아빠/아들/엄마)] --> N[Next.js(App Router, Vercel)]
+  U[브라우저(수험생·학부모·Admin)] --> N[Next.js(App Router, Vercel)]
   N --> S[Supabase(PostgreSQL + pgvector)]
   N --> C1[OpenAI Embedding API]
   N --> C2[Claude 3.5 Sonnet API]
@@ -72,7 +76,7 @@ RAG 파이프라인 흐름(요구사항 기반):
 2. OpenAI `text-embedding-3-small`로 질문 벡터화
 3. Supabase pgvector에서 유사 청크 검색 수행
    - 메타데이터 필터: `university_name`, `admission_type`, `year` 등 PRD 기반 필수 조건
-4. 검색된 컨텍스트(청크 텍스트 + 메타데이터)와 함께 아들 성적/사용자 입력 요약을 구성
+4. 검색된 컨텍스트(청크 텍스트 + 메타데이터)와 함께 학생 성적/사용자 입력 요약을 구성
 5. Claude 3.5 Sonnet에 프롬프트/컨텍스트 전달
 6. Claude는 필요 시 Tool Use로 Track 1 계산 함수를 호출
 7. 최종 답변을 스트리밍 반환
@@ -116,25 +120,24 @@ sequenceDiagram
 | `학생부종합` | 생기부 세특 텍스트(업로드/정제된 텍스트) | Track 2(RAG + Claude) (+ 필요 시 Tool Use로 참고 계산) | 역량 분석 리포트, 세특 주제 제안 |
 | `논술전형` | (예시) 모의고사 등급/관련 입력 + 대학별 최저 기준/조건 | Track 1(최저 충족 판정 및 실질 경쟁률 구성) + Track 2(해석/설명) | 최저 충족 여부 + 실질 경쟁률(및 해석) |
 | `정시` | 수능 표준점수/백분위 + 영어 등급 환산 기준 + 탐구 변환표준점수 + 반영비율 + 과탐II 가산점 | Track 1(`calculateSuneungScore`) (+ 합격 신호등) | 대학별 환산점수 + 합격 가능성 |
+| (PRD v2) **전국 탐색·필터** | 내신/수능 성적 + 입결(199개)·전형 조건(18개 전형계획 등) | Track 1(배치 신호등·조건 필터) + Track 2(결과 설명) | P1-15 탐색기, P1-16 조건부 필터, P0-4 전체 스캔 |
 | (참고) `Z점수 기반 고교 수준` | 과목별 원점수/평균/표준편차/수강자수 | Track 1(`calculateZScore`) | 학교 수준 해석용 참고지표 |
 
 ## 4) 보안 설계
 
 요구사항을 구현 레벨로 분해합니다.
 
-### 4.1 Supabase RLS 정책(기본 원칙)
-- 각 테이블에 `family_id` 또는 `student_id` 스코프 필드를 보유
-- RLS에서 다음 조건을 강제합니다.
-  - 예: `auth.uid() = student_id` (요구사항 기준)
-  - 또는 가족 공유 모델이면 `auth.uid() IN (family_members)` 형태의 `family_id` 스코프
-- 결과적으로:
-  - Viewer는 자신의 가족 데이터 열람만 가능
-  - Admin은 자신의 가족 데이터 수정/관리만 가능
+### 4.1 Supabase RLS 정책(기본 원칙) — PRD v2 정합
+
+- **일반 수험생 계정**: 이메일 인증 후 생성; **사용자별** `auth.uid()` 스코프로 본인(및 연결된 `student_id`) 데이터만 CRUD.
+- **가족/공유 모델**(옵션): `family_id` 또는 멤버십 테이블로 Viewer 간 동일 스코프 열람을 허용할 수 있음 — 제품 정책에 맞게 RLS만 단일화.
+- 각 사용자 소유 테이블에 `student_id` / 테넌트 키를 두고 RLS에서 `auth.uid()`와 조인해 강제.
+- 결과적으로 Viewer는 권한 범위 내 열람만, Admin은 해당 스코프에서 입력·룰 관리만 가능.
 
 ### 4.2 API Route 보호
 - 서버 사이드에서 Supabase 세션 토큰 검증 미들웨어를 적용합니다.
 - 구현 위치(권장):
-  - `src/middleware.ts`에서 요청 인증/권한 검사
+  - Next.js 16: `src/proxy.ts` 등 **요청 가드**에서 세션 검증·리프레시(레거시 `middleware.ts` 아님)
 - 보호 항목:
   - `/api/chat` : Viewer/다른 역할의 접근 범위 제어
   - `/api/scores` : Admin-only write, Viewer read-only
@@ -173,17 +176,20 @@ univ4/app/
 └── docs/                   # 설계 문서
 ```
 
-## 6) 비용 추정 (월간)
+## 6) 비용 추정 (월간) — PRD v2
 
-아래 비용은 **MVP 초기사용 패턴(가족 3인, 챗봇 월 10회 내외 + 요강 임베딩 1회성)** 가정입니다.
+- **MVP 단계**: PRD v2 **§7.4**와 같이 월 총비용 상한 **$10** 유지 가정.
+- **일반 공개 이후**: Freemium 또는 구독 등 **별도 과금 모델 검토** (로드맵 §1 문서 개정 항목).
+
+아래는 **저트래픽 초기 패턴**(챗봇 제한 호출 + 임베딩 1회성 위주) 예시입니다.
 
 | 항목 | 서비스 | 예상 비용 |
 |---|---|---|
 | 웹 호스팅 | Vercel Free Tier | $0 |
 | 데이터베이스 | Supabase Free Tier | $0 |
-| PDF 임베딩 (1회성) | OpenAI Embedding (요강 3개 대학) | ~$0.01 |
-| 챗봇 사용 | Claude 3.5 Sonnet API (가족 3인, 일 10회 수준으로 제한) | ~$3~5 |
-| 합계 |  | 월 $5 이내 |
+| 임베딩 (1회성) | OpenAI Embedding (전형계획·정시자료 Markdown 등) | 소액(문서 규모에 비례) |
+| 챗봇 사용 | Claude 3.5 Sonnet API (호출 상한·캐시) | 사용량에 비례 |
+| 합계 |  | **MVP: PRD 상한 $10 이내** |
 
 비용 통제를 위한 운영 장치:
 - `Top-k` 컨텍스트 크기 제한(토큰 절감)

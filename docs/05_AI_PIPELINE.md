@@ -1,10 +1,13 @@
-# AI Pipeline Design
+# AI Pipeline Design (univ4)
 
-`docs/01_PRD.md`, `docs/02_SYSTEM_DESIGN.md`, `docs/03_DB_SCHEMA.md`, `docs/04_API_SPEC.md`를 기준으로 작성한 univ 프로젝트 AI 파이프라인 설계 문서입니다.
+**근거 PRD**: [`docs/01_PRD_v2.md`](./01_PRD_v2.md) · **로드맵**: [`docs/05_ROADMAP.md`](./05_ROADMAP.md)  
+참고: [`docs/02_SYSTEM_DESIGN.md`](./02_SYSTEM_DESIGN.md), [`docs/03_DB_SCHEMA.md`](./03_DB_SCHEMA.md), [`docs/04_API_SPEC.md`](./04_API_SPEC.md)
+
+데이터 자산·갱신 주기: PRD v2 **§11 데이터 소스 및 파이프라인** (별도 저장소 `data-collector`).
 
 ## 1. AI 파이프라인 전체 개요
 
-univ의 AI 파이프라인은 목적이 다른 2개 트랙으로 분리됩니다.
+univ4의 AI 파이프라인은 목적이 다른 2개 트랙으로 분리됩니다.
 
 - **Ingest Pipeline (1회성/비정기)**  
   PDF 요강을 파싱하고 청킹/임베딩하여 `guideline_chunks(pgvector)`에 적재
@@ -15,10 +18,18 @@ univ의 AI 파이프라인은 목적이 다른 2개 트랙으로 분리됩니다
 
 ## 2. Ingest Pipeline (데이터 적재 파이프라인)
 
-### 2-1. PDF 파싱 (OpenDataLoader PDF v2.0)
+### 2-1. Ingest 소스 (PRD v2)
+
+| 소스 | 범위 | 적재 대상 |
+|---|---|---|
+| 전형계획 PDF → Markdown | 18개 대학 2027학년도 | `guideline_chunks` (RAG) |
+| 정시자료 PDF → Markdown | 서울권·수도권·전문대·총론(4종) | `guideline_chunks` (RAG) |
+| 구조화 JSON | `admission_db.json` 등 (18개 대학 규칙) | **Track 1 규칙 로드** — DB 동기화 시 `university_scoring_rules` 등과 정합 ([`docs/03_DB_SCHEMA.md`](./03_DB_SCHEMA.md) §7) |
+
+PDF 파싱 도구 예시:
 
 - 도구: 한글과컴퓨터 오픈소스 **OpenDataLoader PDF v2.0** (Apache 2.0)
-- 실행 위치: `scripts/ingest/parse_pdf.py` (로컬 1회 실행)
+- 실행 위치: `scripts/ingest/parse_pdf.py` (로컬 1회 실행) — 실제 경로는 data-collector / 앱 스크립트 정책에 따름
 - 주요 기능 활용:
   - AI 기반 표 구조 인식(병합 셀, 복잡한 전형 비율표)
   - 수식 인식(수능 최저학력기준 조건식)
@@ -52,13 +63,16 @@ Parent-Child 청킹 전략:
 ```json
 {
   "university_name": "서강대",
-  "admission_year": 2026,
-  "admission_type": "논술전형",
+  "admission_year": 2027,
+  "admission_type": "학생부교과",
   "category": "수능최저",
   "major_group": "자연계열",
-  "page_number": 12
+  "page_number": 12,
+  "source_kind": "admission_plan_pdf"
 }
 ```
+
+`source_kind` 예시 값: `admission_plan_pdf`(전형계획), `jeonsi_material`(정시자료), `brochure_pdf`(요강) — 검색 필터 확장용.
 
 핵심 원칙:
 - 메타데이터 필터링으로 검색 범위를 먼저 좁힌 뒤 벡터 검색 수행

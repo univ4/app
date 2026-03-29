@@ -1,28 +1,53 @@
-# Next Tasks — Week 3 (우선순위 순서)
+# Next Tasks
 
-1. **`supabase/migrations/[timestamp]_subject_profiles.sql` 생성 및 적용**  
-   - `subject_profiles` / 학과별 선택과목 요건 등 Week 3 스키마를 마이그레이션으로 고정하고 로컬·원격 반영.
+## Week 4 — 완료 (2026-03-30)
 
-2. **2027학년도 입시 일정 시드 데이터 작성**  
-   - 예: 수시 원서접수 **2026-09-07** 등 `admission_schedules`(또는 동등 테이블)에 반영 가능한 형태로 시드 정리.
+다음은 달성됨(상세는 `.context/current_state.md`, `docs/05_ROADMAP.md` Week 4 스냅샷).
 
-3. **`calcDDay()` 함수 구현 + 테스트**  
-   - Track 1 순수 함수, `src/lib/calculators/` + `src/__tests__/calculators/` AC·엣지 케이스 포함.
+1. `/login` `useSearchParams` Suspense 빌드 오류 수정
+2. `load_neis_grades.ts` + `20260329170000_academic_records_fix_unique.sql` — `academic_records_upsert_key`; 내신 **49**건 적재 검증
+3. 챗봇 E2E — 유사도 임계 **0.55**, 시스템 프롬프트, Bearer 인증, `match_guideline_chunks` 정리
+4. P0-4 — `calcAdmissionSignal`, `GET /api/signals`, `/dashboard/signals`, SignalLight/SignalTable
+5. P0-5 — `calendar_events`, 기본 4건 RPC, D-Day, `/api/calendar`, `/dashboard/calendar`
+6. 생활기록부 입력 폼 — 9탭, `student_certificates`·`student_school_violence` 마이그레이션
+7. 모바일 UI — 360px, 하단 네비, 터치·WCAG AA, [`docs/08_MOBILE_UI.md`](../docs/08_MOBILE_UI.md)
 
-4. **`calcSuneungMinimumProbability()` 함수 구현 + 테스트**  
-   - 모의고사 분포·`susi_gpa_rules.suneung_minimum` 등과 연동 가능한 입력/출력 설계 후 계산기 + 단위 테스트.
+---
 
-5. **PDF 파싱 스크립트**  
-   - OpenDataLoader 등 활용, `scripts/ingest/` 아래에서 모집요강 PDF → 구조화 텍스트/중간 산출물.
+## P1 우선순위 (Week 5 이후 권장 순서)
 
-6. **청킹 + 임베딩 적재 스크립트 (pgvector)**  
-   - `guideline_chunks` 등에 청크·메타데이터·벡터 컬럼 적재 파이프라인.
+로드맵·PRD v2 기준, 코어 MVP(P0) 이후 밀도 높은 항목.
 
-7. **pgvector 유사도 검색 함수**  
-   - top-k, `university` / `admission_type` / `year` / 카테고리 필터 등 메타 조건 반영.
+| 순위 | ID | 내용 |
+|---:|---|---|
+| 1 | **P1-1** | 챗봇 **전용 UI/UX** (스트리밍·출처·모바일 입력 경험); 백엔드 RAG는 검증 완료 |
+| 2 | **P1-7** | 6장 원서 배분 전략 시뮬레이터 |
+| 3 | **P1-11** | 선택과목 분석기 UI — `checkSubjectEligibility`·`subject_profiles`·`GET /api/subject-profile/.../eligibility`와 정합 |
+| 4 | **P1-15** | 전국 199개 탐색기 — `GET /api/signals`·입결 스캔 패턴 확장 |
+| 5 | **P1-16** | 조건부 필터링 — `filterUniversitiesByAdmissionCriteria`(가칭) Track 1 + API |
+| 6 | **P1-12** | D-Day **역산 TO-DO** — `GET /api/dday/todos` 실구현·캘린더 연동 |
+| 7 | **P1-2** | Z점수 UI·노출 강화 (`calculateZScore` 이미 존재) |
+| 8 | **P1-4 / P1-14** | 세특 Gap · `detectGibupGap` + UI |
+| 9 | **P1-17** | 신호등 대표 확률 **표시·카피·튜닝** (Track 1 구간값은 반영됨) |
 
-8. **Claude Tool Use 챗봇 API**  
-   - `src/app/api/chat/route.ts`: 검색·프롬프트·Track 1 도구 브리지.
+그 외 P1-3, P1-5~P1-10, P1-6, P1-8, P1-9는 `docs/05_ROADMAP.md` §Week 4 이후 표와 PRD 순서를 따름.
 
-9. **챗봇 UI 컴포넌트**  
-   - 메시지 영역, 로딩/오류, 출처 표시, (필요 시) 스트리밍·필터 UI.
+---
+
+## 백로그 (데이터·파이프라인)
+
+- **생활기록부 RAG** — `student_record_chunks` 임베딩·챗봇 컨텍스트
+- **`scripts/ingest/parse_neis_grades.ts`** — P2-11 Claude Vision 연계
+- **내신 수동 입력** — 운영 데이터 지속 입력
+
+---
+
+## 참고 (Week 3 산출)
+
+- W3-A1: `20260329000002_admission_records`
+- W3-A2: `load_admission_db.ts` (3,393건)
+- W3-A3: `embed_and_store.ts` (6,256청크)
+- W3-B1: `calcDDay()` + `schedules.ts`
+- W3-B2: `calcSuneungMinimumProbability()` + `api/analysis/minimum-check`
+- W3-B3: `POST /api/chat` + `20260329120000_chat_rag`
+- CI: `data-update.yml`, `githubReleaseFetch.ts`

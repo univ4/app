@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getAuthUser } from "@/lib/supabase/server";
+import {
+  NEIS_SEMESTER_TO_EXAM_DATE,
+  schoolGpaPostSchema,
+  type SchoolGpaPostBody,
+} from "@/lib/validation/schoolGpaScore";
 
 const mockExamSchema = z.object({
   record_type: z.literal("MOCK_EXAM"),
@@ -21,26 +26,67 @@ const mockExamSchema = z.object({
   sci2_percentile: z.coerce.number(),
 });
 
-const schoolGpaSchema = z.object({
-  record_type: z.literal("SCHOOL_GPA"),
-  exam_date: z.string().min(1),
-  subject_name: z.string().min(1),
-  raw_score: z.coerce.number(),
-  avg_score: z.coerce.number(),
-  stddev_score: z.coerce.number(),
-  student_count: z.coerce.number().int().positive(),
-  credit_unit: z.coerce.number().int().positive(),
-  school_grade: z.coerce.number().min(1).max(9),
-  achievement_level: z.enum(["A", "B", "C"]).optional().or(z.literal("")),
-});
+const scoreSchema = z.union([mockExamSchema, schoolGpaPostSchema]);
 
-const scoreSchema = z.union([mockExamSchema, schoolGpaSchema]);
+function schoolGpaInsertRow(data: SchoolGpaPostBody, studentId: string) {
+  const exam_date = NEIS_SEMESTER_TO_EXAM_DATE[data.semester];
+  const base = {
+    student_id: studentId,
+    record_type: "SCHOOL_GPA" as const,
+    exam_date,
+    semester: data.semester,
+    subject_category: data.subject_category,
+    subject_name: data.subject_name,
+    credit_unit: data.credit_unit,
+  };
+
+  if (data.subject_category === "general") {
+    return {
+      ...base,
+      total_score: data.total_score,
+      raw_score: data.raw_score,
+      avg_score: data.avg_score,
+      stddev_score: data.stddev_score,
+      student_count: data.student_count,
+      class_rank: data.class_rank,
+      rank_total: data.rank_total,
+      school_grade: data.school_grade,
+      achievement_level: data.achievement_level || null,
+    };
+  }
+
+  if (data.subject_category === "career_choice") {
+    return {
+      ...base,
+      total_score: data.total_score ?? null,
+      raw_score: data.raw_score,
+      avg_score: data.avg_score,
+      stddev_score: data.stddev_score,
+      student_count: data.student_count,
+      class_rank: null,
+      rank_total: null,
+      school_grade: null,
+      achievement_level: data.achievement_level,
+    };
+  }
+
+  return {
+    ...base,
+    total_score: null,
+    raw_score: data.raw_score,
+    avg_score: null,
+    stddev_score: null,
+    student_count: null,
+    class_rank: null,
+    rank_total: null,
+    school_grade: null,
+    achievement_level: data.achievement_level,
+  };
+}
 
 export async function GET(request: Request) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getAuthUser(supabase);
 
   if (!user) {
     return NextResponse.json(
@@ -89,9 +135,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getAuthUser(supabase);
 
   if (!user) {
     return NextResponse.json(
@@ -138,19 +182,7 @@ export async function POST(request: Request) {
       subject_name: `sci1:${parsed.data.sci1_subject}|sci2:${parsed.data.sci2_subject}`,
     };
   } else {
-    insertPayload = {
-      student_id: user.id,
-      record_type: parsed.data.record_type,
-      exam_date: parsed.data.exam_date,
-      subject_name: parsed.data.subject_name,
-      raw_score: parsed.data.raw_score,
-      avg_score: parsed.data.avg_score,
-      stddev_score: parsed.data.stddev_score,
-      student_count: parsed.data.student_count,
-      credit_unit: parsed.data.credit_unit,
-      school_grade: parsed.data.school_grade,
-      achievement_level: parsed.data.achievement_level || null,
-    };
+    insertPayload = schoolGpaInsertRow(parsed.data, user.id);
   }
 
   const { data, error } = await supabase

@@ -1,4 +1,6 @@
-# System Architecture 보강 (PRD P1-11~14, P2-6~8 반영)
+# System Architecture 보강 (PRD v2 · P1-11~17, P2-6~12, P3-4·P3-6)
+
+**근거**: [`docs/01_PRD_v2.md`](./01_PRD_v2.md) · **로드맵**: [`docs/05_ROADMAP.md`](./05_ROADMAP.md)
 
 전체 시스템 설계·데이터 흐름·비용 등은 [`docs/02_SYSTEM_DESIGN.md`](./02_SYSTEM_DESIGN.md)를 따릅니다.  
 본 문서는 **DB 스키마 확장**, **Track 1 함수 목록 확장**, **Track 2 RAG 데이터 소스 확장**만 정리합니다.
@@ -60,8 +62,15 @@
 | `detectGibupGap(...)` | 생기부 항목별 공백·글자수 미달 탐지 (P1-14) |
 | `calcDDay(...)` | 기준일 대비 D-Day 정수 산출 (P1-12) |
 | `calcSuneungNapchiRisk(...)` | 수시 지원 조합 기준 정시 납치 리스크 등급 (P2-6) |
+| `scanAdmissionSignals(...)` *(가칭)* | 199개 대학·전형 배치 합격 신호등 산출 (P0-4 전체 스캔, P1-15 핵심) |
+| `filterUniversitiesByAdmissionCriteria(...)` *(가칭)* | 수능최저/면접/교과 반영 등 AND 조건 필터 (P1-16) |
+| `summarizeCutoffTrends(...)` *(가칭)* | 연도별 컷오프 추이 지표 (P2-9) |
+| `evaluateJeonsiGroupPortfolio(...)` *(가칭)* | 가·나·다군 조합 리스크·패턴 (P2-10) |
+| `simulateScience2BonusImpact(...)` *(가칭)* | 과탐II 가산 시뮬 (P3-4) |
 
-기존 함수(`calculateSuneungScore`, `calculateSusiGPA`, `calculateZScore`, `calculateAdmissionProbability`, `checkSuneungMinimum` 등)와 동일 원칙을 따릅니다.
+이름은 구현 시 모듈 분할에 맞게 조정한다. 기존 함수(`calculateSuneungScore`, `calculateSusiGPA`, `calculateZScore`, `calculateAdmissionProbability`, `checkSuneungMinimum` 등)와 동일 원칙을 따른다.
+
+**규칙 데이터**: 정시 환산 등은 data-collector 산출 `admission_db.json`( 및 동기화 테이블)에서 로드 — PRD v2 P0-2, [`docs/03_DB_SCHEMA.md`](./03_DB_SCHEMA.md) §PRD v2 연계.
 
 ---
 
@@ -71,8 +80,12 @@
 
 | 소스 | 용도 |
 |---|---|
+| 전형계획 Markdown | **18개 대학** 2027학년도 (수능반영·최저·교과규칙 등) — PRD v2 §11 |
+| 정시자료 Markdown | **4개** (서울권·수도권·전문대·총론) — P1-1 RAG, P2-10·P3-4 해석 보조 |
 | 선택과목 지원조건 | 모집요강 PDF (과목 제한·우대·불가) |
 | 합격자 평균 스펙 | 대학 공시·통계 (P2-7) |
 | N수생 비율 | 대학 입학처 공시 (P2-8) |
 
-메타데이터 필터 예: `university_name` / `admission_year` / `admission_type` / `chunk_category`(예: `subject_requirement`, `admission_stats`).
+메타데이터 필터 예: `university_name` / `admission_year` / `admission_type` / `chunk_category`(예: `subject_requirement`, `admission_stats`, `jeonsi_material`, `admission_plan_2027`).
+
+**입결·경쟁률(199개)** 는 RAG가 아니라 Track 1 집계·DB·번들 JSON 등 **결정론적 소스**로 다루는 것이 원칙이다 (P1-15, P2-9).

@@ -65,7 +65,7 @@ export function ScoreTrendChart({ records }: { records: MockExamTrendRecord[] })
           <CardTitle>모의고사 성적 추이</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-gray-600">아직 입력된 모의고사 성적이 없습니다</p>
+          <p className="text-muted-foreground text-sm">아직 입력된 모의고사 성적이 없습니다</p>
         </CardContent>
       </Card>
     );
