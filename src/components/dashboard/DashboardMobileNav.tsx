@@ -35,10 +35,6 @@ export function DashboardMobileNav() {
     return () => window.removeEventListener("keydown", onKey);
   }, [moreOpen, closeMore]);
 
-  useEffect(() => {
-    closeMore();
-  }, [pathname, closeMore]);
-
   return (
     <>
       <nav
@@ -60,6 +56,7 @@ export function DashboardMobileNav() {
                     "flex min-h-11 flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-[0.65rem] font-medium",
                     active ? "text-foreground" : "text-muted-foreground",
                   )}
+                  onClick={closeMore}
                 >
                   <Icon className="size-5 shrink-0" aria-hidden />
                   {label}
