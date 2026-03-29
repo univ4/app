@@ -313,6 +313,8 @@ grade=2
 
 ### POST `/api/chat`
 
+**웹 UI:** 대시보드 → AI 요강 챗봇 (`/dashboard/chat`) — 세션 쿠키로 동일 엔드포인트 호출·SSE 표시.
+
 설명:
 - 요강 RAG 챗봇 질의(보유 자료: 18개 대학 전형계획·정시자료 청크만 근거)
 - 응답은 **항상 SSE**(`text/event-stream`) 스트리밍

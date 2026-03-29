@@ -140,11 +140,11 @@ export default async function DashboardPage() {
             </Card>
           </Link>
 
-          <Link href="/chat" className="block">
+          <Link href="/dashboard/chat" className="block">
             <Card>
               <CardHeader>
                 <CardTitle>AI 요강 챗봇</CardTitle>
-                <CardDescription>대학 요강 질의응답</CardDescription>
+                <CardDescription>전형계획·정시 자료 RAG 질의응답</CardDescription>
               </CardHeader>
             </Card>
           </Link>

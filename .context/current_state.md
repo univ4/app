@@ -17,7 +17,7 @@
 
 - **Week 1–2:** 기반 설계 + Track 1 계산 엔진 + 테스트 인프라.
 - **Week 3 (완료, 2026-03-29):** 입결·RAG 적재 파이프라인, `calcDDay`·`calcSuneungMinimumProbability`, `POST /api/chat`(RAG), 내신 NEIS 스키마·폼.
-- **Week 4 (완료, 2026-03-30):** `/login` Suspense, 내신 upsert UNIQUE(`20260329170000`)·적재 49건, 챗봇 E2E(임계 0.55·Bearer·프롬프트·RPC), P0-4 신호등·P0-5 캘린더, 생활기록부 9탭+자격증·학폭, 모바일 UI·`08_MOBILE_UI.md`.
+- **Week 4 (완료, 2026-03-30):** `/login` Suspense, 내신 upsert UNIQUE(`20260329170000`)·적재 49건, 챗봇 E2E(임계 0.55·Bearer·프롬프트·RPC), **P1-1** `/dashboard/chat` UI(SSE·출처·필터), P0-4 신호등·P0-5 캘린더, 생활기록부 9탭+자격증·학폭, 모바일 UI·`08_MOBILE_UI.md`.
 
 ## 완료된 핵심 산출물
 
@@ -45,6 +45,10 @@
 | `20260330180000_calendar_events.sql` | P0-5 `calendar_events` + RLS + `ensure_default_admission_calendar_2027` |
 | `20260330190000_student_certificates_school_violence.sql` | `student_certificates`, `student_school_violence` + RLS |
 
+### 대시보드 UI (발췌)
+
+- **P1-1** `src/app/dashboard/chat/page.tsx` — AI 요강 챗봇(`ChatInterface`, `ChatMessage`, `UnivFilter`; `POST /api/chat` SSE)
+
 ### API routes (`src/app/api/**/route.ts`)
 
 - `api/scores/route.ts`, `api/scores/[id]/route.ts`
@@ -64,7 +68,7 @@
 
 ### 테스트 (`src/__tests__/`)
 
-- Calculators × 10, API routes × 4+, lib/chat × 1, calendar 통합 × 1 — **17 suites**
+- Calculators × 10, API routes × 4+, lib/chat × 1, calendar 통합 × 1 — **19 suites**
 
 ## 데이터 적재 스냅샷 (검증 배치)
 
@@ -76,7 +80,7 @@
 ## 테스트·품질 현황
 
 - **Jest:** `jest.config.ts` (next/jest), `testMatch`: `src/__tests__/**/*.test.ts`
-- **결과:** **148 tests PASS** / **17 suites** / FAIL 0 (`npm test`, 2026-03-30)
+- **결과:** **185 tests PASS** / **19 suites** / FAIL 0 (`npm test`, 2026-03-30)
 
 ## PRD v2 백로그 메모
 

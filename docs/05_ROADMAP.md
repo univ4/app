@@ -72,7 +72,7 @@ Track 1·데이터 경로를 먼저 안정화한 뒤 UI·RAG를 붙인다.
 
 **Week 3 진행 스냅샷 (2026-03-29):** `admission_records`·`guideline_chunks` 적재 스크립트 동작 확인, `calcDDay`·`calcSuneungMinimumProbability`·`POST /api/chat`(RAG) 구현·테스트 통과.
 
-**Week 4 완료 스냅샷 (2026-03-30):** P0 **5/5** 코어 UI·API 정합 — P0-4 신호등(`calcAdmissionSignal`, `GET /api/signals`), P0-5 캘린더(`calendar_events`, `/api/calendar`), 챗봇 RAG E2E·임계값·인증, 내신 UNIQUE/적재(49건), 생활기록부 9탭·자격증·학교폭력 테이블, 모바일 가이드 [`docs/08_MOBILE_UI.md`](./08_MOBILE_UI.md). Jest **148** / suites **17**.
+**Week 4 완료 스냅샷 (2026-03-30):** P0 **5/5** 코어 UI·API 정합 — P0-4 신호등(`calcAdmissionSignal`, `GET /api/signals`), P0-5 캘린더(`calendar_events`, `/api/calendar`), **P1-1** 요강 챗봇 UI(`/dashboard/chat`), 챗봇 RAG E2E·임계값·인증, 내신 UNIQUE/적재(49건), 생활기록부 9탭·자격증·학교폭력 테이블, 모바일 가이드 [`docs/08_MOBILE_UI.md`](./08_MOBILE_UI.md). Jest **185** / suites **19**.
 
 ### Week 4 이후 — P1 나머지 · P2 · P3
 

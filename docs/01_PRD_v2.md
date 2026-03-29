@@ -861,14 +861,14 @@ flowchart LR
 
 **진행 스냅샷 (2026-03-29):** Week 3에서 **데이터 파이프라인·Track 1·RAG API**를 우선 완료했다. `admission_records` 적재(검증 배치 **3,393**건), `guideline_chunks` 임베딩 적재(**6,256**청크), `calcDDay`·`calcSuneungMinimumProbability`·`POST /api/chat`(RAG) 및 내신 폼·NEIS 컬럼 마이그레이션 적용.
 
-**Week 4 완료 스냅샷 (2026-03-30):** `/login` Suspense 빌드 수정, `academic_records` upsert용 **`academic_records_upsert_key`** 정합 및 내신 JSON 적재(**49**건 검증 배치), 챗봇 E2E(`CHAT_SIMILARITY_THRESHOLD` 기본 **0.55**, 시스템 프롬프트·Bearer 인증, `match_guideline_chunks` 정리). **P0-4** `calcAdmissionSignal`·`GET /api/signals`·`/dashboard/signals` UI. **P0-5** `calendar_events`·기본 4건 RPC·`/dashboard/calendar`·D-Day. **생활기록부** 9탭 입력 폼·`student_certificates`·`student_school_violence` 마이그레이션. **모바일** 360px·하단 네비·터치·WCAG AA 대비([`docs/08_MOBILE_UI.md`](./08_MOBILE_UI.md)). Jest **148** tests PASS / **17** suites.
+**Week 4 완료 스냅샷 (2026-03-30):** `/login` Suspense 빌드 수정, `academic_records` upsert용 **`academic_records_upsert_key`** 정합 및 내신 JSON 적재(**49**건 검증 배치), 챗봇 E2E(`CHAT_SIMILARITY_THRESHOLD` 기본 **0.55**, 시스템 프롬프트·Bearer 인증, `match_guideline_chunks` 정리). **P1-1** 요강 챗봇 UI **`/dashboard/chat`**(SSE·출처·대학·연도 필터·매뉴얼 §12 예시). **P0-4** `calcAdmissionSignal`·`GET /api/signals`·`/dashboard/signals` UI. **P0-5** `calendar_events`·기본 4건 RPC·`/dashboard/calendar`·D-Day. **생활기록부** 9탭 입력 폼·`student_certificates`·`student_school_violence` 마이그레이션. **모바일** 360px·하단 네비·터치·WCAG AA 대비([`docs/08_MOBILE_UI.md`](./08_MOBILE_UI.md)). Jest **185** tests PASS / **19** suites.
 
 ### Week 4
 - ~~통합 QA, 성능 튜닝, 모바일 UI 안정화~~ (2026-03-30 마무리)
 - 운영 규칙(데이터 입력 SOP, 백업/복구 체크) — 지속 과제
 
 ### Week 4 이후 스프린트
-- **P1-1** 챗봇 전용 UI·UX 고도화(백엔드 RAG는 Week 3~4에서 동작 검증 완료)
+- **P1-1** 챗봇 UX 고도화·Tool Use 연동(백엔드 RAG·`/dashboard/chat` 1차 UI는 Week 4 반영 — 사용법 `docs/08_USER_MANUAL.md` §12)
 - P1-6 자소서 코치
 - P1-7 6장 원서 배분 전략 시뮬레이터
 - P1-8 탐구 주제 추천 엔진

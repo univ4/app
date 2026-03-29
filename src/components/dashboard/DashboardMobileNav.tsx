@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarDays, LayoutDashboard, Menu, Table2 } from "lucide-react";
+import { CalendarDays, LayoutDashboard, Menu, MessageCircle, Table2 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -11,13 +11,13 @@ const MAIN = [
   { href: "/dashboard", label: "홈", Icon: LayoutDashboard },
   { href: "/dashboard/signals", label: "신호등", Icon: Table2 },
   { href: "/dashboard/calendar", label: "캘린더", Icon: CalendarDays },
+  { href: "/dashboard/chat", label: "챗봇", Icon: MessageCircle },
 ] as const;
 
 const MORE = [
   { href: "/dashboard/scores", label: "성적 입력" },
   { href: "/dashboard/student-record", label: "생활기록부" },
   { href: "/dashboard/analysis", label: "합격 가능성" },
-  { href: "/chat", label: "AI 요강 챗봇" },
 ] as const;
 
 export function DashboardMobileNav() {
@@ -104,7 +104,7 @@ export function DashboardMobileNav() {
                 다른 메뉴
               </h2>
               <p className="text-muted-foreground text-sm">
-                성적·생기부·분석·챗봇으로 이동합니다.
+                성적·생기부·분석으로 이동합니다.
               </p>
             </div>
             <ul className="max-h-[50vh] overflow-y-auto p-2">

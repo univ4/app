@@ -7,7 +7,7 @@
 ### 네비게이션
 
 - `src/app/dashboard/layout.tsx`: 대시보드 하위 전역 레이아웃, 모바일 하단 여백(`pb-20`).
-- `src/components/dashboard/DashboardMobileNav.tsx`: **md 미만** 고정 하단 바 — 홈·신호등·캘린더 1탭, **더보기** 시트로 성적·생기부·분석·챗봇.
+- `src/components/dashboard/DashboardMobileNav.tsx`: **md 미만** 고정 하단 바 — 홈·신호등·캘린더·**챗봇** 1탭, **더보기** 시트로 성적·생기부·분석.
 - 서브페이지의「대시보드」버튼은 **md 이상**만 표시(모바일은 하단 홈과 중복 제거).
 
 ### 반응형·테이블
@@ -39,9 +39,10 @@
 | `/dashboard/calendar` | 캘린더 셀·폼 |
 | `/dashboard/student-record` | 탭 래핑·select 높이 |
 | `/dashboard/scores` | 폼·목록 테이블 |
+| `/dashboard/chat` | 메시지 스크롤·하단 입력(`sticky`·네비 오프셋)·출처 토글 |
 | `/login` | 카드 `w-full`, 라벨 대비 |
 
 ## 검증
 
 - `npm run build` — 성공.
-- `npm test` — 전체 PASS (현재 저장소 기준 **148**건).
+- `npm test` — 전체 PASS (현재 저장소 기준 **185**건 / **19** suites).
