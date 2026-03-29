@@ -4,7 +4,7 @@
 (보관 PRD: [`docs/01_PRD.md`](./01_PRD.md)) · 아키텍처 요약: [`docs/02_SYSTEM_DESIGN.md`](./02_SYSTEM_DESIGN.md)
 
 실제 적용 SQL은 아래 마이그레이션(파일명 순)에 포함됩니다:  
-`20260325000000_init.sql`, `20260326000000_multi_student.sql`, `20260327000000_subject_profiles.sql`, `20260329000001_admission_records.sql`, `20260329000002_admission_records.sql`, `20260329120000_chat_rag.sql`, `20260329140000_academic_records_neis.sql`, `20260329150000_academic_records_neis_upsert_unique.sql`, `20260329160000_student_record_tables.sql`, `20260329170000_academic_records_fix_unique.sql`, `20260330180000_calendar_events.sql`, `20260330190000_student_certificates_school_violence.sql`.  
+`20260325000000_init.sql`, `20260326000000_multi_student.sql`, `20260327000000_subject_profiles.sql`, `20260329000001_admission_records.sql`, `20260329000002_admission_records.sql`, `20260329120000_chat_rag.sql`, `20260329140000_academic_records_neis.sql`, `20260329150000_academic_records_neis_upsert_unique.sql`, `20260329160000_student_record_tables.sql`, `20260329170000_academic_records_fix_unique.sql`, `20260330180000_calendar_events.sql`, `20260330190000_student_certificates_school_violence.sql`, `20260330210000_simulator_portfolios.sql`.  
 P1-11 확장 테이블 상세는 [`docs/03_DATA_MODEL.md`](./03_DATA_MODEL.md)를 참조합니다. 생활기록부 구조화 테이블은 [`docs/08_STUDENT_RECORD_SPEC.md`](./08_STUDENT_RECORD_SPEC.md)와 본 문서 §2.15를 참조합니다.
 
 ## 1) ER 다이어그램
@@ -161,6 +161,7 @@ erDiagram
   students ||--o{ student_reading : "student_id"
   students ||--o{ student_behavior : "student_id"
   students ||--o{ calendar_events : "student_id"
+  students ||--o| simulator_portfolios : "student_id unique"
   students ||--o| subject_profiles : "student_id year"
   universities ||--o{ departments : "university_id"
   universities ||--o{ univ_subject_requirements : "univ_id"
@@ -677,7 +678,20 @@ DDL: `supabase/migrations/20260329000002_admission_records.sql` (`20260329000001
 
 ---
 
-### 2.16 `chat_usage_daily` (AI 챗봇 일일 호출)
+### 2.16 `simulator_portfolios` (P1-7 원서 배분 시뮬레이터) — `20260330210000_simulator_portfolios.sql`
+
+| 컬럼명 | 타입 | 제약 | 설명 |
+|---|---|---|---|
+| id | uuid | PK, default `gen_random_uuid()` | |
+| student_id | uuid | FK → `students(id)` ON DELETE CASCADE, not null | |
+| cards | jsonb | not null, default `[]` | 저장 카드(JSON). API·앱과 동일 스키마 |
+| created_at | timestamptz | not null, default now() | |
+
+- **고유**: `unique (student_id)`
+- **인덱스**: `(student_id)`
+- **RLS**: SELECT/INSERT/UPDATE/DELETE — `auth.uid() = student_id`
+
+### 2.17 `chat_usage_daily` (AI 챗봇 일일 호출)
 
 | 컬럼명 | 타입 | 제약 | 설명 |
 |---|---|---|---|

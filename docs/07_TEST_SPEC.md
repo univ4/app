@@ -6,7 +6,7 @@
 통합 테스트 전략·기존 케이스는 [`docs/06_TEST_PLAN.md`](./06_TEST_PLAN.md)를 참조합니다.  
 본 문서는 Track 1 함수·`POST /api/chat`에 대한 **단위·라우트 테스트 스펙**을 정의한다(§2·3·8 등은 구현됨, §4·5·6·7 등은 예정).
 
-**실행 스냅샷 (2026-03-30):** `npm test` — **18** suites, **173** tests, FAIL 0. (`GET /api/signals`: `src/__tests__/api/signals.route.test.ts`; 생기부 `[id]`·출결 PUT: `src/__tests__/api/student-record-api.test.ts`; `calcAdmissionSignal`: `src/__tests__/calculators/calcAdmissionSignal.test.ts`; 캘린더·D-Day: `src/__tests__/calendar/calendarDday.integration.test.ts`)
+**실행 스냅샷 (2026-03-30):** `npm test` — **22** suites, **201** tests, FAIL 0. (`GET/POST /api/simulator`: `src/__tests__/api/simulator.route.test.ts`; `calcPortfolioRisk` / `calcNapchiRisk`: `src/__tests__/calculators/calcPortfolioRisk.test.ts`, `calcNapchiRisk.test.ts`; `GET /api/signals`: `src/__tests__/api/signals.route.test.ts`; 생기부 `[id]`·출결 PUT: `src/__tests__/api/student-record-api.test.ts`; `calcAdmissionSignal`: `src/__tests__/calculators/calcAdmissionSignal.test.ts`; 캘린더·D-Day: `src/__tests__/calendar/calendarDday.integration.test.ts`)
 
 ---
 
@@ -76,6 +76,37 @@
 | CAS-05 | 교과, 컷±0.3 | `moderate` |
 | CAS-06 | 교과, 컷+0.3 초과 | `challenge` |
 | CAS-07 | `medShiftCoeff` 음수 가산 시 컷 하향 | 동일 점수에서 신호등이 유리 쪽으로 이동 가능 |
+
+---
+
+## 6a. `calcPortfolioRisk` / `calcNapchiRisk` (P1-7)
+
+구현·테스트: `src/lib/calculators/calcPortfolioRisk.ts`, `calcNapchiRisk.ts`, `src/__tests__/calculators/calcPortfolioRisk.test.ts`, `calcNapchiRisk.test.ts`
+
+| ID | 시나리오 | 기대 |
+|---|---|---|
+| PR-01 | 안정·적정·도전이 고르게 6장 이내 | `riskLevel === balanced`, §9.1 경고 없음 |
+| PR-02 | 안정 0장 | `"안정 지원이 없습니다…"` 경고, `aggressive` |
+| PR-03 | 도전 4장 이상 | `"도전 지원이 너무 많습니다"` |
+| PR-04 | 7장 이상 | `"6장을 초과했습니다"` |
+| PR-05 | 수능최저 전형 3장 이상 | `"수능최저 리스크를 확인하세요"` |
+| NR-01 | `challenge` 카드 | `calcNapchiRisk` → `low` |
+| NR-02 | `moderate` 카드 | `medium` |
+| NR-03 | `safe` + 정시 신호에 다른 대학 `safe`/`moderate` | `high` (납치 기회비용 휴리스틱) |
+
+---
+
+## 6b. `GET` / `POST /api/simulator`
+
+구현·테스트: `src/app/api/simulator/route.ts`, `src/__tests__/api/simulator.route.test.ts` (`NextRequest` 사용)
+
+| ID | 시나리오 | 기대 |
+|---|---|---|
+| SIM-GET-01 | 미인증 | `401` `UNAUTHORIZED` |
+| SIM-GET-02 | 인증 | `data.portfolio` 객체 또는 `null` |
+| SIM-POST-01 | 미인증 | `401` |
+| SIM-POST-02 | 유효 `cards`(≤6) | `200`, 저장된 `portfolio` |
+| SIM-POST-03 | 잘못된 본문 | `422` `VALIDATION_ERROR` |
 
 ---
 

@@ -9,7 +9,7 @@
 ## Cursor rules (요약)
 
 - `00_project_overview.mdc`: 수험생·학부모 AI 대입 전략 플랫폼; Data coverage(199 / 18); Out of Scope는 PRD v2 5.2와 동일.
-- `02_architecture.mdc`: Two-Track, `admission_records`·data-collector, ingest, 핵심 테이블 목록(`calendar_events`, 생활기록부 구조화 테이블 포함), Track 1에 `calcAdmissionSignal` 명시.
+- `02_architecture.mdc`: Two-Track, `admission_records`·data-collector, ingest, 핵심 테이블 목록(`calendar_events`, `simulator_portfolios`, 생활기록부 구조화 테이블 포함), Track 1에 `calcAdmissionSignal`·`calcPortfolioRisk`·`calcNapchiRisk` 명시.
 - `04_domain_knowledge.mdc`: Target University Universe(199·18·P1-15·P0-4).
 - `05_change_protocol.mdc`: 문서 선행·연쇄 갱신(마이그레이션 시 `03_DATA_MODEL`+`03_DB_SCHEMA`+`current_state`); **마이그레이션과 `03_DATA_MODEL.md` 동시 커밋·커밋 메시지에 `docs: 03_DATA_MODEL.md 업데이트`**(CI 문서 싱크); 계산기/API 체크리스트; calculators **≥90%**·신규 API 구문 **≥70%**·`[id]` PUT/DELETE 성공 테스트 1건 이상; **완료 전 로컬 CI**: `tsc --noEmit` → `lint` → `npm test` → `build`; API route 테스트는 `NextRequest`(`next/server`)·`new Request()` 금지; 완료 보고에 커버리지·미커버 구간; **<90% calculators / <50% 신규 API** 시 완료 불가 또는 최소 테스트 추가; Supabase 모킹은 `jest.mock("@/lib/supabase/server")`+`getAuthUser` (`scores.route.test.ts` 표준).
 
@@ -21,11 +21,12 @@
 
 ## 완료된 핵심 산출물
 
-### Calculators (10개, `src/lib/calculators/`)
+### Calculators (12개, `src/lib/calculators/`)
 
 - `analyzeSubjectAdvantage.ts`, `calculateAdmissionProbability.ts`, `calculateSuneungScore.ts`, `calculateSusiGPA.ts`, `calculateZScore.ts`
 - `checkSubjectEligibility.ts`, `checkSuneungMinimum.ts`
 - `calcDDay.ts`, `calcSuneungMinimumProbability.ts`, **`calcAdmissionSignal.ts`** (P0-4 / P1-17 대표 확률)
+- **`calcPortfolioRisk.ts`**, **`calcNapchiRisk.ts`** (P1-7 원서 배분 시뮬레이터)
 
 ### DB 마이그레이션 (적용 순, `supabase/migrations/`)
 
@@ -44,10 +45,12 @@
 | `20260329170000_academic_records_fix_unique.sql` | `academic_records_upsert_key` — `UNIQUE (student_id, semester, subject_name, credit_unit)` (`ON CONFLICT` 정합) |
 | `20260330180000_calendar_events.sql` | P0-5 `calendar_events` + RLS + `ensure_default_admission_calendar_2027` |
 | `20260330190000_student_certificates_school_violence.sql` | `student_certificates`, `student_school_violence` + RLS |
+| `20260330210000_simulator_portfolios.sql` | P1-7 `simulator_portfolios` + RLS (학생당 1행) |
 
 ### 대시보드 UI (발췌)
 
 - **P1-1** `src/app/dashboard/chat/page.tsx` — AI 요강 챗봇(`ChatInterface`, `ChatMessage`, `UnivFilter`; `POST /api/chat` SSE)
+- **P1-7** `src/app/dashboard/simulator/page.tsx` — 원서 배분 시뮬레이터(`PortfolioBuilder`, `PortfolioSummary`; `GET/POST /api/simulator`)
 
 ### API routes (`src/app/api/**/route.ts`)
 
@@ -55,6 +58,7 @@
 - `api/analysis/probability/route.ts`, `api/analysis/minimum-check/route.ts`
 - `api/chat/route.ts`
 - **`api/signals/route.ts`**
+- **`api/simulator/route.ts`** (P1-7)
 - **`api/calendar/route.ts`, `api/calendar/[id]/route.ts`**
 - **`api/student-record/*`** (subject-notes, activities, awards, behavior, attendance, volunteer, reading, certificates, school-violence)
 
@@ -68,7 +72,7 @@
 
 ### 테스트 (`src/__tests__/`)
 
-- Calculators × 10, API routes × 4+, lib/chat × 1, calendar 통합 × 1 — **19 suites**
+- Calculators × 12, API routes × 5+, lib/chat × 1, calendar 통합 × 1 — **22 suites**
 
 ## 데이터 적재 스냅샷 (검증 배치)
 
@@ -80,7 +84,7 @@
 ## 테스트·품질 현황
 
 - **Jest:** `jest.config.ts` (next/jest), `testMatch`: `src/__tests__/**/*.test.ts`
-- **결과:** **185 tests PASS** / **19 suites** / FAIL 0 (`npm test`, 2026-03-30)
+- **결과:** **201 tests PASS** / **22 suites** / FAIL 0 (`npm test`, 2026-03-30)
 
 ## PRD v2 백로그 메모
 

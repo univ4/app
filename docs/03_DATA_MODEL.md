@@ -7,7 +7,7 @@
 
 실제 DDL: `supabase/migrations/20260327000000_subject_profiles.sql`
 
-**RAG·챗봇 한도**: `guideline_chunks` 검색 RPC(`match_guideline_chunks`, `match_threshold` 포함) 및 `chat_usage_daily` / `try_consume_chat_quota`는 [`docs/03_DB_SCHEMA.md`](./03_DB_SCHEMA.md) §2.16 및 동일 문서의 RAG RPC 절, 마이그레이션 `20260329120000_chat_rag.sql`, `20260329140000_match_guideline_chunks_threshold.sql`을 참조.
+**RAG·챗봇 한도**: `guideline_chunks` 검색 RPC(`match_guideline_chunks`, `match_threshold` 포함) 및 `chat_usage_daily` / `try_consume_chat_quota`는 [`docs/03_DB_SCHEMA.md`](./03_DB_SCHEMA.md) §2.17 및 동일 문서의 RAG RPC 절, 마이그레이션 `20260329120000_chat_rag.sql`, `20260329140000_match_guideline_chunks_threshold.sql`을 참조.
 
 ---
 
@@ -176,11 +176,27 @@ NEIS 파싱 JSON 적재 스크립트 `scripts/ingest/load_neis_grades.ts`의 ups
 
 ---
 
-## 7) CI 문서 동기화
+## 7) `simulator_portfolios` (P1-7 원서 배분 시뮬레이터)
+
+실제 DDL: `supabase/migrations/20260330210000_simulator_portfolios.sql`
+
+| 컬럼명 | 타입 | 제약 | 설명 |
+|---|---|---|---|
+| id | uuid | PK, default `gen_random_uuid()` | |
+| student_id | uuid | FK → `students(id)` ON DELETE CASCADE, not null | 본인 계정 UUID |
+| cards | jsonb | not null, default `[]` | 카드 배열(대학·학과·전형·신호등·수능최저 여부 등). 앱 스키마는 `POST /api/simulator`와 동일 |
+| created_at | timestamptz | not null, default now() | |
+
+- **고유**: `unique (student_id)` — 학생당 1행(upsert 저장)
+- **RLS**: SELECT/INSERT/UPDATE/DELETE 모두 `auth.uid() = student_id`
+
+---
+
+## 8) CI 문서 동기화
 
 GitHub Actions `doc-sync-check`는 `supabase/migrations/*.sql` 중 **`docs/03_DATA_MODEL.md`보다 최근에 수정된 파일**이 있으면 실패합니다. 마이그레이션을 추가·변경한 커밋에서는 반드시 본 문서를 함께 갱신하세요.
 
-**현재 마이그레이션 파일 목록 (13개, `find supabase/migrations -name "*.sql" | sort` 기준)**
+**현재 마이그레이션 파일 목록 (14개, `find supabase/migrations -name "*.sql" | sort` 기준)**
 
 | 순서 | 파일명 |
 | ---: | --- |
@@ -197,3 +213,4 @@ GitHub Actions `doc-sync-check`는 `supabase/migrations/*.sql` 중 **`docs/03_DA
 | 11 | `20260329170000_academic_records_fix_unique.sql` |
 | 12 | `20260330180000_calendar_events.sql` |
 | 13 | `20260330190000_student_certificates_school_violence.sql` |
+| 14 | `20260330210000_simulator_portfolios.sql` |

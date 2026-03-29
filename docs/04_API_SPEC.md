@@ -231,6 +231,58 @@ medShift=0|1       (optional, 1이면 행별 med_shift_coeff를 컷에 가산)
 
 ---
 
+### GET/POST `/api/simulator` — P1-7 원서 배분 시뮬레이터
+
+설명:
+- 학생별 저장된 **수시 6장 포트폴리오**(카드 JSON)를 조회·저장한다.
+- 권한: 로그인 사용자만. `student_id`는 항상 `auth.uid()`(본인).
+
+**GET** 성공 응답:
+
+```json
+{
+  "data": {
+    "portfolio": {
+      "id": "uuid",
+      "student_id": "uuid",
+      "cards": [],
+      "created_at": "2026-03-30T00:00:00.000Z"
+    }
+  },
+  "error": null
+}
+```
+
+- 저장 전이면 `portfolio`는 `null`일 수 있다.
+
+**POST** 요청 본문:
+
+```json
+{
+  "cards": [
+    {
+      "university": "서강대",
+      "department": "자연계열",
+      "admissionType": "학생부교과",
+      "signal": "moderate",
+      "hasSuneungMinimum": false,
+      "admissionRecordId": 1
+    }
+  ]
+}
+```
+
+- `cards`: **최대 6개**. `signal` ∈ `safe` | `moderate` | `challenge`. `admissionRecordId`는 선택.
+- 검증 실패(형식·개수 초과) → `422` `VALIDATION_ERROR`.
+
+**POST** 성공 시 `data.portfolio`에 upsert된 행을 반환한다.
+
+Track 1(클라이언트·요약 UI): `calcPortfolioRisk`, `calcNapchiRisk` (`src/lib/calculators/`).
+
+구현 경로: `src/app/api/simulator/route.ts`, 테이블 `simulator_portfolios` (`docs/03_DATA_MODEL.md` §7).
+
+---
+
 ## 3. 합격 가능성 분석 API (`/api/analysis`)
 
 ### GET `/api/analysis/probability`
@@ -994,6 +1046,7 @@ Query (optional): `year=2027`
 ```txt
 scores/route.ts                          # GET, POST
 signals/route.ts                         # GET
+simulator/route.ts                       # GET, POST (P1-7)
 analysis/probability/route.ts            # GET
 analysis/minimum-check/route.ts          # GET
 chat/route.ts                            # POST

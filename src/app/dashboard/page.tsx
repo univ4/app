@@ -140,6 +140,17 @@ export default async function DashboardPage() {
             </Card>
           </Link>
 
+          <Link href="/dashboard/simulator" className="block">
+            <Card>
+              <CardHeader>
+                <CardTitle>원서 배분 시뮬레이터</CardTitle>
+                <CardDescription>
+                  수시 6장 구성·포트폴리오 경고·수시 납치 리스크 (§9)
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </Link>
+
           <Link href="/dashboard/chat" className="block">
             <Card>
               <CardHeader>
