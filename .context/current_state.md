@@ -27,7 +27,7 @@
 - `analyzeSubjectAdvantage.ts`, **`calcSubjectAdvantage.ts`** (P1-11 정시 반영비 유불리), **`calcAdmissionTrend.ts`** (P2-9 연도별 입결 추이), `calculateAdmissionProbability.ts`, `calculateSuneungScore.ts`, `calculateSusiGPA.ts`, `calculateZScore.ts`, **`calcSchoolLevel.ts`** (P1-2 Z·고교 수준 참고)
 - `checkSubjectEligibility.ts`, `checkSuneungMinimum.ts`
 - `calcDDay.ts`, **`calcAdmissionTodos.ts`** (P1-12 역산 TO-DO), `calcSuneungMinimumProbability.ts`, **`calcAdmissionSignal.ts`** (P0-4 / P1-17 대표 확률)
-- **`calcPortfolioRisk.ts`**, **`calcNapchiRisk.ts`** (P1-7 원서 배분 시뮬레이터)
+- **`calcPortfolioRisk.ts`**, **`calcNapchiRisk.ts`** (P1-7 원서 배분 시뮬레이터), **`calcIntegratedStrategy.ts`** (P2-6 수시·정시 통합 전략)
 - **`calcRealCompetitionRate.ts`** (P1-3 논술 실질 경쟁률)
 - **`calcRecordGapAnalysis.ts`** (P1-14 생기부 공백 탐지, `detectGibupGap` 별칭)
 

@@ -464,6 +464,54 @@ Track 1(클라이언트·요약 UI): `calcPortfolioRisk`, `calcNapchiRisk` (`src
 
 ---
 
+### GET `/api/integrated-strategy` — P2-6 수시·정시 통합 전략
+
+설명:
+- `simulator_portfolios`에 저장된 수시 카드와 `GET /api/signals`와 동일한 파이프라인으로 산출한 정시 신호등을 합쳐 Track 1 `calcIntegratedStrategy`를 실행한다.
+- 권한: 로그인 사용자만. `student_id`는 `auth.uid()`(본인).
+
+**GET** Query (`GET /api/signals`와 동일):
+
+| 파라미터 | 값 | 기본 |
+|---|---|---|
+| `admissionYear` | 2020–2035 정수 | 2026 |
+| `medShift` | `0` \| `1` | `0` |
+
+- 잘못된 쿼리 → `422` `VALIDATION_ERROR`.
+- 비로그인 → `401` `UNAUTHORIZED`.
+- DB 오류 → `500` `INTERNAL_ERROR`.
+
+**GET** 성공:
+
+```json
+{
+  "data": {
+    "napchiRisks": [
+      {
+        "university": "서강대",
+        "admissionType": "학생부교과",
+        "riskLevel": "high",
+        "message": "…",
+        "opportunityCost": "…"
+      }
+    ],
+    "allFailScenario": {
+      "jeongsiSafeUnivs": ["한양대"],
+      "message": "…"
+    },
+    "overallRisk": "balanced",
+    "summary": "…"
+  },
+  "error": null
+}
+```
+
+Track 1: `calcIntegratedStrategy` (`src/lib/calculators/calcIntegratedStrategy.ts`), 납치 휴리스틱은 `calcNapchiRisk` 재사용.
+
+구현 경로: `src/app/api/integrated-strategy/route.ts`.
+
+---
+
 ### GET/POST `/api/grade-simulator` — P2-5 성적 예측 시뮬레이터
 
 설명:
@@ -1494,6 +1542,7 @@ trend-analysis/route.ts                  # GET (P2-9)
 placement-table/route.ts                 # GET (P2-12)
 gachaejeom/route.ts                      # POST (P1-10)
 simulator/route.ts                       # GET, POST (P1-7)
+integrated-strategy/route.ts             # GET (P2-6)
 grade-simulator/route.ts                 # GET, POST (P2-5)
 analysis/probability/route.ts            # GET
 analysis/minimum-check/route.ts          # GET

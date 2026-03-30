@@ -208,6 +208,17 @@ export default async function DashboardPage() {
             </Card>
           </Link>
 
+          <Link href="/dashboard/integrated-strategy" className="block">
+            <Card>
+              <CardHeader>
+                <CardTitle>통합 전략 뷰</CardTitle>
+                <CardDescription>
+                  수시·정시 한 화면·납치 리스크·정시 안전망 (P2-6)
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </Link>
+
           <Link href="/dashboard/grade-simulator" className="block">
             <Card>
               <CardHeader>
