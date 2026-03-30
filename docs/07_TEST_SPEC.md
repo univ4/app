@@ -129,11 +129,20 @@
 
 ---
 
-## 4. `detectGibupGap(...)`
+## 4. `calcRecordGapAnalysis` / `detectGibupGap(...)`
+
+구현·테스트: `src/lib/calculators/calcRecordGapAnalysis.ts`, `src/__tests__/calculators/calcRecordGapAnalysis.test.ts`
 
 | ID | 시나리오 | 기대 |
 |---|---|---|
 | GG-01 | 세특이 3과목 미입력(빈 문자열 또는 null) | 경고 항목 **3개** 반환, `category`별 구분 |
+| RGA-01 | 세특·창체·수상·행동 모두 권장 글자수 이상 | `criticalCount === 0`, 항목 `good` 위주 |
+| RGA-02 | 세특 빈 문자열 | 해당 세특 `critical` |
+| RGA-03 | 세특 200자 미만 | 해당 세특 `warning` |
+| RGA-04 | 창체 활동 데이터 없음 | 창체 3영역 `critical` |
+| RGA-05 | 수상 0건 | `수상경력` `critical` |
+
+**API**: `GET /api/record-check` — `src/__tests__/api/record-check.route.test.ts` (비인증 401, 성공 시 `items`·`overallScore`·`criticalCount`·`targetUnivType`).
 
 ---
 

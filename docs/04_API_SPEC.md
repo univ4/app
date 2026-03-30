@@ -1161,9 +1161,44 @@ Query (optional): `year=2027`
 
 ---
 
+### GET `/api/record-check`
+
+설명: 로그인 사용자(또는 관리자 `?student_id=` UUID) 기준 생기부 구조화 데이터를 읽어 공백·글자수 점검. Track1 `calcRecordGapAnalysis` (`detectGibupGap` 별칭). 데이터: `student_subject_notes`, `student_activities`, `student_awards`, `student_behavior`, `students.target_major`(계열 추정용).
+
+쿼리: `student_id` (optional, admin만 타 학생 UUID).
+
+성공 응답:
+
+```json
+{
+  "data": {
+    "items": [
+      {
+        "section": "세특 (국어)",
+        "status": "warning",
+        "currentLength": 234,
+        "minLength": 500,
+        "message": "보완 권장: 500자 미만"
+      }
+    ],
+    "overallScore": 68,
+    "criticalCount": 1,
+    "targetUnivType": "science"
+  },
+  "error": null
+}
+```
+
+- `status`: `good` | `warning` | `critical`
+- `targetUnivType`: `science` | `liberal` | `any` (`target_major` 휴리스틱)
+
+에러: `UNAUTHORIZED`(401), `INTERNAL_ERROR`(500).
+
+---
+
 ### GET `/api/gibup/[studentId]/gaps`
 
-설명: 생기부(세특·수상·봉사·독서 등) 공백·미달 탐지. Track1 `detectGibupGap`.
+설명: 생기부(세특·수상·봉사·독서 등) 공백·미달 탐지. Track1 `calcRecordGapAnalysis` / `detectGibupGap`. **구현 경로**: 동일 로직은 `GET /api/record-check`에서 사용한다.
 
 성공 응답:
 

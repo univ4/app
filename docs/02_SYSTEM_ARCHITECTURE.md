@@ -60,7 +60,7 @@
 | `analyzeSubjectAdvantage(profile, targetUnivs)` | 목표 대학 배열을 유리/불리/지원불가로 분류 |
 | `calcSubjectAdvantage(params)` | 정시 `math_ratio`·과탐Ⅱ 가산 기준 유리/불리/중립(지원 불가 대학 제외) — P1-11 UI·`GET /api/subject-analysis` |
 | `calcSuneungMinimumProbability(...)` | 모의고사 분포 기반 수능최저 조건 충족 확률(%) (P1-13) |
-| `detectGibupGap(...)` | 생기부 항목별 공백·글자수 미달 탐지 (P1-14) |
+| `calcRecordGapAnalysis(...)` / `detectGibupGap(...)` | 생기부 항목별 공백·글자수 미달 탐지 (P1-14) |
 | `calcDDay(...)` | 기준일 대비 D-Day 정수 산출 (P1-12) |
 | `calcRealCompetitionRate(...)` | 논술전형 실질 경쟁률(명목·수능최저 충족률·결시율, PRD P1-3) |
 | `calcSchoolLevel(...)` | 과목별 Z 평균·밴드(상·중·하위권 참고) — P1-2 고교 내 상대 위치 참고, `GET /api/scores/zscore` |

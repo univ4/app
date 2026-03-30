@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/card";
 import type { CalendarEventRow } from "@/lib/calendar/calendarApiTypes";
 import { aggregateAdmissionTodosFromCalendarEvents } from "@/lib/calculators/calcAdmissionTodos";
+import { loadRecordGapAnalysisForStudent } from "@/lib/record-check/recordGapFromDb";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function DashboardPage() {
@@ -30,13 +31,14 @@ export default async function DashboardPage() {
 
   if (!user) redirect("/login");
 
-  const [{ data: student }, rpcResult, subjectNoteCountRes] = await Promise.all([
+  const [{ data: student }, rpcResult, subjectNoteCountRes, recordGapLoaded] = await Promise.all([
     supabase.from("students").select("name").eq("id", user.id).maybeSingle(),
     supabase.rpc("ensure_default_admission_calendar_2027"),
     supabase
       .from("student_subject_notes")
       .select("*", { count: "exact", head: true })
       .eq("student_id", user.id),
+    loadRecordGapAnalysisForStudent(supabase, user.id),
   ]);
 
   let dashboardTodos = aggregateAdmissionTodosFromCalendarEvents([]);
@@ -53,6 +55,9 @@ export default async function DashboardPage() {
   }
 
   const dashboardTodoPreview = dashboardTodos.slice(0, 12);
+
+  const recordGapCritical =
+    recordGapLoaded.ok ? recordGapLoaded.data.criticalCount : null;
 
   const email = user.email ?? "사용자";
   const emailLocalPart = email.includes("@") ? email.split("@")[0] : email;
@@ -209,6 +214,26 @@ export default async function DashboardPage() {
                     {subjectNoteCountRes.count ?? 0}
                   </span>
                   개
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </Link>
+
+          <Link href="/dashboard/record-check" className="block">
+            <Card>
+              <CardHeader>
+                <CardTitle>생기부 점검</CardTitle>
+                <CardDescription>
+                  공백·글자수 기준 점검 · 치명적 공백{" "}
+                  <span
+                    className={
+                      recordGapCritical !== null && recordGapCritical > 0
+                        ? "font-medium text-destructive"
+                        : "font-medium text-foreground"
+                    }
+                  >
+                    {recordGapCritical === null ? "—" : `${recordGapCritical}개`}
+                  </span>
                 </CardDescription>
               </CardHeader>
             </Card>
