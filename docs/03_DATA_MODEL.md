@@ -121,6 +121,10 @@ erDiagram
 
 data-collector `admission_db.jsonl` 적재용 물리 테이블. 컬럼·UNIQUE·RLS는 [`docs/03_DB_SCHEMA.md`](./03_DB_SCHEMA.md) §2.13, 최종 DDL은 `supabase/migrations/20260329000002_admission_records.sql`을 따른다(이전 `20260329000001` 초안은 `00002`에서 교체됨).
 
+### `susi_gpa_rules` (P1-16 보강)
+
+학생부교과·종합 등 반영 규칙 테이블. 상세 DDL·컬럼 표는 [`docs/03_DB_SCHEMA.md`](./03_DB_SCHEMA.md) §2.5. **`interview_required`**(boolean, nullable)는 `supabase/migrations/20260330230000_susi_gpa_rules_interview_required.sql`에서 추가되며, `GET /api/explore` 면접 필터에 사용한다. null은 요강 미연동·미상을 뜻한다.
+
 ### `academic_records` (NEIS 내신 필드 확장)
 
 마이그레이션 `supabase/migrations/20260329140000_academic_records_neis.sql`에서 내신 행에 `semester`, `subject_category`, `total_score`, `class_rank`, `rank_total` 컬럼을 추가한다. 컬럼 정의·제약은 [`docs/03_DB_SCHEMA.md`](./03_DB_SCHEMA.md) §2.2를 따른다.
@@ -196,7 +200,7 @@ NEIS 파싱 JSON 적재 스크립트 `scripts/ingest/load_neis_grades.ts`의 ups
 
 GitHub Actions `doc-sync-check`는 `supabase/migrations/*.sql` 중 **`docs/03_DATA_MODEL.md`보다 최근에 수정된 파일**이 있으면 실패합니다. 마이그레이션을 추가·변경한 커밋에서는 반드시 본 문서를 함께 갱신하세요.
 
-**현재 마이그레이션 파일 목록 (14개, `find supabase/migrations -name "*.sql" | sort` 기준)**
+**현재 마이그레이션 파일 목록 (15개, `find supabase/migrations -name "*.sql" | sort` 기준)**
 
 | 순서 | 파일명 |
 | ---: | --- |
@@ -214,3 +218,4 @@ GitHub Actions `doc-sync-check`는 `supabase/migrations/*.sql` 중 **`docs/03_DA
 | 12 | `20260330180000_calendar_events.sql` |
 | 13 | `20260330190000_student_certificates_school_violence.sql` |
 | 14 | `20260330210000_simulator_portfolios.sql` |
+| 15 | `20260330230000_susi_gpa_rules_interview_required.sql` |

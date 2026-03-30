@@ -7,7 +7,7 @@
 ### 네비게이션
 
 - `src/app/dashboard/layout.tsx`: 대시보드 하위 전역 레이아웃, 모바일 하단 여백(`pb-20`).
-- `src/components/dashboard/DashboardMobileNav.tsx`: **md 미만** 고정 하단 바 — 홈·신호등·캘린더·**챗봇** 1탭, **더보기** 시트로 성적·생기부·분석.
+- `src/components/dashboard/DashboardMobileNav.tsx`: **md 미만** 고정 하단 바 — 홈·신호등·**탐색**(`/dashboard/explore`)·캘린더·**챗봇** 1탭, **더보기** 시트로 성적·생기부·분석.
 - 서브페이지의「대시보드」버튼은 **md 이상**만 표시(모바일은 하단 홈과 중복 제거).
 
 ### 반응형·테이블

@@ -231,6 +231,34 @@ medShift=0|1       (optional, 1이면 행별 med_shift_coeff를 컷에 가산)
 
 ---
 
+### GET `/api/explore` — P1-15 전국 탐색기 · P1-16 조건부 필터
+
+설명:
+- `admission_records` 전 연도 행을 로드한 뒤 `buildAdmissionSignalRows`·`calcAdmissionSignal`로 신호등을 산출하고, 쿼리 필터를 적용한다.
+- 수능최저·면접 필터는 `susi_gpa_rules`의 `suneung_minimum`·`interview_required`(대학+전형 유형 단위, `20260330230000` 마이그레이션)를 조인해 판정한다. 규칙이 없거나 `interview_required`가 null이면 면접 없음 필터는 엄격 적용(통과하지 않음). 수능최저 없음은 규칙 부재 시 “최저 없음”으로 간주한다.
+- 권한: 로그인만. `studentId`는 본인 UUID만 (`403`은 `/api/signals`와 동일).
+
+Query Params:
+
+| 파라미터 | 값 | 기본 |
+|---|---|---|
+| `studentId` | uuid | 토큰 `auth.uid()` |
+| `admissionYear` | 2020–2035 | 2026 |
+| `medShift` | `0` \| `1` | `0` |
+| `admissionType` | `all` 또는 쉼표 구분 `학생부교과,학생부종합,정시` | all |
+| `signal` | `all` 또는 쉼표 구분 `safe,moderate,challenge` | all |
+| `region` | `서울` \| `수도권` \| `지방` \| `all` | all |
+| `suneungMin` | `true` \| `false` \| `all` | all (`true`=수능최저 없음, `false`=있음; 정시는 없음 필터에 포함) |
+| `noInterview` | `true` \| `false` \| `all` | all (`true`=면접 없음, `false`=면접 있음) |
+
+- 잘못된 `admissionType`·`signal` 조합 → `422` `VALIDATION_ERROR`.
+- 성공: `{ data: { items: SignalScanRow[], meta: { total, duration_ms } }, error: null }` (`items` 형식은 `GET /api/signals`의 `items`와 동일).
+- PRD P0-4 응답 시간: 설계상 DB+메모리 필터만 사용; 클라이언트·테스트에서 `duration_ms` 3000ms 미만을 점검한다.
+
+구현 경로: `src/app/api/explore/route.ts`, `src/lib/explore/applyExploreFilters.ts`, `src/lib/explore/susiRuleHelpers.ts`.
+
+---
+
 ### GET/POST `/api/simulator` — P1-7 원서 배분 시뮬레이터
 
 설명:
@@ -1053,8 +1081,8 @@ Query (optional): `year=2027`
 | PRD | 설명 | 예상 엔드포인트(가칭) |
 |---|---|---|
 | P0-4 | 199개 대학 일괄 신호등(3초 이내 AC) | `GET /api/signals` |
-| P1-15 | 전국 탐색기(전형·지역·최저 필터) | `GET/POST /api/explorer/universities` 등 |
-| P1-16 | 조건부 필터(AND 조합) | `POST /api/explorer/filter` 등 |
+| P1-15 | 전국 탐색기(전형·지역·신호등) | `GET /api/explore` |
+| P1-16 | 조건부 필터(수능최저·면접 AND) | `GET /api/explore` (`suneungMin`, `noInterview`) |
 | P2-9 | 입결 추이 지표 | `GET /api/analysis/cutoff-trends` 등 |
 | P2-10 | 정시 군별 조합·패턴 | `POST /api/strategy/jeonsi-groups` 등 |
 | P3-4 | 과탐 가산 시뮬 | `POST /api/analysis/science2-bonus` 등 |

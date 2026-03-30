@@ -151,6 +151,17 @@ export default async function DashboardPage() {
             </Card>
           </Link>
 
+          <Link href="/dashboard/explore" className="block">
+            <Card>
+              <CardHeader>
+                <CardTitle>전국 대학 탐색</CardTitle>
+                <CardDescription>
+                  전형·지역·수능최저·면접 조건으로 199개 대학 필터 (§6)
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </Link>
+
           <Link href="/dashboard/simulator" className="block">
             <Card>
               <CardHeader>

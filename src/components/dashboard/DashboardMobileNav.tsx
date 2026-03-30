@@ -1,6 +1,13 @@
 "use client";
 
-import { CalendarDays, LayoutDashboard, Menu, MessageCircle, Table2 } from "lucide-react";
+import {
+  CalendarDays,
+  Compass,
+  LayoutDashboard,
+  Menu,
+  MessageCircle,
+  Table2,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -10,6 +17,7 @@ import { cn } from "@/lib/utils";
 const MAIN = [
   { href: "/dashboard", label: "홈", Icon: LayoutDashboard },
   { href: "/dashboard/signals", label: "신호등", Icon: Table2 },
+  { href: "/dashboard/explore", label: "탐색", Icon: Compass },
   { href: "/dashboard/calendar", label: "캘린더", Icon: CalendarDays },
   { href: "/dashboard/chat", label: "챗봇", Icon: MessageCircle },
 ] as const;

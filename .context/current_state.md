@@ -46,12 +46,14 @@
 | `20260330180000_calendar_events.sql` | P0-5 `calendar_events` + RLS + `ensure_default_admission_calendar_2027` |
 | `20260330190000_student_certificates_school_violence.sql` | `student_certificates`, `student_school_violence` + RLS |
 | `20260330210000_simulator_portfolios.sql` | P1-7 `simulator_portfolios` + RLS (학생당 1행) |
+| `20260330230000_susi_gpa_rules_interview_required.sql` | P1-16 `susi_gpa_rules.interview_required` (nullable) |
 
 ### 대시보드 UI (발췌)
 
 - **P1-1** `src/app/dashboard/chat/page.tsx` — AI 요강 챗봇(`ChatInterface`, `ChatMessage`, `UnivFilter`; `POST /api/chat` SSE)
 - **P1-7** `src/app/dashboard/simulator/page.tsx` — 원서 배분 시뮬레이터(`PortfolioBuilder`, `PortfolioSummary`; `GET/POST /api/simulator`)
 - **P1-11** `src/app/dashboard/subject-analysis/page.tsx` — 선택과목 분석(`SubjectProfileForm`, `EligibilityResult`, `AdvantageResult`; `GET /api/subject-analysis`, `POST /api/subject-analysis/profile`)
+- **P1-15·P1-16** `src/app/dashboard/explore/page.tsx` — 전국 대학 탐색(`ExploreClient`, `ExploreFilter`, `ExploreTable`; `GET /api/explore`)
 
 ### API routes (`src/app/api/**/route.ts`)
 
@@ -59,6 +61,7 @@
 - `api/analysis/probability/route.ts`, `api/analysis/minimum-check/route.ts`
 - `api/chat/route.ts`
 - **`api/signals/route.ts`**
+- **`api/explore/route.ts`** (P1-15·P1-16)
 - **`api/subject-analysis/route.ts`**, **`api/subject-analysis/profile/route.ts`** (P1-11)
 - **`api/simulator/route.ts`** (P1-7)
 - **`api/calendar/route.ts`, `api/calendar/[id]/route.ts`**
@@ -74,7 +77,7 @@
 
 ### 테스트 (`src/__tests__/`)
 
-- Calculators × 13, API routes × 6+, lib/chat × 1, calendar 통합 × 1 — **24+ suites** (스냅샷은 `npm test` 기준)
+- Calculators × 13, API routes × 7+, lib/chat × 1, calendar 통합 × 1, explore 헬퍼 × 1 — **26+ suites** (스냅샷은 `npm test` 기준)
 
 ## 데이터 적재 스냅샷 (검증 배치)
 

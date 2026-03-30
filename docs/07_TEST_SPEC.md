@@ -126,6 +126,20 @@
 
 ---
 
+## 6b. `GET /api/explore` (P1-15 / P1-16)
+
+구현·테스트: `src/app/api/explore/route.ts`, `src/__tests__/api/explore.route.ts`, `src/__tests__/lib/explore/susiRuleHelpers.test.ts`
+
+| ID | 시나리오 | 기대 |
+|---|---|---|
+| EXP-01 | 미인증 | `401` `UNAUTHORIZED` |
+| EXP-02 | 인증·필터 없음 | `200`, `data.items` 배열, `meta.total`·`meta.duration_ms` |
+| EXP-03 | `admissionType` 단일/복수 | 해당 전형만 |
+| EXP-04 | `signal` 복수·단일 | 해당 신호등만 |
+| EXP-PERF | 응답 시간 | 테스트에서 `duration_ms < 3000` (모킹 환경 기준) |
+
+---
+
 ## 7. `scanAdmissionSignals(...)` *(가칭, P0-4 / P1-15)*
 
 | ID | 시나리오 | 기대 |

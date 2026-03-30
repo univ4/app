@@ -4,7 +4,7 @@
 (보관 PRD: [`docs/01_PRD.md`](./01_PRD.md)) · 아키텍처 요약: [`docs/02_SYSTEM_DESIGN.md`](./02_SYSTEM_DESIGN.md)
 
 실제 적용 SQL은 아래 마이그레이션(파일명 순)에 포함됩니다:  
-`20260325000000_init.sql`, `20260326000000_multi_student.sql`, `20260327000000_subject_profiles.sql`, `20260329000001_admission_records.sql`, `20260329000002_admission_records.sql`, `20260329120000_chat_rag.sql`, `20260329140000_academic_records_neis.sql`, `20260329150000_academic_records_neis_upsert_unique.sql`, `20260329160000_student_record_tables.sql`, `20260329170000_academic_records_fix_unique.sql`, `20260330180000_calendar_events.sql`, `20260330190000_student_certificates_school_violence.sql`, `20260330210000_simulator_portfolios.sql`.  
+`20260325000000_init.sql`, `20260326000000_multi_student.sql`, `20260327000000_subject_profiles.sql`, `20260329000001_admission_records.sql`, `20260329000002_admission_records.sql`, `20260329120000_chat_rag.sql`, `20260329140000_academic_records_neis.sql`, `20260329150000_academic_records_neis_upsert_unique.sql`, `20260329160000_student_record_tables.sql`, `20260329170000_academic_records_fix_unique.sql`, `20260330180000_calendar_events.sql`, `20260330190000_student_certificates_school_violence.sql`, `20260330210000_simulator_portfolios.sql`, `20260330230000_susi_gpa_rules_interview_required.sql`.  
 P1-11 확장 테이블 상세는 [`docs/03_DATA_MODEL.md`](./03_DATA_MODEL.md)를 참조합니다. 생활기록부 구조화 테이블은 [`docs/08_STUDENT_RECORD_SPEC.md`](./08_STUDENT_RECORD_SPEC.md)와 본 문서 §2.15를 참조합니다.
 
 ## 1) ER 다이어그램
@@ -345,6 +345,7 @@ create table if not exists public.university_scoring_rules (
 | include_subjects | text[] | not null, default '{}' | 반영 교과목 목록 |
 | career_choice_conversion | jsonb | not null | 진로선택 성취도 환산 |
 | suneung_minimum | jsonb | nullable | 수능 최저학력기준 |
+| interview_required | boolean | nullable | 면접 필수 여부(P1-16). null=미상 — `20260330230000_susi_gpa_rules_interview_required.sql` |
 | created_at | timestamptz | not null, default now() | 생성 시각 |
 
 ```sql
@@ -356,6 +357,7 @@ create table if not exists public.susi_gpa_rules (
   include_subjects text[] not null default '{}',
   career_choice_conversion jsonb not null,
   suneung_minimum jsonb,
+  interview_required boolean,
   created_at timestamptz not null default now(),
   unique (university_name, admission_type, admission_year)
 );
