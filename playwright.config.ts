@@ -6,6 +6,7 @@ dotenv.config({ path: path.resolve(process.cwd(), ".env.local") });
 
 export default defineConfig({
   testDir: "e2e",
+  workers: 1,
   use: {
     baseURL: "http://localhost:3000",
     headless: true,
