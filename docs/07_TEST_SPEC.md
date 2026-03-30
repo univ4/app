@@ -20,6 +20,21 @@
 
 ---
 
+## 1a. `calcPlacementTable(params)` (P2-12)
+
+구현·테스트: `src/lib/calculators/calcPlacementTable.ts`, `src/__tests__/calculators/calcPlacementTable.test.ts`
+
+| ID | 시나리오 | 기대 |
+|---|---|---|
+| PT-01 | 정시 행 3건·안정/적정/도전 분류 | `±5` 밴드에 맞게 세 배열에 분배 |
+| PT-02 | `applyMedShift` + 행별 `medShiftCoeff` | `calcAdmissionSignal`과 동일 보정 컷 |
+| PT-03 | 빈 `admissionRecords` | 세 구간 모두 빈 배열 |
+| PT-04 | 동일 `gap` | `univName`·`deptName`로 정렬 |
+
+**API**: `GET /api/placement-table` — `src/__tests__/api/placement-table.route.test.ts` (비인증 401, 인증 200·`meta`)
+
+---
+
 ## 1b. `calcSubjectAdvantage(params)` (P1-11)
 
 구현·테스트: `src/lib/calculators/calcSubjectAdvantage.ts`, `src/__tests__/calculators/calcSubjectAdvantage.test.ts`

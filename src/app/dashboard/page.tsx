@@ -153,6 +153,17 @@ export default async function DashboardPage() {
             </Card>
           </Link>
 
+          <Link href="/dashboard/placement-table" className="block">
+            <Card>
+              <CardHeader>
+                <CardTitle>정시 배치표</CardTitle>
+                <CardDescription>
+                  내 환산점수 기준 안정·적정·도전 3단 배치 (P2-12)
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </Link>
+
           <Link href="/dashboard/nulsul" className="block">
             <Card>
               <CardHeader>

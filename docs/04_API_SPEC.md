@@ -273,6 +273,35 @@ medShift=0|1       (optional, 1이면 행별 med_shift_coeff를 컷에 가산)
 
 ---
 
+### GET `/api/placement-table` — P2-12 정시 배치표
+
+설명:
+
+- `admission_records`에서 해당 연도·`정시`·`cutoff_score`가 있는 행만 조회한 뒤 Track 1 `calcPlacementTable`으로 **안정 / 적정 / 도전** 3단 분류 (±5점 밴드는 `calcAdmissionSignal`과 동일).
+- 지역 필터는 `classifyUnivRegion` 기준: `seoul`(서울), `sudogwon`(서울+수도권), `all`(전국).
+- `myScore`가 없으면 최근 모의고사 + `서강대`·`자연계열` `university_scoring_rules`로 **제안 환산점수**를 계산해 사용한다. 모의고사·규칙이 없으면 `422` `VALIDATION_ERROR`.
+- 권한: 로그인 사용자만 (`401`).
+
+Query Params:
+
+| 파라미터 | 값 | 기본 |
+|---|---|---|
+| `myScore` | 유한 실수(선택) | 없으면 모의고사 제안 |
+| `medShift` | `0` \| `1` | `0` (`1`이면 행별 `med_shift_coeff` 적용) |
+| `region` | `seoul` \| `sudogwon` \| `all` | `all` |
+| `admissionYear` | 2020–2035 | 2026 |
+
+- 잘못된 쿼리 → `422` `VALIDATION_ERROR`.
+
+성공: `{ data: { safe, moderate, challenge, meta }, error: null }`
+
+- `safe` | `moderate` | `challenge`: `{ univName, deptName, cutoff, gap }[]` (`gap`은 `calcAdmissionSignal`과 동일하게 내 점수 − 원 컷).
+- `meta`: `admission_year`, `my_score_used`, `med_shift_enabled`, `region`, `row_count_jeongsi_filtered`, `suggested_my_score`, `suggested_reference`, `has_mock_exam`, `duration_ms`.
+
+구현 경로: `src/app/api/placement-table/route.ts`, `src/lib/calculators/calcPlacementTable.ts`.
+
+---
+
 ### POST `/api/gachaejeom` — P1-10 수능 가채점 환산
 
 설명:
@@ -1383,6 +1412,7 @@ Query (optional): `year=2027`
 ```txt
 scores/route.ts                          # GET, POST
 signals/route.ts                         # GET
+placement-table/route.ts                 # GET (P2-12)
 gachaejeom/route.ts                      # POST (P1-10)
 simulator/route.ts                       # GET, POST (P1-7)
 analysis/probability/route.ts            # GET
