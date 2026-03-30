@@ -4,6 +4,7 @@
 
 - **PRD**: `docs/01_PRD_v2.md` · **로드맵(단일 정본)**: `docs/05_ROADMAP.md`  
 - **테스트·사용자 문서(순번):** `docs/06_TEST_PLAN.md` → `docs/07_TEST_SPEC.md` → `docs/08_USER_MANUAL.md` · **모바일**: `docs/08_MOBILE_UI.md`  
+- **사용자 매뉴얼 P0–P1 경로 동기화:** `docs/08_USER_MANUAL.md` (2026-03-30).
 - `docs/` 하위 설계·API·스키마·테스트·AI 파이프라인 문서는 위 문서를 상단 인용하도록 동기화됨.
 
 ## Cursor rules (요약)
