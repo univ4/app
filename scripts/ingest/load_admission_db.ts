@@ -24,7 +24,7 @@ const RUN_SUMMARY_FILE = "run_summary.json";
 const BATCH_SIZE = 500;
 const DEFAULT_SOURCE = "admission_db.jsonl";
 
-const ADMISSION_TYPES = new Set(["학생부교과", "학생부종합", "정시"]);
+const ADMISSION_TYPES = new Set(["학생부교과", "학생부종합", "논술전형", "정시"]);
 
 type AdmissionRecordInsert = {
   univ_name: string;
@@ -157,7 +157,7 @@ function mapJsonlToRow(
   if (!ADMISSION_TYPES.has(admissionTypeRaw)) {
     return {
       ok: false,
-      reason: `admission_type 값 불가: ${JSON.stringify(admissionTypeRaw)} (허용: 학생부교과|학생부종합|정시)`,
+      reason: `admission_type 값 불가: ${JSON.stringify(admissionTypeRaw)} (허용: 학생부교과|학생부종합|논술전형|정시)`,
     };
   }
 

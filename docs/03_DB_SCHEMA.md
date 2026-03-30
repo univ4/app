@@ -4,7 +4,7 @@
 (보관 PRD: [`docs/01_PRD.md`](./01_PRD.md)) · 아키텍처 요약: [`docs/02_SYSTEM_DESIGN.md`](./02_SYSTEM_DESIGN.md)
 
 실제 적용 SQL은 아래 마이그레이션(파일명 순)에 포함됩니다:  
-`20260325000000_init.sql`, `20260326000000_multi_student.sql`, `20260327000000_subject_profiles.sql`, `20260329000001_admission_records.sql`, `20260329000002_admission_records.sql`, `20260329120000_chat_rag.sql`, `20260329140000_academic_records_neis.sql`, `20260329150000_academic_records_neis_upsert_unique.sql`, `20260329160000_student_record_tables.sql`, `20260329170000_academic_records_fix_unique.sql`, `20260330180000_calendar_events.sql`, `20260330190000_student_certificates_school_violence.sql`, `20260330210000_simulator_portfolios.sql`, `20260330230000_susi_gpa_rules_interview_required.sql`.  
+`20260325000000_init.sql`, `20260326000000_multi_student.sql`, `20260327000000_subject_profiles.sql`, `20260329000001_admission_records.sql`, `20260329000002_admission_records.sql`, `20260329120000_chat_rag.sql`, `20260329140000_academic_records_neis.sql`, `20260329150000_academic_records_neis_upsert_unique.sql`, `20260329160000_student_record_tables.sql`, `20260329170000_academic_records_fix_unique.sql`, `20260330180000_calendar_events.sql`, `20260330190000_student_certificates_school_violence.sql`, `20260330210000_simulator_portfolios.sql`, `20260330230000_susi_gpa_rules_interview_required.sql`, `20260330240000_admission_records_nulsul_type.sql`.  
 P1-11 확장 테이블 상세는 [`docs/03_DATA_MODEL.md`](./03_DATA_MODEL.md)를 참조합니다. 생활기록부 구조화 테이블은 [`docs/08_STUDENT_RECORD_SPEC.md`](./08_STUDENT_RECORD_SPEC.md)와 본 문서 §2.15를 참조합니다.
 
 ## 1) ER 다이어그램
@@ -533,7 +533,7 @@ create table if not exists public.admission_schedules (
 | id | bigint | PK, identity | |
 | univ_name | text | not null | 대학명 |
 | dept_name | text | not null | 모집단위(학과·계열 등) |
-| admission_type | text | not null, check | `학생부교과` / `학생부종합` / `정시` |
+| admission_type | text | not null, check | `학생부교과` / `학생부종합` / `논술전형` / `정시` |
 | year | integer | not null | 입시 연도(모집 연도 등) |
 | cutoff_score | numeric | nullable | 컷라인·환산 등 입결 지표 |
 | competition_ratio | numeric | nullable | 경쟁률 |
@@ -544,7 +544,7 @@ create table if not exists public.admission_schedules (
 - 인덱스: `(univ_name, year, admission_type)`
 - RLS: 활성화 — `authenticated` **SELECT** (`admission_records_select_authenticated`); **INSERT/UPDATE/DELETE**는 `students.role = 'admin'`인 동일 `auth.uid()`만 (`admission_records_*_admin`)
 
-DDL: `supabase/migrations/20260329000002_admission_records.sql` (`20260329000001` 초안 테이블은 본 마이그레이션에서 `drop` 후 재생성)
+DDL: `supabase/migrations/20260329000002_admission_records.sql` (`20260329000001` 초안 테이블은 본 마이그레이션에서 `drop` 후 재생성). `논술전형` 값은 `20260330240000_admission_records_nulsul_type.sql`에서 `admission_type` CHECK에 추가된다.
 
 ---
 

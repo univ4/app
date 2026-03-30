@@ -62,6 +62,7 @@
 | `calcSuneungMinimumProbability(...)` | 모의고사 분포 기반 수능최저 조건 충족 확률(%) (P1-13) |
 | `detectGibupGap(...)` | 생기부 항목별 공백·글자수 미달 탐지 (P1-14) |
 | `calcDDay(...)` | 기준일 대비 D-Day 정수 산출 (P1-12) |
+| `calcRealCompetitionRate(...)` | 논술전형 실질 경쟁률(명목·수능최저 충족률·결시율, PRD P1-3) |
 | `calcSchoolLevel(...)` | 과목별 Z 평균·밴드(상·중·하위권 참고) — P1-2 고교 내 상대 위치 참고, `GET /api/scores/zscore` |
 | `calcAdmissionTodos(...)` / `aggregateAdmissionTodosFromCalendarEvents(...)` | 입시 일정 유형·남은 일수 기준 역산 TO-DO 템플릿 (P1-12) |
 | `calcSuneungNapchiRisk(...)` | 수시 지원 조합 기준 정시 납치 리스크 등급 (P2-6) |

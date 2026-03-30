@@ -301,6 +301,32 @@ Query Params:
 
 ---
 
+### GET `/api/nulsul` — P1-3 논술전형 실질 경쟁률 판독기(목록)
+
+설명:
+
+- `admission_records`에서 `admission_type = 논술전형`인 행만 조회한다. UI에서 명목 경쟁률(`competition_ratio`) 자동 로드에 사용한다.
+- 실질 경쟁률 수식은 Track 1 `calcRealCompetitionRate` (`src/lib/calculators/calcRealCompetitionRate.ts`) — 클라이언트 또는 서버에서 동일 함수로 산출.
+
+권한: 로그인 사용자만 (`401` 비인증).
+
+Query Params:
+
+| 파라미터 | 값 | 기본 |
+|---|---|---|
+| `admissionYear` | 2020–2035 정수 | 2026 |
+
+- 잘못된 `admissionYear` → `422` `VALIDATION_ERROR`.
+- DB 오류 → `500` `INTERNAL_ERROR`.
+
+성공: `{ data: { items: NulsulAdmissionItem[], meta: { admission_year, row_count } }, error: null }`
+
+`NulsulAdmissionItem` 필드: `id`, `univ_name`, `dept_name`, `admission_type`, `year`, `competition_ratio` (nullable).
+
+구현 경로: `src/app/api/nulsul/route.ts`, 타입 `src/lib/nulsul/types.ts`.
+
+---
+
 ### GET/POST `/api/simulator` — P1-7 원서 배분 시뮬레이터
 
 설명:
@@ -1013,6 +1039,10 @@ Query (optional): `reference_date=2026-03-27`(ISO 날짜, 테스트용)
 - `label`: `D-{n}` / `D+{n}` / `D-Day`.
 - 주요 2027학년도 일정 상수: `src/lib/constants/schedules.ts` (`ADMISSION_SCHEDULE_2027`).
 - API·테스트에서 기준일을 고정하려면 `reference_date` 쿼리(위) 또는 Jest `jest.setSystemTime` 등으로 처리.
+
+**Track 1 (구현, P1-3)**: `src/lib/calculators/calcRealCompetitionRate.ts`
+
+- `calcRealCompetitionRate({ nominalRate, suneungMinimumRate, absenceRate? })` — 실질 경쟁률 = 명목 × 수능최저 충족률 × (1 − 결시율), `diffRate` = 명목 − 실질. `absenceRate` 생략 시 **0.1**. 범위 위반 시 `Error` 메시지에 `ValidationError` 포함.
 
 ---
 

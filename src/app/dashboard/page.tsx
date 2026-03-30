@@ -137,6 +137,17 @@ export default async function DashboardPage() {
             </Card>
           </Link>
 
+          <Link href="/dashboard/nulsul" className="block">
+            <Card>
+              <CardHeader>
+                <CardTitle>논술 경쟁률 판독기</CardTitle>
+                <CardDescription>
+                  논술전형 명목 대비 실질 경쟁률·차이율 (수능최저·결시율 반영, P1-3)
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </Link>
+
           <Link href="/dashboard/explore" className="block">
             <Card>
               <CardHeader>

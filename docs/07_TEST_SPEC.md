@@ -6,7 +6,7 @@
 통합 테스트 전략·기존 케이스는 [`docs/06_TEST_PLAN.md`](./06_TEST_PLAN.md)를 참조합니다.  
 본 문서는 Track 1 함수·`POST /api/chat`에 대한 **단위·라우트 테스트 스펙**을 정의한다(§2·3·8 등은 구현됨, §4·5·6·7 등은 예정).
 
-**실행 스냅샷 (2026-03-30):** `npm test` — **30** suites, **242** tests, FAIL 0. (`GET/POST /api/simulator`: `src/__tests__/api/simulator.route.test.ts`; `calcSubjectAdvantage` / `GET /api/subject-analysis`: `src/__tests__/calculators/calcSubjectAdvantage.test.ts`, `src/__tests__/api/subject-analysis.route.test.ts`; `calcPortfolioRisk` / `calcNapchiRisk`: `src/__tests__/calculators/calcPortfolioRisk.test.ts`, `calcNapchiRisk.test.ts`; `GET /api/signals`: `src/__tests__/api/signals.route.test.ts`; 생기부 `[id]`·출결 PUT: `src/__tests__/api/student-record-api.test.ts`; `calcAdmissionSignal`: `src/__tests__/calculators/calcAdmissionSignal.test.ts`; 캘린더·D-Day: `src/__tests__/calendar/calendarDday.integration.test.ts`; P1-12 `calcAdmissionTodos` / `GET /api/calendar/todos`: `src/__tests__/calculators/calcAdmissionTodos.test.ts`, `src/__tests__/api/calendar-todos.route.test.ts`; P1-2 `calcSchoolLevel` / `GET /api/scores/zscore`: `src/__tests__/calculators/calcSchoolLevel.test.ts`, `src/__tests__/api/scores-zscore.route.test.ts`)
+**실행 스냅샷 (2026-03-30):** `npm test` — **32** suites, **250** tests, FAIL 0. (추가: P1-3 `calcRealCompetitionRate` / `GET /api/nulsul`: `src/__tests__/calculators/calcRealCompetitionRate.test.ts`, `src/__tests__/api/nulsul.route.test.ts`; `GET/POST /api/simulator`: `src/__tests__/api/simulator.route.test.ts`; `calcSubjectAdvantage` / `GET /api/subject-analysis`: `src/__tests__/calculators/calcSubjectAdvantage.test.ts`, `src/__tests__/api/subject-analysis.route.test.ts`; `calcPortfolioRisk` / `calcNapchiRisk`: `src/__tests__/calculators/calcPortfolioRisk.test.ts`, `calcNapchiRisk.test.ts`; `GET /api/signals`: `src/__tests__/api/signals.route.test.ts`; 생기부 `[id]`·출결 PUT: `src/__tests__/api/student-record-api.test.ts`; `calcAdmissionSignal`: `src/__tests__/calculators/calcAdmissionSignal.test.ts`; 캘린더·D-Day: `src/__tests__/calendar/calendarDday.integration.test.ts`; P1-12 `calcAdmissionTodos` / `GET /api/calendar/todos`: `src/__tests__/calculators/calcAdmissionTodos.test.ts`, `src/__tests__/api/calendar-todos.route.test.ts`; P1-2 `calcSchoolLevel` / `GET /api/scores/zscore`: `src/__tests__/calculators/calcSchoolLevel.test.ts`, `src/__tests__/api/scores-zscore.route.test.ts`)
 
 ---
 
@@ -93,6 +93,23 @@
 | CSL-05 | `zScoreBandLabel` 경계 | Z=1.5 → 중위권, Z=1.51 → 상위권, Z=-0.01 → 하위권 |
 
 **API**: `GET /api/scores/zscore` — `src/__tests__/api/scores-zscore.route.test.ts` (비인증 401, 인증 200·빈 목록·필드 누락·DB 오류 500·`data` null·라벨 기본값)
+
+---
+
+## 3d. `calcRealCompetitionRate(...)` (P1-3)
+
+구현·테스트: `src/lib/calculators/calcRealCompetitionRate.ts`, `src/__tests__/calculators/calcRealCompetitionRate.test.ts`
+
+| ID | 시나리오 | 기대 |
+|---|---|---|
+| RCR-01 | 명목 10, 충족률 0.5, 결시 0.1 | `realRate === 4.5`, `diffRate === 5.5` |
+| RCR-02 | 충족률 1.0, 결시 0.1 | 실질 = 명목 × 0.9 |
+| RCR-03 | 결시율 0 | 실질 = 명목 × 충족률 |
+| RCR-04 | 명목 0 | 실질·차이 0 |
+| RCR-05 | `absenceRate` 생략 | 결시율 0.1로 간주 |
+| RCR-06 | 음수 명목·충족률/결시율 범위 밖·NaN | `ValidationError` throw |
+
+**API**: `GET /api/nulsul` — `src/__tests__/api/nulsul.route.test.ts` (비인증 401, 인증 200·`data.items`·`meta`)
 
 ---
 
