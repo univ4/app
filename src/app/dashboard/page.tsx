@@ -208,6 +208,17 @@ export default async function DashboardPage() {
             </Card>
           </Link>
 
+          <Link href="/dashboard/grade-simulator" className="block">
+            <Card>
+              <CardHeader>
+                <CardTitle>성적 예측 시뮬레이터</CardTitle>
+                <CardDescription>
+                  목표 등급별 내신 평균·신호등 변화·과목별 개선 효과 (P2-5)
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </Link>
+
           <Link href="/dashboard/chat" className="block">
             <Card>
               <CardHeader>

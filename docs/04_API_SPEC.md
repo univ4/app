@@ -464,6 +464,56 @@ Track 1(클라이언트·요약 UI): `calcPortfolioRisk`, `calcNapchiRisk` (`src
 
 ---
 
+### GET/POST `/api/grade-simulator` — P2-5 성적 예측 시뮬레이터
+
+설명:
+- **GET**: 로그인 사용자의 `academic_records`(내신 `SCHOOL_GPA`)와, `admission_records`에서 연도·학생부교과 기준 대학별 최저 컷(모집단위별 `cutoff_score` 중 최소값) 목록을 반환한다.
+- **POST**: 본문의 현재 과목·목표 등급으로 Track 1 `calcGradeSimulator`를 실행해 평균 내신·신호등 변화·과목별 개선 효과를 반환한다.
+
+**GET** Query:
+
+| 파라미터 | 값 | 기본 |
+|---|---|---|
+| `admissionYear` | 2020–2035 정수 | 2027 |
+
+- 잘못된 `admissionYear` → `422` `VALIDATION_ERROR`.
+- 비로그인 → `401` `UNAUTHORIZED`.
+
+**GET** 성공: `{ data: { records, universities: { univName, cutoffGrade }[], admissionYear }, error: null }`
+
+**POST** 요청 본문:
+
+```json
+{
+  "currentSubjects": [
+    {
+      "subjectName": "국어",
+      "currentGrade": 3,
+      "creditUnit": 2,
+      "semester": "3-1"
+    }
+  ],
+  "targetGrades": [
+    { "subjectName": "국어", "targetGrade": 2, "semester": "3-1" }
+  ],
+  "targetUniv": "서강대",
+  "cutoffGrade": 2.7
+}
+```
+
+- `targetGrades.semester`: 동일 과목명이 여러 학기에 있을 때만 지정(미지정 시 과목명만으로 매칭).
+- `cutoffGrade`가 있으면 `calcAdmissionSignal` (교과, `scoreType: gpa`)으로 시뮬레이션 전후 신호등을 계산한다.
+
+**POST** 성공: `{ data: { result: CalcGradeSimulatorResult }, error: null }` — `result` 필드는 `src/lib/calculators/calcGradeSimulator.ts`와 동일.
+
+검증 실패·계산기 `ValidationError` → `422` `VALIDATION_ERROR`.
+
+Track 1: `calcGradeSimulator` (`src/lib/calculators/calcGradeSimulator.ts`).
+
+구현 경로: `src/app/api/grade-simulator/route.ts`.
+
+---
+
 ## 3. 합격 가능성 분석 API (`/api/analysis`)
 
 ### GET `/api/analysis/probability`
@@ -1444,6 +1494,7 @@ trend-analysis/route.ts                  # GET (P2-9)
 placement-table/route.ts                 # GET (P2-12)
 gachaejeom/route.ts                      # POST (P1-10)
 simulator/route.ts                       # GET, POST (P1-7)
+grade-simulator/route.ts                 # GET, POST (P2-5)
 analysis/probability/route.ts            # GET
 analysis/minimum-check/route.ts          # GET
 chat/route.ts                            # POST
