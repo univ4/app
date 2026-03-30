@@ -5,6 +5,7 @@ import { useForm, type Resolver } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
+import { ImageUpload } from "@/components/scores/ImageUpload";
 import { ScoreTrendChart, type MockExamTrendRecord } from "@/components/scores/ScoreTrendChart";
 import { ZScoreDisplay, type ZScoreDisplayData } from "@/components/scores/ZScoreDisplay";
 import { Button } from "@/components/ui/button";
@@ -72,8 +73,10 @@ function parseScienceLabel(subjectName: string | null) {
   return `${sci1} / ${sci2}`.trim();
 }
 
+type ScoreInputTab = "MOCK_EXAM" | "SCHOOL_GPA" | "IMAGE_UPLOAD";
+
 export default function ScoresPage() {
-  const [activeTab, setActiveTab] = useState<"MOCK_EXAM" | "SCHOOL_GPA">("MOCK_EXAM");
+  const [activeTab, setActiveTab] = useState<ScoreInputTab>("MOCK_EXAM");
   const [records, setRecords] = useState<AcademicRecord[]>([]);
   const [mockTrendRecords, setMockTrendRecords] = useState<MockExamTrendRecord[]>([]);
   const [loading, setLoading] = useState(false);
@@ -123,9 +126,12 @@ export default function ScoresPage() {
     }
   }, [schoolCategory, schoolForm]);
 
+  const recordListType: "MOCK_EXAM" | "SCHOOL_GPA" =
+    activeTab === "MOCK_EXAM" ? "MOCK_EXAM" : "SCHOOL_GPA";
+
   const filteredRecords = useMemo(
-    () => records.filter((record) => record.record_type === activeTab),
-    [activeTab, records],
+    () => records.filter((record) => record.record_type === recordListType),
+    [recordListType, records],
   );
 
   async function fetchZscoreSummary() {
@@ -244,7 +250,7 @@ export default function ScoresPage() {
         <CardContent>
           <Tabs
             value={activeTab}
-            onValueChange={(value) => setActiveTab(value as "MOCK_EXAM" | "SCHOOL_GPA")}
+            onValueChange={(value) => setActiveTab(value as ScoreInputTab)}
           >
             <TabsList className="h-auto min-h-0 w-full flex-wrap justify-start gap-1 sm:w-fit">
               <TabsTrigger value="MOCK_EXAM" className="min-h-11 flex-none sm:min-h-0">
@@ -252,6 +258,9 @@ export default function ScoresPage() {
               </TabsTrigger>
               <TabsTrigger value="SCHOOL_GPA" className="min-h-11 flex-none sm:min-h-0">
                 내신
+              </TabsTrigger>
+              <TabsTrigger value="IMAGE_UPLOAD" className="min-h-11 flex-none sm:min-h-0">
+                이미지로 입력
               </TabsTrigger>
             </TabsList>
 
@@ -519,6 +528,15 @@ export default function ScoresPage() {
                 )}
               </div>
             </TabsContent>
+
+            <TabsContent value="IMAGE_UPLOAD" className="mt-4">
+              <ImageUpload
+                onSaved={() => {
+                  void fetchRecords();
+                  void fetchZscoreSummary();
+                }}
+              />
+            </TabsContent>
           </Tabs>
           {apiError ? <p className="mt-4 text-sm text-red-600">{apiError}</p> : null}
         </CardContent>
@@ -536,7 +554,7 @@ export default function ScoresPage() {
               <Table className="min-w-[520px]">
               <TableHeader>
                 <TableRow>
-                  {activeTab === "MOCK_EXAM" ? (
+                  {recordListType === "MOCK_EXAM" ? (
                     <>
                       <TableHead>날짜</TableHead>
                       <TableHead>국어등급</TableHead>
@@ -558,13 +576,13 @@ export default function ScoresPage() {
               <TableBody>
                 {filteredRecords.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={activeTab === "MOCK_EXAM" ? 5 : 5}>
+                    <TableCell colSpan={recordListType === "MOCK_EXAM" ? 5 : 5}>
                       입력된 성적이 없습니다.
                     </TableCell>
                   </TableRow>
                 ) : (
                   filteredRecords.map((record) =>
-                    activeTab === "MOCK_EXAM" ? (
+                    recordListType === "MOCK_EXAM" ? (
                       <TableRow key={record.id}>
                         <TableCell>{record.exam_date}</TableCell>
                         <TableCell>{record.korean_grade ?? "-"}</TableCell>

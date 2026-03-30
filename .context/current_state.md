@@ -63,13 +63,13 @@
 - **P2-9** `src/app/dashboard/trend-analysis/page.tsx` — 입결 추이 분석(`TrendAnalysisClient`, `TrendChart`, `TrendFilter`; `GET /api/trend-analysis`)
 - **P1-15·P1-16** `src/app/dashboard/explore/page.tsx` — 전국 대학 탐색(`ExploreClient`, `ExploreFilter`, `ExploreTable`; `GET /api/explore`)
 - **P1-3** `src/app/dashboard/nulsul/page.tsx` — 논술 실질 경쟁률(`NulsulDashboardClient`, `NulsulCalculator`, `NulsulCompareTable`; `GET /api/nulsul`)
-- **P1-2** `src/app/dashboard/scores/page.tsx` 내신 탭 — `ZScoreDisplay`, `GET /api/scores/zscore`
+- **P1-2·P2-11** `src/app/dashboard/scores/page.tsx` — 내신 탭 `ZScoreDisplay`·`GET /api/scores/zscore`, **이미지로 입력** 탭 `ImageUpload`·`POST /api/scores/parse-image`
 - **P1-14** `src/app/dashboard/record-check/page.tsx` — 생기부 점검(`RecordCheckResult`, `RecordCheckSummary`; `loadRecordGapAnalysisForStudent`)
 - **P1-6** `src/app/dashboard/personal-statement/page.tsx` — 자소서 코치(`PersonalStatementCoach`, `StatementEditor`, `FeedbackView`; `GET/POST /api/personal-statement`, `POST /api/personal-statement/feedback` SSE)
 
 ### API routes (`src/app/api/**/route.ts`)
 
-- `api/scores/route.ts`, **`api/scores/zscore/route.ts`** (P1-2)
+- `api/scores/route.ts`, **`api/scores/zscore/route.ts`** (P1-2), **`api/scores/parse-image/route.ts`** (P2-11 NEIS Vision)
 - `api/analysis/probability/route.ts`, `api/analysis/minimum-check/route.ts`
 - `api/chat/route.ts`
 - **`api/signals/route.ts`**
@@ -107,11 +107,11 @@
 ## 테스트·품질 현황
 
 - **Jest:** `jest.config.ts` (next/jest), `testMatch`: `src/__tests__/**/*.test.ts`
-- **결과:** **277 tests PASS** / **38 suites** / FAIL 0 (`npm test`, 2026-03-30)
+- **결과:** **375 tests PASS** / **65 suites** / FAIL 0 (`npm test`, P2-11 `scores-parse-image`·NEIS 매핑 테스트 포함)
 
 ## PRD v2 백로그 메모
 
-- **P2-11** 나이스 PDF 자동 파싱·적재 — `docs/01_PRD_v2.md` §6, `docs/08_USER_MANUAL.md` §2.3.
+- **P2-11** 나이스 성적표 이미지 파싱 — 구현: `POST /api/scores/parse-image`, `/dashboard/scores` **이미지로 입력** 탭, `docs/08_USER_MANUAL.md` §2.2.
 - **생활기록부 RAG** `student_record_chunks` — 임베딩 적재 후 **P1-5** `POST /api/student-record/analyze`·`/dashboard/hakjong-analysis`로 역량 분석 스트리밍.
 
 ## 알려진 미완·주의

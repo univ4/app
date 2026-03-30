@@ -112,6 +112,50 @@
 
 ---
 
+### POST `/api/scores/parse-image` (P2-11)
+
+설명:
+- 나이스(NEIS) **학생 성적 확인서** 이미지(PNG/JPEG, 최대 10MB)를 **multipart/form-data**로 받아 Claude Vision으로 JSON 추출 후 `academic_records`에 **내신(`SCHOOL_GPA`) upsert** (`UNIQUE (student_id, semester, subject_name, credit_unit)`).
+- **미리보기만** 할 때는 같은 multipart에 `dry_run` 필드를 `1` 또는 `true`로 넣으면 DB에 쓰지 않고 `parsed`·`skipped`(매핑 실패 건수)만 반환한다.
+- 화면에서 과목을 수정한 뒤 **Vision 없이 저장**하려면 **`Content-Type: application/json`** 으로 `{ "semester": "2-1", "subjects": [ { "subjectName", "creditUnit", "rawScore", … } ] }` 형식으로 POST한다 (`semester`는 `1-1`…`3-2`).
+
+multipart 필드:
+- `file` 또는 `image`: 이미지 파일(필수, PNG/JPEG)
+- `dry_run`(선택): `1` / `true` 이면 파싱만 수행
+
+권한: 로그인 사용자(본인 `student_id`로 RLS 적용).
+
+환경: `ANTHROPIC_API_KEY` 필수. 모델은 `ANTHROPIC_MODEL`(미설정 시 앱 기본 Sonnet) 사용.
+
+성공 응답 예시:
+
+```json
+{
+  "data": {
+    "parsed": {
+      "grade": 2,
+      "semester": 1,
+      "neisSemester": "2-1",
+      "subjects": []
+    },
+    "inserted": 12,
+    "skipped": 0
+  },
+  "error": null
+}
+```
+
+- `parsed.subjects`: Vision이 반환한 과목 배열(검증·정규화된 형태).
+- `inserted`: upsert에 성공한 행 수(또는 dry_run 시 0).
+- `skipped`: 과목 JSON → 행 매핑 실패 수 + upsert 실패 수(배치 실패 시 개별 재시도 반영).
+
+오류 코드:
+- `UNAUTHORIZED` 401
+- `VALIDATION_ERROR` 422 — 파일 없음·용량 초과·형식 오류·JSON 해석 실패 등
+- `INTERNAL_ERROR` 500 — `ANTHROPIC_API_KEY` 미설정, Anthropic API 오류, 이미지 읽기 실패 등
+
+---
+
 ### GET `/api/scores`
 
 설명:
@@ -199,7 +243,7 @@ offset=0 (optional, default 0)
 
 설명:
 - 성적 1건 삭제(스펙 예정)
-- **현재 레포에는** `src/app/api/scores/[id]/route.ts`가 없으며, `GET`·`POST`만 `src/app/api/scores/route.ts`에 구현되어 있다.
+- **현재 레포에는** `src/app/api/scores/[id]/route.ts`가 없으며, `GET`·`POST`는 `src/app/api/scores/route.ts`, P2-11 **`POST /api/scores/parse-image`** 는 `src/app/api/scores/parse-image/route.ts`에 구현되어 있다.
 
 성공 응답(구현 시 예시):
 
@@ -1566,6 +1610,7 @@ Query (optional): `year=2027`
 
 ```txt
 scores/route.ts                          # GET, POST
+scores/parse-image/route.ts              # POST (P2-11 NEIS 이미지·JSON commit)
 signals/route.ts                         # GET
 trend-analysis/route.ts                  # GET (P2-9)
 placement-table/route.ts                 # GET (P2-12)
