@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, PanelLeftOpen } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -21,7 +21,15 @@ export function DashboardSidebar() {
       )}
     >
       <div className="mb-4 flex items-center justify-between">
-        {!collapsed ? <p className="text-sm font-semibold text-foreground">더 보기</p> : null}
+        <Link
+          href="/dashboard"
+          className={cn(
+            "rounded-md px-3 py-1 text-sm font-semibold text-foreground transition-colors hover:bg-accent hover:text-accent-foreground",
+            collapsed && "px-2",
+          )}
+        >
+          {collapsed ? "u4" : "univ4"}
+        </Link>
         <Button
           type="button"
           variant="ghost"
@@ -30,7 +38,7 @@ export function DashboardSidebar() {
           onClick={() => setCollapsed((prev) => !prev)}
           className="size-8"
         >
-          {collapsed ? <ChevronRight className="size-4" /> : <ChevronLeft className="size-4" />}
+          {collapsed ? <PanelLeftOpen className="size-4" /> : <ChevronLeft className="size-4" />}
         </Button>
       </div>
 
@@ -38,26 +46,28 @@ export function DashboardSidebar() {
         {DASHBOARD_MORE_SECTIONS.map((section) => (
           <div key={section.title}>
             {!collapsed ? (
-              <p className="mb-2 px-2 text-xs font-medium tracking-wide text-muted-foreground">
+              <p className="cursor-default px-3 pb-1 pt-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 {section.title}
               </p>
             ) : null}
             <ul className="space-y-1">
               {section.items.map((item) => {
                 const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+                const ItemIcon = item.icon;
                 return (
                   <li key={`${section.title}-${item.href}-${item.label}`}>
                     <Link
                       href={item.href}
                       className={cn(
-                        "block rounded-md px-2 py-2 text-sm transition-colors",
+                        "flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm text-foreground transition-colors",
                         active
-                          ? "bg-accent text-accent-foreground"
-                          : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                        collapsed && "text-center text-xs",
+                          ? "bg-primary/10 font-medium text-primary"
+                          : "hover:bg-accent hover:text-accent-foreground",
+                        collapsed && "justify-center",
                       )}
                     >
-                      {collapsed ? item.label.slice(0, 2) : item.label}
+                      {ItemIcon ? <ItemIcon className="size-4 shrink-0" aria-hidden /> : null}
+                      {!collapsed ? <span>{item.label}</span> : null}
                     </Link>
                   </li>
                 );
