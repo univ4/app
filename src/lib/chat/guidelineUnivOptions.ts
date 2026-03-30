@@ -1,5 +1,5 @@
 /**
- * `guideline_chunks.metadata.univ_name` 필터용 — `scripts/ingest/embed_and_store.ts` 전형계획 17교.
+ * `guideline_chunks.metadata.univ_name` 필터용 — `scripts/ingest/embed_and_store.ts` 전형계획 18교.
  * (정시 총론·권역 자료 등은 대학명이 달라 별도 청크이며, 여기 목록은 전형계획 스코프용.)
  */
 export const GUIDELINE_PLAN_UNIV_NAMES: readonly string[] = [
@@ -16,6 +16,7 @@ export const GUIDELINE_PLAN_UNIV_NAMES: readonly string[] = [
   "동국대",
   "홍익대",
   "아주대",
+  "인하대",
   "세종대",
   "광운대",
   "국민대",

@@ -139,7 +139,7 @@ app/에 직접 입력하거나 파일로 업로드할 수 있습니다.
 > 생활기록부는 개인 민감정보이므로
 > 본인 또는 보호자만 업로드하세요.
 
-> **현재(2026-03-30):** NEIS에 맞춘 **구조화 입력**(세특·창체·수상·행동특성·출결·봉사·독서·자격증·학교폭력 등 탭)으로 DB에 저장할 수 있다. 구조화 데이터를 임베딩한 **`student_record_chunks`** 적재 후, 대시보드 **학종 역량 분석** (`/dashboard/hakjong-analysis`)에서 학업·진로·공동체 역량 분석을 스트리밍으로 받을 수 있다([`docs/04_API_SPEC.md`](./04_API_SPEC.md) `POST /api/student-record/analyze`).
+> **현재(2026-03-30):** NEIS에 맞춘 **구조화 입력**(세특·창체·수상·행동특성·출결·봉사·독서·자격증·학교폭력 등 탭)으로 DB에 저장할 수 있다. 구조화 데이터를 임베딩한 **`student_record_chunks`** 적재 후, 대시보드 **학종 역량 분석** (`/dashboard/hakjong-analysis`)에서 학업·진로·공동체 역량 분석을 스트리밍으로 받을 수 있다([`docs/04_API_SPEC.md`](./04_API_SPEC.md) `POST /api/student-record/analyze`). **세특 Gap 분석** (`/dashboard/gap-analysis`)에서는 목표 대학 전형계획 청크와 세특을 함께 참고해 강점·보완·주차별 액션 플랜을 스트리밍으로 받을 수 있다([`docs/04_API_SPEC.md`](./04_API_SPEC.md) `POST /api/student-record/gap-analysis`; 문장 대필 없음).
 
 ---
 

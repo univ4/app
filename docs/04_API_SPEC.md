@@ -923,6 +923,25 @@ university=서강대
     `sections`는 스트리밍 완료 후 모델 출력에서 `## 학업역량` 등 마크다운 제목 기준 파싱.
 - **오류**: 한도 초과 **429** `RATE_LIMIT`; 검증 실패 **400** `VALIDATION_ERROR`; 그 외 **5xx** `INTERNAL_ERROR` / **502** 업스트림.
 
+### POST `/api/student-record/gap-analysis` (P1-4 세특 Gap 분석)
+
+- **인증**: 필수. `try_consume_chat_quota`로 일일 호출 한도(`CHAT_DAILY_LIMIT`, 기본 50) 공유.
+- **Body (JSON)**:
+  - `studentId?` (UUID): 생략 시 본인. **Admin**만 다른 학생 UUID 지정 가능.
+  - `targetUniv` (string, 1–120자): **필수.** 목표 대학명(`guideline_chunks.metadata.univ_name`와 정합).
+  - `remainingWeeks?` (number): 남은 기간(주). 기본 **12**, 범위 1–104.
+- **처리**:
+  1. 대상 학생의 `student_record_chunks` 전체를 `id` 오름차순으로 조회.
+  2. 청크 0건: SSE로 안내 문구만 전송 후 `done` (`finish_reason: no_context`, `sections: []`).
+  3. OpenAI 임베딩으로 질의 벡터 생성 후 `match_guideline_chunks`(`filter`에 `univ_name`·`year: 2027`, `CHAT_SIMILARITY_THRESHOLD` 하한).
+  4. 전형계획 청크 0건: SSE 안내 후 `done` (`finish_reason: no_guidelines`).
+  5. 그 외: Claude Sonnet 스트리밍. 시스템 프롬프트에 [학생 세특]·[대학 전형 자료]·주차 기준 액션 플랜 형식 포함(문장 대필 금지).
+- **응답**: `Content-Type: text/event-stream` (SSE)
+  - `event: chunk` — `{ "text": "<델타>" }` 누적
+  - `event: done` — `{ "finish_reason": "stop" | "no_context" | "no_guidelines", "sections": [ { "key": "strengths"|"gaps"|"actions", "title": string, "content": string } ] }`  
+    `sections`는 스트리밍 완료 후 `## 강점` / `## 보완점` / `## 액션 플랜` 기준 파싱.
+- **오류**: 한도 초과 **429** `RATE_LIMIT`; `targetUniv` 누락·빈 문자열 등 검증 실패 **422** `VALIDATION_ERROR`; JSON 본문 없음 **400**; 그 외 **5xx** / **502** 업스트림.
+
 ---
 
 ## 6. 데이터 적재 API (`/api/ingest`) - Admin 전용
@@ -1286,6 +1305,7 @@ chat/route.ts                            # POST
 calendar/route.ts                        # GET, POST
 calendar/[id]/route.ts                   # PUT, DELETE
 student-record/analyze/route.ts          # POST (P1-5 SSE)
+student-record/gap-analysis/route.ts     # POST (P1-4 SSE)
 student-record/subject-notes/route.ts
 student-record/subject-notes/[id]/route.ts
 student-record/activities/route.ts

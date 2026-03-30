@@ -230,6 +230,17 @@ export default async function DashboardPage() {
             </Card>
           </Link>
 
+          <Link href="/dashboard/gap-analysis" className="block">
+            <Card>
+              <CardHeader>
+                <CardTitle>세특 Gap 분석</CardTitle>
+                <CardDescription>
+                  목표 대학 대비 강점·보완·주차별 액션 플랜 (P1-4)
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </Link>
+
           <Link href="/dashboard/record-check" className="block">
             <Card>
               <CardHeader>

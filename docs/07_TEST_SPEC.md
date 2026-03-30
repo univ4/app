@@ -260,6 +260,17 @@
 
 ---
 
+## 9c. `POST /api/student-record/gap-analysis` (P1-4)
+
+구현·테스트: `src/app/api/student-record/gap-analysis/route.ts`, `src/lib/chat/gapAnalysis.ts`, `src/__tests__/api/gap-analysis.route.test.ts`, `src/__tests__/lib/chat/gapAnalysis.test.ts`
+
+| ID | 시나리오 | 기대 |
+|---|---|---|
+| GAP-01 | 미인증 요청 | HTTP **401**, `UNAUTHORIZED` |
+| GAP-02 | `targetUniv` 누락 | HTTP **422**, `VALIDATION_ERROR` |
+
+---
+
 ## 10. 구현 순서 권장
 
 1. `checkSubjectEligibility` / `analyzeSubjectAdvantage` (이미 존재 시 SE-01만 보강)
