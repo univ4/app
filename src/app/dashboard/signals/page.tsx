@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { CalcBasis } from "@/components/common/CalcBasis";
+import { DisclaimerBanner } from "@/components/common/DisclaimerBanner";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 
@@ -31,6 +33,12 @@ export default async function SignalsPage() {
           </Button>
         </div>
 
+        <DisclaimerBanner variant="calculation" />
+        <CalcBasis
+          dataSource="대학별 입학전형 시행계획 및 입결 자료"
+          formula="내 점수와 입결 컷오프(70%컷) 비교: ±5점(정시), ±0.3등급(교과)"
+          year={2027}
+        />
         <SignalsClient studentId={user.id} />
       </div>
     </div>

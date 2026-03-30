@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { CalcBasis } from "@/components/common/CalcBasis";
+import { DisclaimerBanner } from "@/components/common/DisclaimerBanner";
 import { Button } from "@/components/ui/button";
 import { PlacementTableView } from "@/components/placement-table/PlacementTableView";
 import { createClient } from "@/lib/supabase/server";
@@ -30,6 +32,12 @@ export default async function PlacementTablePage() {
           </Button>
         </div>
 
+        <DisclaimerBanner variant="calculation" />
+        <CalcBasis
+          dataSource="대학별 정시 입결 자료"
+          formula="수능 환산점수와 70%컷 컷오프 비교"
+          year={2027}
+        />
         <PlacementTableView />
       </div>
     </div>

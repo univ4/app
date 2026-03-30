@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { CalcBasis } from "@/components/common/CalcBasis";
+import { DisclaimerBanner } from "@/components/common/DisclaimerBanner";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 
@@ -31,6 +33,11 @@ export default async function NulsulPage() {
           </Button>
         </div>
 
+        <DisclaimerBanner variant="calculation" />
+        <CalcBasis
+          dataSource="대학별 논술전형 경쟁률 자료"
+          formula="실질경쟁률 = 명목경쟁률 × 수능최저충족률 × (1-결시율)"
+        />
         <NulsulDashboardClient defaultYear={2026} />
       </div>
     </div>

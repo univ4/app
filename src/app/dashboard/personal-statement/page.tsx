@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { DisclaimerBanner } from "@/components/common/DisclaimerBanner";
 import { PersonalStatementCoach } from "@/components/personal-statement/PersonalStatementCoach";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
@@ -30,6 +31,9 @@ export default async function PersonalStatementPage() {
           </Button>
         </div>
 
+        <div className="mb-6">
+          <DisclaimerBanner variant="ai" />
+        </div>
         <PersonalStatementCoach />
       </div>
     </div>

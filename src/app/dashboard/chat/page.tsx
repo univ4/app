@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { ChatInterface } from "@/components/chat/ChatInterface";
+import { DisclaimerBanner } from "@/components/common/DisclaimerBanner";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 
@@ -30,6 +31,9 @@ export default async function DashboardChatPage() {
           </Button>
         </div>
 
+        <div className="mb-4">
+          <DisclaimerBanner variant="ai" />
+        </div>
         <ChatInterface />
       </div>
     </div>

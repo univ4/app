@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { CalcBasis } from "@/components/common/CalcBasis";
+import { DisclaimerBanner } from "@/components/common/DisclaimerBanner";
 import { Button } from "@/components/ui/button";
 import { TrendAnalysisClient } from "@/components/trend-analysis/TrendAnalysisClient";
 import type { TrendFilterValue } from "@/components/trend-analysis/TrendFilter";
@@ -63,6 +65,11 @@ export default async function TrendAnalysisPage() {
             <Link href="/dashboard">대시보드</Link>
           </Button>
         </div>
+        <DisclaimerBanner variant="data" />
+        <CalcBasis
+          dataSource="대학별 연도별 입결 공시 자료"
+          formula="최근 2개년 컷오프 변화율 기준: ±2% 이내 유지, +2% 초과 상승, -2% 초과 하락"
+        />
 
         {univOptions.length === 0 ? (
           <p className="text-muted-foreground text-sm">

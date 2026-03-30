@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { DisclaimerBanner } from "@/components/common/DisclaimerBanner";
 import { HakjongAnalysisView } from "@/components/hakjong/HakjongAnalysisView";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
@@ -30,6 +31,9 @@ export default async function HakjongAnalysisPage() {
           </Button>
         </div>
 
+        <div className="mb-6">
+          <DisclaimerBanner variant="ai" />
+        </div>
         <HakjongAnalysisView />
       </div>
     </div>

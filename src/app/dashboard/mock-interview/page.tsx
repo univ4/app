@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { DisclaimerBanner } from "@/components/common/DisclaimerBanner";
 import { MockInterviewView } from "@/components/mock-interview/MockInterviewView";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
@@ -30,6 +31,9 @@ export default async function MockInterviewPage() {
           </Button>
         </div>
 
+        <div className="mb-6">
+          <DisclaimerBanner variant="ai" />
+        </div>
         <MockInterviewView />
       </div>
     </div>
