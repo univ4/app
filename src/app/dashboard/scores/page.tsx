@@ -5,6 +5,7 @@ import { useForm, type Resolver } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
+import { PageHeader } from "@/components/common/PageHeader";
 import { ImageUpload } from "@/components/scores/ImageUpload";
 import { ScoreTrendChart, type MockExamTrendRecord } from "@/components/scores/ScoreTrendChart";
 import { ZScoreDisplay, type ZScoreDisplayData } from "@/components/scores/ZScoreDisplay";
@@ -240,7 +241,11 @@ export default function ScoresPage() {
   }
 
   return (
-    <div className="mx-auto w-full min-w-0 max-w-6xl space-y-6 p-4 sm:p-6">
+    <div className="mx-auto w-full min-w-0 max-w-6xl space-y-6 bg-background p-4 sm:p-6">
+      <PageHeader
+        title="성적 관리"
+        description="/dashboard/scores — 모의고사·내신 입력, Z점수, 나이스 이미지 파싱"
+      />
       <ScoreTrendChart records={mockTrendRecords} />
 
       <Card>

@@ -3,6 +3,7 @@
 import { SendHorizontal } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
 
+import { ErrorState } from "@/components/common/ErrorState";
 import { Button } from "@/components/ui/button";
 import { CHAT_EXAMPLE_QUESTIONS } from "@/lib/chat/guidelineUnivOptions";
 import type { ChatCitation, ChatDonePayload } from "@/types/chat";
@@ -280,12 +281,7 @@ export function ChatInterface() {
       />
 
       {errorBanner ? (
-        <div
-          className="bg-destructive/10 text-destructive mb-2 rounded-md px-3 py-2 text-sm"
-          role="alert"
-        >
-          {errorBanner}
-        </div>
+        <ErrorState message={errorBanner} variant="banner" />
       ) : null}
 
       <div

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { PageHeader } from "@/components/common/PageHeader";
 import { Button } from "@/components/ui/button";
 import {
   resolveRecordStudentId,
@@ -33,24 +34,23 @@ export default async function StudentRecordPage({
   const recordStudentId = resolveRecordStudentId(user.id, role, sp.student_id);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 sm:p-6">
-      <div className="mx-auto mb-4 flex min-w-0 max-w-5xl flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-        <div className="min-w-0">
-          <h1 className="text-xl font-semibold text-foreground break-words sm:text-2xl">
-            생활기록부
-          </h1>
-          {role === "admin" && recordStudentId !== user.id ? (
-            <p className="text-xs text-muted-foreground">
-              대상 학생 ID: <span className="font-mono">{recordStudentId}</span> (
-              <code className="rounded bg-muted px-1">?student_id=</code> 쿼리)
-            </p>
-          ) : null}
-        </div>
-        <div className="flex shrink-0 gap-2">
-          <Button asChild variant="outline" className="hidden px-4 sm:inline-flex">
-            <Link href="/dashboard">대시보드</Link>
-          </Button>
-        </div>
+    <div className="min-h-screen bg-background p-4 sm:p-6">
+      <div className="mx-auto mb-4 min-w-0 max-w-5xl">
+        <PageHeader
+          title="생활기록부"
+          description={
+            role === "admin" && recordStudentId !== user.id
+              ? `대상 학생 ID: ${recordStudentId} (?student_id= 쿼리)`
+              : "세특·창체·수상·출결 데이터를 입력하고 관리합니다."
+          }
+          rightSlot={
+            role === "admin" && recordStudentId !== user.id ? (
+              <Button asChild variant="ghost" className="hidden sm:inline-flex">
+                <Link href="/dashboard/student-record">내 계정으로 보기</Link>
+              </Button>
+            ) : undefined
+          }
+        />
       </div>
 
       <StudentRecordPageClient recordStudentId={recordStudentId} isAdmin={role === "admin"} />

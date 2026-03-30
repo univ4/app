@@ -1,19 +1,16 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { ArrowRight } from "lucide-react";
 
-import { TodoList } from "@/components/calendar/TodoList";
+import { OnboardingGuide } from "@/components/dashboard/OnboardingGuide";
+import { DASHBOARD_CORE_CARDS } from "@/components/dashboard/dashboardMenu";
 import { Button } from "@/components/ui/button";
 import {
   Card,
-  CardContent,
-  CardDescription,
   CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import type { CalendarEventRow } from "@/lib/calendar/calendarApiTypes";
-import { aggregateAdmissionTodosFromCalendarEvents } from "@/lib/calculators/calcAdmissionTodos";
-import { loadRecordGapAnalysisForStudent } from "@/lib/record-check/recordGapFromDb";
+import { calcDDay } from "@/lib/calculators/calcDDay";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function DashboardPage() {
@@ -32,17 +29,20 @@ export default async function DashboardPage() {
 
   if (!user) redirect("/login");
 
-  const [{ data: student }, rpcResult, subjectNoteCountRes, recordGapLoaded] = await Promise.all([
+  const [{ data: student }, rpcResult, subjectNoteCountRes, scoreCountRes] = await Promise.all([
     supabase.from("students").select("name").eq("id", user.id).maybeSingle(),
     supabase.rpc("ensure_default_admission_calendar_2027"),
     supabase
       .from("student_subject_notes")
       .select("*", { count: "exact", head: true })
       .eq("student_id", user.id),
-    loadRecordGapAnalysisForStudent(supabase, user.id),
+    supabase
+      .from("academic_records")
+      .select("*", { count: "exact", head: true })
+      .eq("student_id", user.id),
   ]);
 
-  let dashboardTodos = aggregateAdmissionTodosFromCalendarEvents([]);
+  let calendarRows: Pick<CalendarEventRow, "id" | "title" | "event_date" | "event_type">[] = [];
   if (!rpcResult.error) {
     const { data: calRows } = await supabase
       .from("calendar_events")
@@ -50,354 +50,78 @@ export default async function DashboardPage() {
       .eq("student_id", user.id)
       .order("event_date", { ascending: true })
       .order("title", { ascending: true });
-    dashboardTodos = aggregateAdmissionTodosFromCalendarEvents(
-      (calRows ?? []) as Pick<CalendarEventRow, "id" | "title" | "event_date" | "event_type">[],
-    );
+    calendarRows = (calRows ?? []) as Pick<CalendarEventRow, "id" | "title" | "event_date" | "event_type">[];
   }
-
-  const dashboardTodoPreview = dashboardTodos.slice(0, 12);
-
-  const recordGapCritical =
-    recordGapLoaded.ok ? recordGapLoaded.data.criticalCount : null;
 
   const email = user.email ?? "사용자";
   const emailLocalPart = email.includes("@") ? email.split("@")[0] : email;
   const greetingName = student?.name?.trim() || emailLocalPart;
+  const todayLabel = new Intl.DateTimeFormat("ko-KR", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    weekday: "short",
+  }).format(new Date());
+  const nearestEvent = calendarRows
+    .map((row) => ({
+      ...row,
+      dday: calcDDay(row.event_date),
+    }))
+    .filter((row) => row.dday.dday >= 0)
+    .sort((a, b) => a.dday.dday - b.dday.dday)[0];
+  const hasScores = (scoreCountRes.count ?? 0) > 0;
+  const hasStudentRecord = (subjectNoteCountRes.count ?? 0) > 0;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 sm:p-6">
+    <div className="min-h-screen bg-background p-4 sm:p-6">
       <div className="mx-auto w-full min-w-0 max-w-5xl">
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h1 className="text-xl font-semibold text-foreground break-words sm:text-2xl">
-            안녕하세요, {greetingName}님
-          </h1>
+          <div className="min-w-0">
+            <h1 className="break-words text-xl font-semibold text-foreground sm:text-2xl">
+              안녕하세요, {greetingName}님
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {todayLabel}
+              {nearestEvent ? ` · ${nearestEvent.title} ${nearestEvent.dday.label}` : ""}
+            </p>
+          </div>
           <form action={logout} className="shrink-0">
-            <Button type="submit" className="w-full px-4 sm:w-auto">
+            <Button type="submit" variant="outline" className="w-full px-4 sm:w-auto">
               로그아웃
             </Button>
           </form>
         </div>
 
-        <Card className="mb-4">
-          <CardHeader>
-            <CardTitle>이번 주 할 일</CardTitle>
-            <CardDescription>
-              캘린더 일정 기준 역산 TO-DO(원서접수·수능·정시) ·{" "}
-              <Link href="/dashboard/calendar" className="text-primary underline">
-                입시 캘린더
+        <div className="mb-4">
+          <OnboardingGuide
+            hasScores={hasScores}
+            hasStudentRecord={hasStudentRecord}
+            hasSignalsReady={hasScores}
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+          {DASHBOARD_CORE_CARDS.map((item) => {
+            const Icon = item.icon;
+            return (
+              <Link key={item.href} href={item.href} className="block">
+                <Card className="h-36 border-border transition-all hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-md">
+                  <CardHeader className="h-full justify-between space-y-0 p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="rounded-md bg-accent p-2 text-accent-foreground">
+                        {Icon ? <Icon className="size-4" aria-hidden /> : null}
+                      </div>
+                      <ArrowRight className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-foreground sm:text-base">{item.label}</p>
+                      <p className="mt-1 line-clamp-2 text-xs text-muted-foreground sm:text-sm">{item.description}</p>
+                    </div>
+                  </CardHeader>
+                </Card>
               </Link>
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <TodoList
-              items={dashboardTodoPreview}
-              showHeading={false}
-              numbered
-              className="border-0 p-0"
-            />
-          </CardContent>
-        </Card>
-
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <Link href="/dashboard/early-roadmap" className="block">
-            <Card>
-              <CardHeader>
-                <CardTitle>조기 설계 로드맵</CardTitle>
-                <CardDescription>
-                  고1·고2 학기별 내신·활동·마일스톤 참고 로드맵 (P3-3)
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          </Link>
-
-          <Link href="/dashboard/scores" className="block">
-            <Card>
-              <CardHeader>
-                <CardTitle>성적 관리</CardTitle>
-                <CardDescription>
-                  모의고사 및 내신 성적 입력 및 추이 확인
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          </Link>
-
-          <Link href="/dashboard/analysis" className="block">
-            <Card>
-              <CardHeader>
-                <CardTitle>합격 가능성</CardTitle>
-                <CardDescription>
-                  서성한 이공계 합격 가능성 분석
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          </Link>
-
-          <Link href="/dashboard/subject-analysis" className="block">
-            <Card>
-              <CardHeader>
-                <CardTitle>선택과목 분석</CardTitle>
-                <CardDescription>
-                  수능 선택과목·지원 가능 필터·정시 반영비 유불리
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          </Link>
-
-          <Link href="/dashboard/science-combo" className="block">
-            <Card>
-              <CardHeader>
-                <CardTitle>과탐 조합 시뮬레이터</CardTitle>
-                <CardDescription>
-                  탐구1·2 조합별 과탐Ⅱ 가산 적용 대학 비교 (P3-4)
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          </Link>
-
-          <Link href="/dashboard/gachaejeom" className="block">
-            <Card>
-              <CardHeader>
-                <CardTitle>수능 가채점 계산기</CardTitle>
-                <CardDescription>
-                  원점수 추정 표준점수·18개 대학 정시 환산·신호등 (P1-10)
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          </Link>
-
-          <Link href="/dashboard/signals" className="block">
-            <Card>
-              <CardHeader>
-                <CardTitle>합격 신호등</CardTitle>
-                <CardDescription>
-                  199개 대학 입결 대비 안정·적정·도전 및 확률 %
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          </Link>
-
-          <Link href="/dashboard/placement-table" className="block">
-            <Card>
-              <CardHeader>
-                <CardTitle>정시 배치표</CardTitle>
-                <CardDescription>
-                  내 환산점수 기준 안정·적정·도전 3단 배치 (P2-12)
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          </Link>
-
-          <Link href="/dashboard/jeongsi-gun" className="block">
-            <Card>
-              <CardHeader>
-                <CardTitle>정시 군별 전략</CardTitle>
-                <CardDescription>
-                  가·나·다군 조합 위험도·안전망·정시자료 RAG (P2-10)
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          </Link>
-
-          <Link href="/dashboard/trend-analysis" className="block">
-            <Card>
-              <CardHeader>
-                <CardTitle>입결 추이 분석</CardTitle>
-                <CardDescription>
-                  연도별 컷오프 추이·상승·하락·유지 (P2-9)
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          </Link>
-
-          <Link href="/dashboard/nulsul" className="block">
-            <Card>
-              <CardHeader>
-                <CardTitle>논술 경쟁률 판독기</CardTitle>
-                <CardDescription>
-                  논술전형 명목 대비 실질 경쟁률·차이율 (수능최저·결시율 반영, P1-3)
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          </Link>
-
-          <Link href="/dashboard/explore" className="block">
-            <Card>
-              <CardHeader>
-                <CardTitle>전국 대학 탐색</CardTitle>
-                <CardDescription>
-                  전형·지역·수능최저·면접 조건으로 199개 대학 필터 (§6)
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          </Link>
-
-          <Link href="/dashboard/nsu-strategy" className="block">
-            <Card>
-              <CardHeader>
-                <CardTitle>N수생 전략</CardTitle>
-                <CardDescription>
-                  재수 연차·점수 추이·내신 기준 정시·수시 참고 전략
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          </Link>
-
-          <Link href="/dashboard/simulator" className="block">
-            <Card>
-              <CardHeader>
-                <CardTitle>원서 배분 시뮬레이터</CardTitle>
-                <CardDescription>
-                  수시 6장 구성·포트폴리오 경고·수시 납치 리스크 (§9)
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          </Link>
-
-          <Link href="/dashboard/integrated-strategy" className="block">
-            <Card>
-              <CardHeader>
-                <CardTitle>통합 전략 뷰</CardTitle>
-                <CardDescription>
-                  수시·정시 한 화면·납치 리스크·정시 안전망 (P2-6)
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          </Link>
-
-          <Link href="/dashboard/grade-simulator" className="block">
-            <Card>
-              <CardHeader>
-                <CardTitle>성적 예측 시뮬레이터</CardTitle>
-                <CardDescription>
-                  목표 등급별 내신 평균·신호등 변화·과목별 개선 효과 (P2-5)
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          </Link>
-
-          <Link href="/dashboard/chat" className="block">
-            <Card>
-              <CardHeader>
-                <CardTitle>AI 요강 챗봇</CardTitle>
-                <CardDescription>전형계획·정시 자료 RAG 질의응답</CardDescription>
-              </CardHeader>
-            </Card>
-          </Link>
-
-          <Link href="/dashboard/calendar" className="block">
-            <Card>
-              <CardHeader>
-                <CardTitle>입시 캘린더</CardTitle>
-                <CardDescription>D-Day · 월별 보기 · 일정 관리(관리자)</CardDescription>
-              </CardHeader>
-            </Card>
-          </Link>
-
-          <Link href="/dashboard/student-record" className="block">
-            <Card>
-              <CardHeader>
-                <CardTitle>생활기록부</CardTitle>
-                <CardDescription>
-                  세특·창체·수상·행동특성 · 세특 입력 과목{" "}
-                  <span className="font-medium text-foreground">
-                    {subjectNoteCountRes.count ?? 0}
-                  </span>
-                  개
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          </Link>
-
-          <Link href="/dashboard/hakjong-analysis" className="block">
-            <Card>
-              <CardHeader>
-                <CardTitle>학종 역량 분석</CardTitle>
-                <CardDescription>
-                  학업·진로·공동체 역량 · 생기부 청크 RAG 스트리밍 (P1-5)
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          </Link>
-
-          <Link href="/dashboard/personal-statement" className="block">
-            <Card>
-              <CardHeader>
-                <CardTitle>자소서 코치</CardTitle>
-                <CardDescription>
-                  초안·글자수 · 생기부 근거 피드백 · 문장 대필 없음 (P1-6)
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          </Link>
-
-          <Link href="/dashboard/gap-analysis" className="block">
-            <Card>
-              <CardHeader>
-                <CardTitle>세특 Gap 분석</CardTitle>
-                <CardDescription>
-                  목표 대학 대비 강점·보완·주차별 액션 플랜 (P1-4)
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          </Link>
-
-          <Link href="/dashboard/research-topics" className="block">
-            <Card>
-              <CardHeader>
-                <CardTitle>탐구 주제 추천</CardTitle>
-                <CardDescription>
-                  세특·인재상 연계 탐구 주제·난이도·소요 기간 (P1-8)
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          </Link>
-
-          <Link href="/dashboard/mock-interview" className="block">
-            <Card>
-              <CardHeader>
-                <CardTitle>모의 면접</CardTitle>
-                <CardDescription>
-                  생기부·요강 기반 질문·답변 피드백 스트리밍 (P1-9)
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          </Link>
-
-          <Link href="/dashboard/exam-analysis" className="block">
-            <Card>
-              <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0">
-                <div className="min-w-0">
-                  <CardTitle>기출 분석</CardTitle>
-                  <CardDescription>
-                    논술·면접 기출 유사 검색·출처 표시 (P2-4)
-                  </CardDescription>
-                </div>
-                <Badge variant="secondary" className="shrink-0">
-                  준비 중
-                </Badge>
-              </CardHeader>
-            </Card>
-          </Link>
-
-          <Link href="/dashboard/record-check" className="block">
-            <Card>
-              <CardHeader>
-                <CardTitle>생기부 점검</CardTitle>
-                <CardDescription>
-                  공백·글자수 기준 점검 · 치명적 공백{" "}
-                  <span
-                    className={
-                      recordGapCritical !== null && recordGapCritical > 0
-                        ? "font-medium text-destructive"
-                        : "font-medium text-foreground"
-                    }
-                  >
-                    {recordGapCritical === null ? "—" : `${recordGapCritical}개`}
-                  </span>
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          </Link>
+            );
+          })}
         </div>
       </div>
     </div>

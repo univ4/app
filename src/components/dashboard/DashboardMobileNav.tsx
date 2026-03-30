@@ -1,33 +1,18 @@
 "use client";
 
 import {
-  CalendarDays,
-  Compass,
-  LayoutDashboard,
+  ChevronRight,
   Menu,
-  MessageCircle,
-  Table2,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
+import {
+  DASHBOARD_CORE_CARDS,
+  DASHBOARD_MORE_SECTIONS,
+} from "@/components/dashboard/dashboardMenu";
 import { cn } from "@/lib/utils";
-
-const MAIN = [
-  { href: "/dashboard", label: "홈", Icon: LayoutDashboard },
-  { href: "/dashboard/signals", label: "신호등", Icon: Table2 },
-  { href: "/dashboard/explore", label: "탐색", Icon: Compass },
-  { href: "/dashboard/calendar", label: "캘린더", Icon: CalendarDays },
-  { href: "/dashboard/chat", label: "챗봇", Icon: MessageCircle },
-] as const;
-
-const MORE = [
-  { href: "/dashboard/scores", label: "성적 입력" },
-  { href: "/dashboard/student-record", label: "생활기록부" },
-  { href: "/dashboard/analysis", label: "합격 가능성" },
-  { href: "/dashboard/subject-analysis", label: "선택과목 분석" },
-] as const;
 
 export function DashboardMobileNav() {
   const pathname = usePathname();
@@ -52,11 +37,21 @@ export function DashboardMobileNav() {
         aria-label="주요 화뷰 이동"
       >
         <ul className="flex max-w-lg mx-auto">
-          {MAIN.map(({ href, label, Icon }) => {
+          <li className="min-w-0 flex-1">
+            <Link
+              href="/dashboard"
+              className={cn(
+                "flex min-h-11 flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-[0.65rem] font-medium",
+                pathname === "/dashboard" ? "text-foreground" : "text-muted-foreground",
+              )}
+              onClick={closeMore}
+            >
+              홈
+            </Link>
+          </li>
+          {DASHBOARD_CORE_CARDS.slice(0, 4).map(({ href, label, icon: Icon }) => {
             const active =
-              href === "/dashboard"
-                ? pathname === "/dashboard"
-                : pathname === href || pathname.startsWith(`${href}/`);
+              pathname === href || pathname.startsWith(`${href}/`);
             return (
               <li key={href} className="min-w-0 flex-1">
                 <Link
@@ -67,7 +62,7 @@ export function DashboardMobileNav() {
                   )}
                   onClick={closeMore}
                 >
-                  <Icon className="size-5 shrink-0" aria-hidden />
+                  {Icon ? <Icon className="size-5 shrink-0" aria-hidden /> : null}
                   {label}
                 </Link>
               </li>
@@ -82,7 +77,7 @@ export function DashboardMobileNav() {
               aria-controls="dashboard-more-sheet"
               onClick={() => setMoreOpen(true)}
             >
-              <Menu className="size-5 shrink-0" aria-hidden />
+              <Menu className="size-4 shrink-0" aria-hidden />
               더보기
             </button>
           </li>
@@ -107,25 +102,33 @@ export function DashboardMobileNav() {
           >
             <div className="border-b border-border px-4 py-3">
               <h2 id="dashboard-more-title" className="text-base font-semibold">
-                다른 메뉴
+                더보기 메뉴
               </h2>
               <p className="text-muted-foreground text-sm">
-                성적·생기부·분석으로 이동합니다.
+                분석 도구와 AI 도우미 기능으로 이동합니다.
               </p>
             </div>
-            <ul className="max-h-[50vh] overflow-y-auto p-2">
-              {MORE.map(({ href, label }) => (
-                <li key={href}>
-                  <Link
-                    href={href}
-                    className="hover:bg-muted block min-h-11 rounded-lg px-3 py-3 text-base font-medium"
-                    onClick={closeMore}
-                  >
-                    {label}
-                  </Link>
-                </li>
+            <div className="max-h-[50vh] space-y-3 overflow-y-auto p-3">
+              {DASHBOARD_MORE_SECTIONS.map((section) => (
+                <div key={section.title}>
+                  <p className="mb-1 px-1 text-xs font-medium text-muted-foreground">{section.title}</p>
+                  <ul className="space-y-1">
+                    {section.items.map(({ href, label }) => (
+                      <li key={`${section.title}-${href}-${label}`}>
+                        <Link
+                          href={href}
+                          className="hover:bg-muted flex min-h-11 items-center justify-between rounded-lg px-3 py-2 text-sm font-medium"
+                          onClick={closeMore}
+                        >
+                          {label}
+                          <ChevronRight className="size-4 text-muted-foreground" />
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               ))}
-            </ul>
+            </div>
           </div>
         </div>
       ) : null}

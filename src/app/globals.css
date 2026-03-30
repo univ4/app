@@ -49,39 +49,38 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  /* WCAG AA ~4.5:1 on white body text for secondary copy */
-  --muted-foreground: oklch(0.44 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --background: hsl(210 20% 98%);
+  --foreground: hsl(215 25% 15%);
+  --card: hsl(0 0% 100%);
+  --card-foreground: hsl(215 25% 15%);
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(215 25% 15%);
+  --primary: hsl(214 80% 42%);
+  --primary-foreground: hsl(0 0% 100%);
+  --secondary: hsl(210 20% 94%);
+  --secondary-foreground: hsl(215 25% 15%);
+  --muted: hsl(210 20% 94%);
+  --muted-foreground: hsl(215 15% 45%);
+  --accent: hsl(210 100% 95%);
+  --accent-foreground: hsl(214 80% 35%);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --border: hsl(210 20% 88%);
+  --input: hsl(210 20% 88%);
+  --ring: hsl(214 80% 42%);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar: hsl(0 0% 100%);
+  --sidebar-foreground: hsl(215 25% 15%);
+  --sidebar-primary: hsl(214 80% 42%);
+  --sidebar-primary-foreground: hsl(0 0% 100%);
+  --sidebar-accent: hsl(210 100% 95%);
+  --sidebar-accent-foreground: hsl(214 80% 35%);
+  --sidebar-border: hsl(210 20% 88%);
+  --sidebar-ring: hsl(214 80% 42%);
 }
 
 .dark {

@@ -1,10 +1,9 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { CalendarPageClient } from "@/components/calendar/CalendarPageClient";
+import { PageHeader } from "@/components/common/PageHeader";
 import type { CalendarEventRow } from "@/lib/calendar/calendarApiTypes";
 import { aggregateAdmissionTodosFromCalendarEvents } from "@/lib/calculators/calcAdmissionTodos";
-import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function DashboardCalendarPage() {
@@ -41,21 +40,12 @@ export default async function DashboardCalendarPage() {
   const isAdmin = student?.role === "admin";
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 sm:p-6">
+    <div className="min-h-screen bg-background p-4 sm:p-6">
       <div className="mx-auto w-full min-w-0 max-w-6xl space-y-6">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="min-w-0">
-            <h1 className="text-xl font-semibold text-foreground break-words sm:text-2xl">
-              입시 D-Day 캘린더
-            </h1>
-            <p className="text-muted-foreground text-sm break-words">
-              /dashboard/calendar — P0-5 · 2027학년도 기본 일정 및 가족 공유
-            </p>
-          </div>
-          <Button asChild variant="outline" className="hidden w-full sm:inline-flex sm:w-auto">
-            <Link href="/dashboard">대시보드</Link>
-          </Button>
-        </div>
+        <PageHeader
+          title="입시 D-Day 캘린더"
+          description="/dashboard/calendar — P0-5 · 2027학년도 기본 일정 및 가족 공유"
+        />
 
         <CalendarPageClient
           initialItems={initialItems}
