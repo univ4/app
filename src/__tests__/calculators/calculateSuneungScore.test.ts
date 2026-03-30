@@ -40,7 +40,9 @@ describe("calculateSuneungScore", () => {
       { ...baseScores, english_grade: 2 },
       baseRules,
     );
-    expect(grade1).toBeGreaterThan(grade2);
+    expect(grade1).not.toBeNull();
+    expect(grade2).not.toBeNull();
+    expect(grade1!).toBeGreaterThan(grade2!);
   });
 
   it("works without science2 bonus when bonus is zero", () => {
@@ -84,8 +86,9 @@ describe("calculateSuneungScore", () => {
         sci2_is_type_two: false,
       };
       const v = calculateSuneungScore(zeroSci, baseRules);
-      expect(Number.isFinite(v)).toBe(true);
-      expect(v).toBeGreaterThanOrEqual(0);
+      expect(v).not.toBeNull();
+      expect(Number.isFinite(v!)).toBe(true);
+      expect(v!).toBeGreaterThanOrEqual(0);
     });
 
     it("과탐 만점에 가까운 값에서도 유한값", () => {
@@ -95,7 +98,9 @@ describe("calculateSuneungScore", () => {
         sci2_standard_score: 70,
         sci2_is_type_two: true,
       };
-      expect(Number.isFinite(calculateSuneungScore(high, baseRules))).toBe(true);
+      const highScore = calculateSuneungScore(high, baseRules);
+      expect(highScore).not.toBeNull();
+      expect(Number.isFinite(highScore!)).toBe(true);
     });
   });
 });

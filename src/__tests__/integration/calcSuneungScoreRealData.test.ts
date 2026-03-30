@@ -25,15 +25,17 @@ describe("calculateSuneungScore 실데이터 검증", () => {
     };
 
     const result = calculateSuneungScore(input, rule);
+    expect(result).not.toBeNull();
 
-    expect(result).toBeGreaterThan(120);
-    expect(result).toBeLessThan(170);
+    expect(result!).toBeGreaterThan(120);
+    expect(result!).toBeLessThan(170);
 
     const resultWithoutBonus = calculateSuneungScore(input, {
       ...rule,
       science_2_bonus: 0,
     });
-    expect(result).toBeGreaterThan(resultWithoutBonus);
+    expect(resultWithoutBonus).not.toBeNull();
+    expect(result!).toBeGreaterThan(resultWithoutBonus!);
   });
 
   test("영어 1등급 vs 2등급 환산점수 차이", () => {
@@ -55,7 +57,9 @@ describe("calculateSuneungScore 실데이터 검증", () => {
 
     const score1 = calculateSuneungScore({ ...base, english_grade: 1 }, rule);
     const score2 = calculateSuneungScore({ ...base, english_grade: 2 }, rule);
-    expect(score1).toBeGreaterThan(score2);
+    expect(score1).not.toBeNull();
+    expect(score2).not.toBeNull();
+    expect(score1!).toBeGreaterThan(score2!);
   });
 
   test("수능최저 2개합5 충족 여부", () => {
