@@ -6,6 +6,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { ScoreTrendChart, type MockExamTrendRecord } from "@/components/scores/ScoreTrendChart";
+import { ZScoreDisplay, type ZScoreDisplayData } from "@/components/scores/ZScoreDisplay";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -77,6 +78,8 @@ export default function ScoresPage() {
   const [mockTrendRecords, setMockTrendRecords] = useState<MockExamTrendRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
+  const [zscoreData, setZscoreData] = useState<ZScoreDisplayData | null>(null);
+  const [zscoreLoading, setZscoreLoading] = useState(false);
 
   const mockForm = useForm<MockExamFormValues>({
     resolver: zodResolver(mockExamSchema) as unknown as Resolver<MockExamFormValues>,
@@ -125,6 +128,23 @@ export default function ScoresPage() {
     [activeTab, records],
   );
 
+  async function fetchZscoreSummary() {
+    setZscoreLoading(true);
+    try {
+      const response = await fetch("/api/scores/zscore", { cache: "no-store" });
+      const json = await response.json();
+      if (!response.ok) {
+        setZscoreData(null);
+        return;
+      }
+      setZscoreData(json.data ?? null);
+    } catch {
+      setZscoreData(null);
+    } finally {
+      setZscoreLoading(false);
+    }
+  }
+
   async function fetchRecords() {
     setLoading(true);
     setApiError(null);
@@ -157,6 +177,7 @@ export default function ScoresPage() {
   useEffect(() => {
     void fetchRecords();
     void fetchMockTrendRecords();
+    void fetchZscoreSummary();
   }, []);
 
   async function submitMock(values: MockExamFormValues) {
@@ -209,6 +230,7 @@ export default function ScoresPage() {
       achievement_level: "",
     } as unknown as SchoolGpaFormValues);
     await fetchRecords();
+    await fetchZscoreSummary();
   }
 
   return (
@@ -488,6 +510,14 @@ export default function ScoresPage() {
                   저장
                 </Button>
               </form>
+
+              <div className="mt-8 space-y-2 border-t pt-6">
+                {zscoreLoading ? (
+                  <p className="text-muted-foreground text-sm">Z점수 계산 중...</p>
+                ) : (
+                  <ZScoreDisplay data={zscoreData} />
+                )}
+              </div>
             </TabsContent>
           </Tabs>
           {apiError ? <p className="mt-4 text-sm text-red-600">{apiError}</p> : null}

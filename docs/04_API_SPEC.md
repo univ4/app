@@ -153,6 +153,48 @@ offset=0 (optional, default 0)
 
 ---
 
+### GET `/api/scores/zscore`
+
+설명:
+- 로그인 학생의 **내신**(`record_type = SCHOOL_GPA`) 행을 읽어 과목별 Z점수와 전체 평균 Z·참고 밴드를 산출한다.
+- Track 1: `calculateZScore`, `calcSchoolLevel` 사용.
+- **PRD P1-2**: 원점수·과목평균·표준편차·수강자수가 모두 유효한 행만 Z 산출에 포함한다(미충족 행은 목록에 포함되나 `zScore`는 `null`·사유 문자열).
+- 권한: `GET /api/scores`와 동일(인증 사용자, RLS로 본인 `academic_records`만).
+
+성공 응답 예시:
+
+```json
+{
+  "data": {
+    "subjects": [
+      {
+        "id": 12,
+        "semester": "3-1",
+        "subjectName": "수학Ⅰ",
+        "subjectCategory": "general",
+        "zScore": 1.55,
+        "bandLabel": "상위권",
+        "omitReason": null
+      }
+    ],
+    "schoolLevel": {
+      "avgZScore": 1.55,
+      "levelLabel": "상위권",
+      "subjectZScores": [{ "subjectName": "3-1 · 수학Ⅰ", "zScore": 1.55 }],
+      "disclaimer": "학생부종합 참고지표로만 활용하세요."
+    }
+  },
+  "error": null
+}
+```
+
+| HTTP | `error.code` | 설명 |
+|---|---|---|
+| 401 | `UNAUTHORIZED` | 미로그인 |
+| 500 | `INTERNAL_ERROR` | DB 조회 실패 |
+
+---
+
 ### DELETE `/api/scores/:id` *(미구현)*
 
 설명:
@@ -354,10 +396,11 @@ admission_type=정시|학생부교과
 
 ---
 
-### GET `/api/analysis/z-score`
+### GET `/api/analysis/z-score` *(스펙 초안; 구현은 `/api/scores/zscore`)*
 
 설명:
 - 특정 과목 Z점수 및 고교 수준 판별 결과 반환
+- **구현됨:** 내신 연동·대시보드 성적 탭은 [`GET /api/scores/zscore`](#get-apiscoreszscore)를 사용한다.
 - 권한: `Admin`, `Viewer` 허용
 
 Query Params:

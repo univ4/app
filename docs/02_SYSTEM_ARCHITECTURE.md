@@ -62,6 +62,7 @@
 | `calcSuneungMinimumProbability(...)` | 모의고사 분포 기반 수능최저 조건 충족 확률(%) (P1-13) |
 | `detectGibupGap(...)` | 생기부 항목별 공백·글자수 미달 탐지 (P1-14) |
 | `calcDDay(...)` | 기준일 대비 D-Day 정수 산출 (P1-12) |
+| `calcSchoolLevel(...)` | 과목별 Z 평균·밴드(상·중·하위권 참고) — P1-2 고교 내 상대 위치 참고, `GET /api/scores/zscore` |
 | `calcAdmissionTodos(...)` / `aggregateAdmissionTodosFromCalendarEvents(...)` | 입시 일정 유형·남은 일수 기준 역산 TO-DO 템플릿 (P1-12) |
 | `calcSuneungNapchiRisk(...)` | 수시 지원 조합 기준 정시 납치 리스크 등급 (P2-6) |
 | `scanAdmissionSignals(...)` *(가칭)* | 199개 대학·전형 배치 합격 신호등 산출 (P0-4 전체 스캔, P1-15 핵심) |
@@ -70,7 +71,7 @@
 | `evaluateJeonsiGroupPortfolio(...)` *(가칭)* | 가·나·다군 조합 리스크·패턴 (P2-10) |
 | `simulateScience2BonusImpact(...)` *(가칭)* | 과탐II 가산 시뮬 (P3-4) |
 
-이름은 구현 시 모듈 분할에 맞게 조정한다. 기존 함수(`calculateSuneungScore`, `calculateSusiGPA`, `calculateZScore`, `calculateAdmissionProbability`, `checkSuneungMinimum` 등)와 동일 원칙을 따른다.
+이름은 구현 시 모듈 분할에 맞게 조정한다. 기존 함수(`calculateSuneungScore`, `calculateSusiGPA`, `calculateZScore`, `calcSchoolLevel`, `calculateAdmissionProbability`, `checkSuneungMinimum` 등)와 동일 원칙을 따른다.
 
 **규칙 데이터**: 정시 환산 등은 data-collector 산출 `admission_db.json`( 및 동기화 테이블)에서 로드 — PRD v2 P0-2, [`docs/03_DB_SCHEMA.md`](./03_DB_SCHEMA.md) §PRD v2 연계.
 

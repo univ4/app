@@ -6,7 +6,7 @@
 통합 테스트 전략·기존 케이스는 [`docs/06_TEST_PLAN.md`](./06_TEST_PLAN.md)를 참조합니다.  
 본 문서는 Track 1 함수·`POST /api/chat`에 대한 **단위·라우트 테스트 스펙**을 정의한다(§2·3·8 등은 구현됨, §4·5·6·7 등은 예정).
 
-**실행 스냅샷 (2026-03-30):** `npm test` — **28** suites, **228** tests, FAIL 0. (`GET/POST /api/simulator`: `src/__tests__/api/simulator.route.test.ts`; `calcSubjectAdvantage` / `GET /api/subject-analysis`: `src/__tests__/calculators/calcSubjectAdvantage.test.ts`, `src/__tests__/api/subject-analysis.route.test.ts`; `calcPortfolioRisk` / `calcNapchiRisk`: `src/__tests__/calculators/calcPortfolioRisk.test.ts`, `calcNapchiRisk.test.ts`; `GET /api/signals`: `src/__tests__/api/signals.route.test.ts`; 생기부 `[id]`·출결 PUT: `src/__tests__/api/student-record-api.test.ts`; `calcAdmissionSignal`: `src/__tests__/calculators/calcAdmissionSignal.test.ts`; 캘린더·D-Day: `src/__tests__/calendar/calendarDday.integration.test.ts`; P1-12 `calcAdmissionTodos` / `GET /api/calendar/todos`: `src/__tests__/calculators/calcAdmissionTodos.test.ts`, `src/__tests__/api/calendar-todos.route.test.ts`)
+**실행 스냅샷 (2026-03-30):** `npm test` — **30** suites, **242** tests, FAIL 0. (`GET/POST /api/simulator`: `src/__tests__/api/simulator.route.test.ts`; `calcSubjectAdvantage` / `GET /api/subject-analysis`: `src/__tests__/calculators/calcSubjectAdvantage.test.ts`, `src/__tests__/api/subject-analysis.route.test.ts`; `calcPortfolioRisk` / `calcNapchiRisk`: `src/__tests__/calculators/calcPortfolioRisk.test.ts`, `calcNapchiRisk.test.ts`; `GET /api/signals`: `src/__tests__/api/signals.route.test.ts`; 생기부 `[id]`·출결 PUT: `src/__tests__/api/student-record-api.test.ts`; `calcAdmissionSignal`: `src/__tests__/calculators/calcAdmissionSignal.test.ts`; 캘린더·D-Day: `src/__tests__/calendar/calendarDday.integration.test.ts`; P1-12 `calcAdmissionTodos` / `GET /api/calendar/todos`: `src/__tests__/calculators/calcAdmissionTodos.test.ts`, `src/__tests__/api/calendar-todos.route.test.ts`; P1-2 `calcSchoolLevel` / `GET /api/scores/zscore`: `src/__tests__/calculators/calcSchoolLevel.test.ts`, `src/__tests__/api/scores-zscore.route.test.ts`)
 
 ---
 
@@ -77,6 +77,22 @@
 | AT-04 | 임의 유형, `dday` < 0 | 빈 배열 |
 
 **API**: `GET /api/calendar/todos` — `src/__tests__/api/calendar-todos.route.test.ts` (비인증 401, 인증 200·`data.todos` 배열)
+
+---
+
+## 3c. `calcSchoolLevel(...)` / `zScoreBandLabel` (P1-2)
+
+구현·테스트: `src/lib/calculators/calcSchoolLevel.ts`, `src/__tests__/calculators/calcSchoolLevel.test.ts`
+
+| ID | 시나리오 | 기대 |
+|---|---|---|
+| CSL-01 | 단일 과목, Z &gt; 0 | `subjectZScores` 1건, `avgZScore`·`levelLabel`이 `calculateZScore` 결과와 정합 |
+| CSL-02 | 단일 과목, Z &lt; 0 | `levelLabel`이 하위권 구간 |
+| CSL-03 | 동일 배열에 `stdDev === 0` 과목 + 유효 과목 | 0 표준편차 과목은 제외, 평균 Z는 유효 과목만으로 |
+| CSL-04 | `subjects: []` | `avgZScore === 0`, `levelLabel === "판별 불가"`, 빈 `subjectZScores` |
+| CSL-05 | `zScoreBandLabel` 경계 | Z=1.5 → 중위권, Z=1.51 → 상위권, Z=-0.01 → 하위권 |
+
+**API**: `GET /api/scores/zscore` — `src/__tests__/api/scores-zscore.route.test.ts` (비인증 401, 인증 200·빈 목록·필드 누락·DB 오류 500·`data` null·라벨 기본값)
 
 ---
 
