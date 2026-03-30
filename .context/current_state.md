@@ -52,6 +52,7 @@
 | `20260330240000_admission_records_nulsul_type.sql` | P1-3 `admission_records.admission_type`에 `논술전형` CHECK 허용 |
 | `20260330250000_student_record_chunks.sql` | 생기부 RAG `student_record_chunks` + HNSW + RLS + `match_student_record_chunks` |
 | `20260330260000_personal_statements.sql` | P1-6 `personal_statements` + RLS(본인·admin) |
+| `20260330270000_mock_interviews.sql` | P1-9 `mock_interviews` + RLS(본인·admin) |
 
 ### 대시보드 UI (발췌)
 
@@ -78,6 +79,7 @@
 - **`api/student-record/*`** (subject-notes, activities, awards, behavior, attendance, volunteer, reading, certificates, school-violence)
 - **`api/record-check/route.ts`** (P1-14, `GET` — `calcRecordGapAnalysis`)
 - **`api/personal-statement/route.ts`**, **`api/personal-statement/[id]/route.ts`**, **`api/personal-statement/feedback/route.ts`** (P1-6)
+- **`api/mock-interview/route.ts`**, **`api/mock-interview/questions/route.ts`**, **`api/mock-interview/feedback/route.ts`** (P1-9)
 
 ### Ingest (`scripts/ingest/`)
 

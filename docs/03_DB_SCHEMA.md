@@ -749,6 +749,22 @@ DDL: `supabase/migrations/20260329000002_admission_records.sql` (`20260329000001
 - **인덱스**: `(student_id)`
 - **RLS**: SELECT는 `auth.uid() = student_id` 또는 `students.role = 'admin'`인 사용자(전체 읽기). INSERT/UPDATE/DELETE는 `auth.uid() = student_id` 또는 admin.
 
+### 2.20 `mock_interviews` (P1-9 AI 모의 면접 코치) — `20260330270000_mock_interviews.sql`
+
+| 컬럼명 | 타입 | 제약 | 설명 |
+|---|---|---|---|
+| id | uuid | PK, default `gen_random_uuid()` | |
+| student_id | uuid | FK → `students(id)` ON DELETE CASCADE, not null | |
+| target_univ | text | not null | 목표 대학명 |
+| interview_type | text | not null, check `서류기반` \| `MMI` \| `교직인적성` | 면접 유형 |
+| question | text | not null | 질문 본문 |
+| answer | text | nullable | 답변 |
+| feedback | text | nullable | 피드백 |
+| created_at | timestamptz | not null, default now() | |
+
+- **인덱스**: `(student_id, created_at desc)`
+- **RLS**: SELECT/INSERT/UPDATE/DELETE는 `auth.uid() = student_id` 또는 `students.role = 'admin'`.
+
 ---
 
 ## 3) pgvector 설정 및 인덱스

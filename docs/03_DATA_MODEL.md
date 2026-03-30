@@ -170,6 +170,20 @@ NEIS 파싱 JSON 적재 스크립트 `scripts/ingest/load_neis_grades.ts`의 ups
 
 - **RLS**: SELECT는 본인 `student_id` 또는 admin 전체 조회. INSERT/UPDATE/DELETE는 본인 `student_id` 행 또는 admin.
 
+### `mock_interviews` (P1-9 AI 모의 면접 코치)
+
+마이그레이션 `supabase/migrations/20260330270000_mock_interviews.sql`. 목표 대학·면접 유형별 질문·답변·피드백 텍스트를 저장한다. DDL·RLS는 [`docs/03_DB_SCHEMA.md`](./03_DB_SCHEMA.md) §2.20.
+
+| 컬럼 | 요약 |
+|---|---|
+| `target_univ` | 목표 대학명(텍스트) |
+| `interview_type` | `서류기반` \| `MMI` \| `교직인적성` |
+| `question` | 면접 질문(또는 질문 블록) 본문 |
+| `answer` | 지원자 답변(선택) |
+| `feedback` | AI 피드백(선택) |
+
+- **RLS**: SELECT/INSERT/UPDATE/DELETE는 본인 `student_id` 또는 `students.role = 'admin'`.
+
 ---
 
 ## 5) 타입스크립트 타입 (참고)

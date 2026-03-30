@@ -263,6 +263,17 @@ export default async function DashboardPage() {
             </Card>
           </Link>
 
+          <Link href="/dashboard/mock-interview" className="block">
+            <Card>
+              <CardHeader>
+                <CardTitle>모의 면접</CardTitle>
+                <CardDescription>
+                  생기부·요강 기반 질문·답변 피드백 스트리밍 (P1-9)
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </Link>
+
           <Link href="/dashboard/record-check" className="block">
             <Card>
               <CardHeader>

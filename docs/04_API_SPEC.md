@@ -991,6 +991,43 @@ university=서강대
     `topics`는 스트리밍 완료 후 `###` 블록·`-` 항목 기준 파싱.
 - **오류**: 한도 초과 **429** `RATE_LIMIT`; `targetUniv` 누락·빈 문자열 등 검증 실패 **422** `VALIDATION_ERROR`; JSON 본문 없음 **400**; 그 외 **5xx** / **502** 업스트림.
 
+### POST `/api/mock-interview/questions` (P1-9 모의 면접 질문 생성)
+
+- **인증**: 필수. `try_consume_chat_quota`로 일일 호출 한도(`CHAT_DAILY_LIMIT`, 기본 50) 공유.
+- **Body (JSON)**:
+  - `studentId?` (UUID): 생략 시 본인. **Admin**만 다른 학생 UUID 지정 가능.
+  - `targetUniv` (string, 1–120자): **필수.** 목표 대학명(`guideline_chunks`와 정합).
+  - `interviewType` (string): **필수.** `서류기반` \| `MMI` \| `교직인적성`.
+- **처리**:
+  1. 대상 학생의 `student_record_chunks` **전체**를 `id` 오름차순으로 조회.
+  2. 청크 0건: SSE 안내 후 `done` (`finish_reason: no_context`).
+  3. OpenAI 임베딩 후 `match_guideline_chunks`(`filter`에 `univ_name`·`year: 2027`, `CHAT_SIMILARITY_THRESHOLD` 하한).
+  4. 전형계획 청크 0건: SSE 안내 후 `done` (`finish_reason: no_guidelines`).
+  5. 그 외: Claude Sonnet 스트리밍. 시스템 프롬프트에 [생활기록부]·[대학 전형 자료]·`interviewType`별 면접 질문 목록 형식(5개 이상, 생기부에 없는 내용 질문 금지).
+- **응답**: `Content-Type: text/event-stream` (SSE)
+  - `event: chunk` — `{ "text": "<델타>" }` 누적
+  - `event: done` — `{ "finish_reason": "stop" | "no_context" | "no_guidelines" }`
+- **오류**: 한도 초과 **429** `RATE_LIMIT`; `targetUniv`·`interviewType` 검증 실패 **422** `VALIDATION_ERROR`; JSON 본문 없음 **400**; 그 외 **5xx** / **502** 업스트림.
+
+### POST `/api/mock-interview/feedback` (P1-9 답변 피드백)
+
+- **인증**: 필수. `try_consume_chat_quota`로 일일 한도 공유.
+- **Body (JSON)**:
+  - `question` (string, 1–50000자): **필수.** 면접 질문 본문.
+  - `answer` (string, 최대 50000자): 답변(기본 빈 문자열).
+  - `targetUniv` (string, 1–120자): **필수.**
+- **처리**: Claude Sonnet 스트리밍. 피드백 형식: `## 강점` / `## 보완점` / `## 개선 제안`.
+- **응답**: SSE (`chunk` / `done` with `finish_reason: "stop"`).
+- **오류**: **422** `question` 누락 등; **429** 한도; **502** 업스트림.
+
+### GET/POST `/api/mock-interview` (P1-9 면접 기록)
+
+- **인증**: 필수.
+- **GET**: 본인 `mock_interviews` 목록(`created_at` 내림차순). 성공 `{ data: { items: MockInterviewRow[] }, error: null }`.
+- **POST Body**: `targetUniv`, `interviewType`(`서류기반`|`MMI`|`교직인적성`), `question`(필수), `answer?`, `feedback?` — camelCase 필드명은 서버 `zod` 스키마와 동일.
+- **POST 성공**: **201** `{ data: { item }, error: null }`.
+- **오류**: **422** 필수 필드 누락.
+
 ---
 
 ## 6. 데이터 적재 API (`/api/ingest`) - Admin 전용
@@ -1356,6 +1393,9 @@ calendar/[id]/route.ts                   # PUT, DELETE
 student-record/analyze/route.ts          # POST (P1-5 SSE)
 student-record/gap-analysis/route.ts     # POST (P1-4 SSE)
 research-topics/route.ts                 # POST (P1-8 SSE)
+mock-interview/route.ts                  # GET, POST (P1-9 기록)
+mock-interview/questions/route.ts        # POST (P1-9 SSE)
+mock-interview/feedback/route.ts         # POST (P1-9 SSE)
 personal-statement/route.ts              # GET, POST (P1-6)
 personal-statement/[id]/route.ts         # PUT (P1-6)
 personal-statement/feedback/route.ts     # POST (P1-6 SSE)
