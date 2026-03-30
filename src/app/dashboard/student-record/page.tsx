@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { PageHeader } from "@/components/common/PageHeader";
@@ -10,6 +11,8 @@ import {
 import { createClient } from "@/lib/supabase/server";
 
 import { StudentRecordPageClient } from "./StudentRecordPageClient";
+
+export const metadata: Metadata = { title: "생활기록부" };
 
 export default async function StudentRecordPage({
   searchParams,
@@ -43,6 +46,7 @@ export default async function StudentRecordPage({
               ? `대상 학생 ID: ${recordStudentId} (?student_id= 쿼리)`
               : "세특·창체·수상·출결 데이터를 입력하고 관리합니다."
           }
+          helpHref="/dashboard/help#student-record"
           rightSlot={
             role === "admin" && recordStudentId !== user.id ? (
               <Button asChild variant="ghost" className="hidden sm:inline-flex">

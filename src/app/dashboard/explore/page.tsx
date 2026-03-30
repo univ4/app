@@ -19,6 +19,7 @@ export default async function ExplorePage() {
         <PageHeader
           title="전국 대학 지원 가능 탐색기"
           description="/dashboard/explore — P1-15 · P1-16 (입결 스캔·조건부 필터)"
+          helpHref="/dashboard/help#analysis-tools"
         />
 
         <ExploreClient studentId={user.id} />

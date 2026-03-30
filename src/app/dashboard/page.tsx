@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 
@@ -12,6 +13,8 @@ import {
 import type { CalendarEventRow } from "@/lib/calendar/calendarApiTypes";
 import { calcDDay } from "@/lib/calculators/calcDDay";
 import { createClient } from "@/lib/supabase/server";
+
+export const metadata: Metadata = { title: "대시보드" };
 
 export default async function DashboardPage() {
   async function logout() {

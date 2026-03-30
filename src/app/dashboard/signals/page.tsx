@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { CalcBasis } from "@/components/common/CalcBasis";
@@ -7,6 +8,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/server";
 
 import { SignalsClient } from "./SignalsClient";
+
+export const metadata: Metadata = { title: "합격 가능성 신호등" };
 
 export default async function SignalsPage() {
   const supabase = await createClient();
@@ -35,6 +38,7 @@ export default async function SignalsPage() {
         <PageHeader
           title="합격 가능성 신호등"
           description="/dashboard/signals — P0-4 · P1-17 (Track 1 컷 대비 확률 %)"
+          helpHref="/dashboard/help#signals"
         />
         {dataUpdatedLabel ? (
           <p className="text-caption">데이터 기준: {dataUpdatedLabel}</p>

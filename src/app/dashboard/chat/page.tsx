@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { ChatInterface } from "@/components/chat/ChatInterface";
@@ -5,6 +6,8 @@ import { DisclaimerBanner } from "@/components/common/DisclaimerBanner";
 import { PageHeader } from "@/components/common/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/server";
+
+export const metadata: Metadata = { title: "AI 요강 챗봇" };
 
 export default async function DashboardChatPage() {
   const supabase = await createClient();
@@ -21,6 +24,7 @@ export default async function DashboardChatPage() {
           <PageHeader
             title="AI 요강 챗봇"
             description="/dashboard/chat — P1-1 · 전형계획·정시 청크 RAG (`guideline_chunks`)"
+            helpHref="/dashboard/help#chatbot"
           />
         </div>
 

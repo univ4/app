@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { CalendarPageClient } from "@/components/calendar/CalendarPageClient";
@@ -5,6 +6,8 @@ import { PageHeader } from "@/components/common/PageHeader";
 import type { CalendarEventRow } from "@/lib/calendar/calendarApiTypes";
 import { aggregateAdmissionTodosFromCalendarEvents } from "@/lib/calculators/calcAdmissionTodos";
 import { createClient } from "@/lib/supabase/server";
+
+export const metadata: Metadata = { title: "입시 캘린더" };
 
 export default async function DashboardCalendarPage() {
   const supabase = await createClient();
@@ -45,6 +48,7 @@ export default async function DashboardCalendarPage() {
         <PageHeader
           title="입시 D-Day 캘린더"
           description="/dashboard/calendar — P0-5 · 2027학년도 기본 일정 및 가족 공유"
+          helpHref="/dashboard/help#calendar"
         />
 
         <CalendarPageClient

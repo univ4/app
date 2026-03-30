@@ -1,6 +1,9 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 
 import { LoginForm } from "./login-form";
+
+export const metadata: Metadata = { title: "로그인" };
 
 function LoginFallback() {
   return (

@@ -1,9 +1,12 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { PageHeader } from "@/components/common/PageHeader";
 import { createClient } from "@/lib/supabase/server";
 
 import { SimulatorClient } from "./SimulatorClient";
+
+export const metadata: Metadata = { title: "원서 배분 시뮬레이터" };
 
 export default async function SimulatorPage() {
   const supabase = await createClient();
@@ -19,6 +22,7 @@ export default async function SimulatorPage() {
         <PageHeader
           title="원서 배분 시뮬레이터"
           description="/dashboard/simulator — P1-7 · 매뉴얼 §9 (6장·신호등·납치 리스크)"
+          helpHref="/dashboard/help#susi-strategy"
         />
 
         <SimulatorClient studentId={user.id} />

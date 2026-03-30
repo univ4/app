@@ -245,6 +245,7 @@ export default function ScoresPage() {
       <PageHeader
         title="성적 관리"
         description="/dashboard/scores — 모의고사·내신 입력, Z점수, 나이스 이미지 파싱"
+        helpHref="/dashboard/help#scores"
       />
       <ScoreTrendChart records={mockTrendRecords} />
 

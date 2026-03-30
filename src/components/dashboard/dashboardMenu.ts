@@ -25,6 +25,7 @@ import {
   Search,
   TrendingUp,
   ChevronRight,
+  HelpCircle,
 } from "lucide-react";
 
 export type DashboardLinkItem = {
@@ -117,6 +118,10 @@ export const DASHBOARD_MORE_SECTIONS: DashboardMenuSection[] = [
       { href: "/dashboard/grade-simulator", label: "성적 예측 시뮬레이터", icon: Activity },
       { href: "/dashboard/scores", label: "나이스 이미지 파싱", icon: ScanLine },
     ],
+  },
+  {
+    title: "도움말",
+    items: [{ href: "/dashboard/help", label: "도움말", icon: HelpCircle }],
   },
 ];
 

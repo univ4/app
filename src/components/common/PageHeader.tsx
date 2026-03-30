@@ -1,4 +1,4 @@
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, HelpCircle } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
@@ -9,6 +9,7 @@ type PageHeaderProps = {
   description?: string;
   backHref?: string;
   backLabel?: string;
+  helpHref?: string;
   rightSlot?: ReactNode;
 };
 
@@ -17,6 +18,7 @@ export function PageHeader({
   description,
   backHref = "/dashboard",
   backLabel = "대시보드",
+  helpHref,
   rightSlot,
 }: PageHeaderProps) {
   return (
@@ -32,6 +34,13 @@ export function PageHeader({
             {backLabel}
           </Link>
         </Button>
+        {helpHref ? (
+          <Button asChild variant="ghost" size="icon" aria-label="도움말 열기">
+            <Link href={helpHref}>
+              <HelpCircle className="size-4" aria-hidden />
+            </Link>
+          </Button>
+        ) : null}
         {rightSlot}
       </div>
     </div>
