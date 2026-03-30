@@ -1,5 +1,5 @@
 /**
- * admission_records, guideline_chunks, student_record_chunks 검증을 순서대로 실행하고
+ * admission_records, cutoff/signal 정확도, guideline_chunks, student_record_chunks 검증을 순서대로 실행하고
  * 오류 건수를 합산한다. 오류 > 0이면 exit code 1.
  *
  * 실행:
@@ -11,7 +11,9 @@
 
 import { createServiceClient } from "./_shared.js";
 import { validateAdmissionRecords } from "./validate_admission_records.js";
+import { validateCutoffAccuracy } from "./validate_cutoff_accuracy.js";
 import { validateGuidelineChunks } from "./validate_guideline_chunks.js";
+import { validateSignalAccuracy } from "./validate_signal_accuracy.js";
 import { validateStudentRecordChunks } from "./validate_student_record_chunks.js";
 
 async function main(): Promise<void> {
@@ -24,6 +26,18 @@ async function main(): Promise<void> {
   for (const line of r1.lines) console.log(line);
   totalErrors += r1.errorCount;
   totalWarns += r1.warnCount;
+  console.log("");
+
+  const rCutoff = await validateCutoffAccuracy(supabase);
+  for (const line of rCutoff.lines) console.log(line);
+  totalErrors += rCutoff.errorCount;
+  totalWarns += rCutoff.warnCount;
+  console.log("");
+
+  const rSignal = validateSignalAccuracy();
+  for (const line of rSignal.lines) console.log(line);
+  totalErrors += rSignal.errorCount;
+  totalWarns += rSignal.warnCount;
   console.log("");
 
   const r2 = await validateGuidelineChunks(supabase);
