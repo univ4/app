@@ -126,6 +126,17 @@ export default async function DashboardPage() {
             </Card>
           </Link>
 
+          <Link href="/dashboard/gachaejeom" className="block">
+            <Card>
+              <CardHeader>
+                <CardTitle>수능 가채점 계산기</CardTitle>
+                <CardDescription>
+                  원점수 추정 표준점수·18개 대학 정시 환산·신호등 (P1-10)
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </Link>
+
           <Link href="/dashboard/signals" className="block">
             <Card>
               <CardHeader>

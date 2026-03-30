@@ -6,7 +6,7 @@
 통합 테스트 전략·기존 케이스는 [`docs/06_TEST_PLAN.md`](./06_TEST_PLAN.md)를 참조합니다.  
 본 문서는 Track 1 함수·`POST /api/chat`에 대한 **단위·라우트 테스트 스펙**을 정의한다(§2·3·8 등은 구현됨, §4·5·6·7 등은 예정).
 
-**실행 스냅샷 (2026-03-30):** `npm test` — **32** suites, **250** tests, FAIL 0. (추가: P1-3 `calcRealCompetitionRate` / `GET /api/nulsul`: `src/__tests__/calculators/calcRealCompetitionRate.test.ts`, `src/__tests__/api/nulsul.route.test.ts`; `GET/POST /api/simulator`: `src/__tests__/api/simulator.route.test.ts`; `calcSubjectAdvantage` / `GET /api/subject-analysis`: `src/__tests__/calculators/calcSubjectAdvantage.test.ts`, `src/__tests__/api/subject-analysis.route.test.ts`; `calcPortfolioRisk` / `calcNapchiRisk`: `src/__tests__/calculators/calcPortfolioRisk.test.ts`, `calcNapchiRisk.test.ts`; `GET /api/signals`: `src/__tests__/api/signals.route.test.ts`; 생기부 `[id]`·출결 PUT: `src/__tests__/api/student-record-api.test.ts`; `calcAdmissionSignal`: `src/__tests__/calculators/calcAdmissionSignal.test.ts`; 캘린더·D-Day: `src/__tests__/calendar/calendarDday.integration.test.ts`; P1-12 `calcAdmissionTodos` / `GET /api/calendar/todos`: `src/__tests__/calculators/calcAdmissionTodos.test.ts`, `src/__tests__/api/calendar-todos.route.test.ts`; P1-2 `calcSchoolLevel` / `GET /api/scores/zscore`: `src/__tests__/calculators/calcSchoolLevel.test.ts`, `src/__tests__/api/scores-zscore.route.test.ts`)
+**실행 스냅샷 (2026-03-30):** `npm test` — **34** suites, **262** tests, FAIL 0. (추가: P1-10 `calcGachaejeomScore` / `POST /api/gachaejeom`: `src/__tests__/calculators/calcGachaejeomScore.test.ts`, `src/__tests__/api/gachaejeom.route.test.ts`; P1-3 `calcRealCompetitionRate` / `GET /api/nulsul`: `src/__tests__/calculators/calcRealCompetitionRate.test.ts`, `src/__tests__/api/nulsul.route.test.ts`; `GET/POST /api/simulator`: `src/__tests__/api/simulator.route.test.ts`; `calcSubjectAdvantage` / `GET /api/subject-analysis`: `src/__tests__/calculators/calcSubjectAdvantage.test.ts`, `src/__tests__/api/subject-analysis.route.test.ts`; `calcPortfolioRisk` / `calcNapchiRisk`: `src/__tests__/calculators/calcPortfolioRisk.test.ts`, `calcNapchiRisk.test.ts`; `GET /api/signals`: `src/__tests__/api/signals.route.test.ts`; 생기부 `[id]`·출결 PUT: `src/__tests__/api/student-record-api.test.ts`; `calcAdmissionSignal`: `src/__tests__/calculators/calcAdmissionSignal.test.ts`; 캘린더·D-Day: `src/__tests__/calendar/calendarDday.integration.test.ts`; P1-12 `calcAdmissionTodos` / `GET /api/calendar/todos`: `src/__tests__/calculators/calcAdmissionTodos.test.ts`, `src/__tests__/api/calendar-todos.route.test.ts`; P1-2 `calcSchoolLevel` / `GET /api/scores/zscore`: `src/__tests__/calculators/calcSchoolLevel.test.ts`, `src/__tests__/api/scores-zscore.route.test.ts`)
 
 ---
 
@@ -110,6 +110,22 @@
 | RCR-06 | 음수 명목·충족률/결시율 범위 밖·NaN | `ValidationError` throw |
 
 **API**: `GET /api/nulsul` — `src/__tests__/api/nulsul.route.test.ts` (비인증 401, 인증 200·`data.items`·`meta`)
+
+---
+
+## 3e. `calcGachaejeomScore(...)` / `POST /api/gachaejeom` (P1-10)
+
+구현·테스트: `src/lib/calculators/calcGachaejeomScore.ts`, `src/__tests__/calculators/calcGachaejeomScore.test.ts`, `src/app/api/gachaejeom/route.ts`, `src/__tests__/api/gachaejeom.route.test.ts`
+
+| ID | 시나리오 | 기대 |
+|---|---|---|
+| GC-01 | 분포 중심 원점수(국·수·탐 평균) | 추정 표준점수 약 100, 백분위 약 50 |
+| GC-02 | 만점 원점수 | 국·수는 표준점수 180 클램프; 탐구는 z=2.5 수준으로 150 근처 |
+| GC-03 | 최저 원점수 | 탐구는 표준점수 하한 20 클램프; 국·수 0점은 분포상 20 초과 가능 |
+| GC-04 | 정상 완료 | `warning`에 가채점 안내 문구 포함 |
+| GC-05 | 빈 과목명·영어 등급 범위 밖 | `ValidationError` |
+
+**API**: `POST /api/gachaejeom` — 비인증 401; 인증·모킹 DB 시 `estimatedScores`·`univResults`·`warning` 반환 (`src/__tests__/api/gachaejeom.route.test.ts`).
 
 ---
 

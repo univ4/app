@@ -273,6 +273,34 @@ medShift=0|1       (optional, 1이면 행별 med_shift_coeff를 컷에 가산)
 
 ---
 
+### POST `/api/gachaejeom` — P1-10 수능 가채점 환산
+
+설명:
+
+- 가채점 **원점수** 입력 → Track 1 `calcGachaejeomScore`로 **추정 표준점수·백분위**(근사) 산출.
+- 동일 추정 표준점수 + 영어 등급으로 `calculateSuneungScore`를 적용해 **요강 18개 대학**(`BROCHURE_EIGHTEEN_UNIVERSITY_NAMES`)·`major_group = 자연계열`·`university_scoring_rules` 기준 **환산점수**를 계산한다.
+- `admission_records`에서 해당 연도·`정시`·컷이 있는 행을 대학별 1건(먼저 적재된 `id` 우선)으로 매칭해 `calcAdmissionSignal`로 **신호등**을 붙인다.
+- 탐구2 과목명에 `Ⅱ`가 포함되면 `parseSci2IsTypeTwo`와 동일하게 과탐Ⅱ 가산 반영.
+- 권한: 로그인 사용자만 (`401`). 영어 등급이 **모든** 반환 대상 규칙 행의 `english_conversion_table`에 없으면 `422` (시드 기준 1~5등급).
+
+JSON Body (필수 필드):
+
+| 필드 | 형식 |
+|---|---|
+| `korean` | `{ rawScore: number, subject: string }` |
+| `math` | `{ rawScore: number, subject: string }` |
+| `english` | `{ grade: number }` (정수 1~9) |
+| `science1` | `{ rawScore: number, subjectName: string }` |
+| `science2` | `{ rawScore: number, subjectName: string }` |
+| `admissionYear` | (optional) 2020–2035, 기본 2026 |
+| `medShift` | (optional) `true` 시 `med_shift_coeff` 컷 가산 |
+
+성공: `{ data: { estimatedScores, warning, univResults[], meta }, error: null }` — `univResults` 항목: `university_name`, `major_group`, `admission_name`, `cutoff`, `adjusted_cutoff`, `converted_score`, `signal`, `probability_percent`, `gap`, `med_shift_applied`.
+
+구현 경로: `src/app/api/gachaejeom/route.ts`, `src/lib/calculators/calcGachaejeomScore.ts`, `src/lib/gachaejeom/*`.
+
+---
+
 ### GET `/api/explore` — P1-15 전국 탐색기 · P1-16 조건부 필터
 
 설명:
@@ -1199,6 +1227,7 @@ Query (optional): `year=2027`
 ```txt
 scores/route.ts                          # GET, POST
 signals/route.ts                         # GET
+gachaejeom/route.ts                      # POST (P1-10)
 simulator/route.ts                       # GET, POST (P1-7)
 analysis/probability/route.ts            # GET
 analysis/minimum-check/route.ts          # GET
