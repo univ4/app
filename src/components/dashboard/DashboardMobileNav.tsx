@@ -18,6 +18,7 @@ const MORE = [
   { href: "/dashboard/scores", label: "성적 입력" },
   { href: "/dashboard/student-record", label: "생활기록부" },
   { href: "/dashboard/analysis", label: "합격 가능성" },
+  { href: "/dashboard/subject-analysis", label: "선택과목 분석" },
 ] as const;
 
 export function DashboardMobileNav() {

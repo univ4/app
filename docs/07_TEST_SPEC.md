@@ -6,7 +6,7 @@
 통합 테스트 전략·기존 케이스는 [`docs/06_TEST_PLAN.md`](./06_TEST_PLAN.md)를 참조합니다.  
 본 문서는 Track 1 함수·`POST /api/chat`에 대한 **단위·라우트 테스트 스펙**을 정의한다(§2·3·8 등은 구현됨, §4·5·6·7 등은 예정).
 
-**실행 스냅샷 (2026-03-30):** `npm test` — **22** suites, **201** tests, FAIL 0. (`GET/POST /api/simulator`: `src/__tests__/api/simulator.route.test.ts`; `calcPortfolioRisk` / `calcNapchiRisk`: `src/__tests__/calculators/calcPortfolioRisk.test.ts`, `calcNapchiRisk.test.ts`; `GET /api/signals`: `src/__tests__/api/signals.route.test.ts`; 생기부 `[id]`·출결 PUT: `src/__tests__/api/student-record-api.test.ts`; `calcAdmissionSignal`: `src/__tests__/calculators/calcAdmissionSignal.test.ts`; 캘린더·D-Day: `src/__tests__/calendar/calendarDday.integration.test.ts`)
+**실행 스냅샷 (2026-03-30):** `npm test` — **24** suites, **210** tests, FAIL 0. (`GET/POST /api/simulator`: `src/__tests__/api/simulator.route.test.ts`; `calcSubjectAdvantage` / `GET /api/subject-analysis`: `src/__tests__/calculators/calcSubjectAdvantage.test.ts`, `src/__tests__/api/subject-analysis.route.test.ts`; `calcPortfolioRisk` / `calcNapchiRisk`: `src/__tests__/calculators/calcPortfolioRisk.test.ts`, `calcNapchiRisk.test.ts`; `GET /api/signals`: `src/__tests__/api/signals.route.test.ts`; 생기부 `[id]`·출결 PUT: `src/__tests__/api/student-record-api.test.ts`; `calcAdmissionSignal`: `src/__tests__/calculators/calcAdmissionSignal.test.ts`; 캘린더·D-Day: `src/__tests__/calendar/calendarDday.integration.test.ts`)
 
 ---
 
@@ -17,6 +17,22 @@
 | SE-01 | `required_math`에 `미적분`만 허용인 대학에 학생이 `확률과통계` 선택 | `eligible === false`, `warnings`에 수학 조건 불충족 메시지 |
 
 구현·보강 파일: `src/__tests__/calculators/checkSubjectEligibility.test.ts`
+
+---
+
+## 1b. `calcSubjectAdvantage(params)` (P1-11)
+
+구현·테스트: `src/lib/calculators/calcSubjectAdvantage.ts`, `src/__tests__/calculators/calcSubjectAdvantage.test.ts`
+
+| ID | 시나리오 | 기대 |
+|---|---|---|
+| CSA-01 | 확통 + 목표 3교 수학 비율 상이 | 낮은 비율 대학이 `advantageUnivs`, 높은 비율이 `disadvantageUnivs` |
+| CSA-02 | 미적분 + 동일 규칙 집합 | 높은 비율 대학이 유리, 낮은 비율이 불리 |
+| CSA-03 | 탐구 2과목 + 일부 대학만 `science_2_bonus`>0 | 해당 대학이 유리 목록에 포함 |
+| CSA-04 | `ineligibleUniversityNames`에 포함된 목표 교 | 유불리 세 집합 어디에도 나오지 않음 |
+| CSA-05 | `scoringRules`가 목표와 맞지 않음 | 빈 목록 + 안내 `summary` |
+
+**API**: `GET /api/subject-analysis` — `src/__tests__/api/subject-analysis.route.test.ts` (비인증 401, 무프로필 200)
 
 ---
 

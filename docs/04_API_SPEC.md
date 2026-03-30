@@ -805,7 +805,31 @@ university=서강대
 
 공통: 세션 필수. `studentId` 경로는 **본인(`auth.uid()`)과 일치할 때만** 허용; 아니면 `FORBIDDEN`.
 
-### POST `/api/subject-profile`
+### GET `/api/subject-analysis` *(구현)*
+
+설명: 로그인 학생의 `subject_profiles`(2027) + `students.target_universities` + `univ_subject_requirements` + `university_scoring_rules`(자연계열, 연도 최신)로 지원 가능 집계 및 Track1 `calcSubjectAdvantage` 유불리 요약.
+
+성공 응답 `data`:
+
+- `profile`: 저장된 프로필 필드(없으면 `null`)
+- `eligibility`: `eligibleUniversityCount`, `totalReferenceUniversities`(199), `universitiesWithRequirementData`, `ineligible[]` (학과별 `reasons`)
+- `advantage`: `advantageUnivs`, `disadvantageUnivs`, `neutralUnivs`, `summary`
+
+**Track 1**: `checkSubjectEligibility`, `calcSubjectAdvantage` (`src/lib/calculators/calcSubjectAdvantage.ts`)
+
+---
+
+### POST `/api/subject-analysis/profile` *(구현)*
+
+설명: 선택과목 프로필 upsert(`student_id`+`year=2027` 유니크). 본문에 `year` 필드 없음(서버에서 2027 고정).
+
+요청 Body 필드: `korean_subject`, `math_subject`, `science1`, `science2`, `social1`, `social2`, `second_foreign`(nullable·선택).
+
+성공 응답: `{ data: { id, student_id, year, updated_at }, error: null }`
+
+---
+
+### POST `/api/subject-profile` *(스펙 예정 경로 — 앱 구현은 `POST /api/subject-analysis/profile`)*
 
 설명: 선택과목 프로필 저장(upsert: `student_id`+`year` 유니크).
 

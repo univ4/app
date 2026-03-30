@@ -21,9 +21,9 @@
 
 ## 완료된 핵심 산출물
 
-### Calculators (12개, `src/lib/calculators/`)
+### Calculators (13개, `src/lib/calculators/`)
 
-- `analyzeSubjectAdvantage.ts`, `calculateAdmissionProbability.ts`, `calculateSuneungScore.ts`, `calculateSusiGPA.ts`, `calculateZScore.ts`
+- `analyzeSubjectAdvantage.ts`, **`calcSubjectAdvantage.ts`** (P1-11 정시 반영비 유불리), `calculateAdmissionProbability.ts`, `calculateSuneungScore.ts`, `calculateSusiGPA.ts`, `calculateZScore.ts`
 - `checkSubjectEligibility.ts`, `checkSuneungMinimum.ts`
 - `calcDDay.ts`, `calcSuneungMinimumProbability.ts`, **`calcAdmissionSignal.ts`** (P0-4 / P1-17 대표 확률)
 - **`calcPortfolioRisk.ts`**, **`calcNapchiRisk.ts`** (P1-7 원서 배분 시뮬레이터)
@@ -51,6 +51,7 @@
 
 - **P1-1** `src/app/dashboard/chat/page.tsx` — AI 요강 챗봇(`ChatInterface`, `ChatMessage`, `UnivFilter`; `POST /api/chat` SSE)
 - **P1-7** `src/app/dashboard/simulator/page.tsx` — 원서 배분 시뮬레이터(`PortfolioBuilder`, `PortfolioSummary`; `GET/POST /api/simulator`)
+- **P1-11** `src/app/dashboard/subject-analysis/page.tsx` — 선택과목 분석(`SubjectProfileForm`, `EligibilityResult`, `AdvantageResult`; `GET /api/subject-analysis`, `POST /api/subject-analysis/profile`)
 
 ### API routes (`src/app/api/**/route.ts`)
 
@@ -58,6 +59,7 @@
 - `api/analysis/probability/route.ts`, `api/analysis/minimum-check/route.ts`
 - `api/chat/route.ts`
 - **`api/signals/route.ts`**
+- **`api/subject-analysis/route.ts`**, **`api/subject-analysis/profile/route.ts`** (P1-11)
 - **`api/simulator/route.ts`** (P1-7)
 - **`api/calendar/route.ts`, `api/calendar/[id]/route.ts`**
 - **`api/student-record/*`** (subject-notes, activities, awards, behavior, attendance, volunteer, reading, certificates, school-violence)
@@ -72,7 +74,7 @@
 
 ### 테스트 (`src/__tests__/`)
 
-- Calculators × 12, API routes × 5+, lib/chat × 1, calendar 통합 × 1 — **22 suites**
+- Calculators × 13, API routes × 6+, lib/chat × 1, calendar 통합 × 1 — **24+ suites** (스냅샷은 `npm test` 기준)
 
 ## 데이터 적재 스냅샷 (검증 배치)
 

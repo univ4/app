@@ -129,6 +129,17 @@ export default async function DashboardPage() {
             </Card>
           </Link>
 
+          <Link href="/dashboard/subject-analysis" className="block">
+            <Card>
+              <CardHeader>
+                <CardTitle>선택과목 분석</CardTitle>
+                <CardDescription>
+                  수능 선택과목·지원 가능 필터·정시 반영비 유불리
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </Link>
+
           <Link href="/dashboard/signals" className="block">
             <Card>
               <CardHeader>

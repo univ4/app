@@ -13,7 +13,7 @@ Product baseline: `docs/01_PRD_v2.md`, roadmap: `docs/05_ROADMAP.md`.
   - Location: `src/lib/calculators/`
   - Must be pure TypeScript functions (input -> output).
   - No DB/API side effects, no LLM-based numeric calculation.
-  - Include (extend as implemented): `calculateSuneungScore`, `calculateSusiGPA`, `calculateZScore`, `calculateAdmissionProbability`, `checkSuneungMinimum`, `checkSubjectEligibility`, `analyzeSubjectAdvantage`, `calcSuneungMinimumProbability`, `calcAdmissionSignal` (P0-4 / P1-17 대표 확률), `calcPortfolioRisk`, `calcNapchiRisk` (P1-7 원서 시뮬레이터), `detectGibupGap`, `calcDDay`, `calcSuneungNapchiRisk`, and PRD v2 additions as named in `docs/02_SYSTEM_ARCHITECTURE.md` §2 (e.g. admission scan / explorer filters — final names TBD).
+  - Include (extend as implemented): `calculateSuneungScore`, `calculateSusiGPA`, `calculateZScore`, `calculateAdmissionProbability`, `checkSuneungMinimum`, `checkSubjectEligibility`, `analyzeSubjectAdvantage`, `calcSubjectAdvantage` (P1-11 정시 반영비 유불리), `calcSuneungMinimumProbability`, `calcAdmissionSignal` (P0-4 / P1-17 대표 확률), `calcPortfolioRisk`, `calcNapchiRisk` (P1-7 원서 시뮬레이터), `detectGibupGap`, `calcDDay`, `calcSuneungNapchiRisk`, and PRD v2 additions as named in `docs/02_SYSTEM_ARCHITECTURE.md` §2 (e.g. admission scan / explorer filters — final names TBD).
 - Track 2: RAG/LLM intelligence engine
   - Location: `src/app/api/chat/`
   - Uses retrieval + Claude; when numeric logic is required, call Track 1 functions as tools.
