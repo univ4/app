@@ -10,6 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import type { CalendarEventRow } from "@/lib/calendar/calendarApiTypes";
 import { aggregateAdmissionTodosFromCalendarEvents } from "@/lib/calculators/calcAdmissionTodos";
 import { loadRecordGapAnalysisForStudent } from "@/lib/record-check/recordGapFromDb";
@@ -325,6 +326,22 @@ export default async function DashboardPage() {
                 <CardDescription>
                   생기부·요강 기반 질문·답변 피드백 스트리밍 (P1-9)
                 </CardDescription>
+              </CardHeader>
+            </Card>
+          </Link>
+
+          <Link href="/dashboard/exam-analysis" className="block">
+            <Card>
+              <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0">
+                <div className="min-w-0">
+                  <CardTitle>기출 분석</CardTitle>
+                  <CardDescription>
+                    논술·면접 기출 유사 검색·출처 표시 (P2-4)
+                  </CardDescription>
+                </div>
+                <Badge variant="secondary" className="shrink-0">
+                  준비 중
+                </Badge>
               </CardHeader>
             </Card>
           </Link>

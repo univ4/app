@@ -1587,6 +1587,38 @@ Query (optional): `year=2027`
 
 ---
 
+### GET `/api/exam-analysis` *(구현, P2-4)*
+
+설명: `exam_chunks` 적재 현황 메타·필터 옵션(대학·연도 목록). 인증 필수.
+
+성공 응답 `data`:
+
+- `items`: 예약(현재 빈 배열 `[]`)
+- `meta`: `total`(청크 건수), `univCount`(서로 다른 `univ_name` 수)
+- `filterOptions`: `univNames`, `years`(내림차순 정렬)
+
+에러: `UNAUTHORIZED`(401), `INTERNAL_ERROR`(500).
+
+---
+
+### POST `/api/exam-analysis` *(구현, P2-4)*
+
+설명: 질문 문장을 임베딩한 뒤 `match_exam_chunks` RPC로 유사 기출 청크 검색. `exam_chunks`가 0건이면 `matches: []`를 반환(임베딩 호출 없음).
+
+요청 Body:
+
+- `query` (string, 필수)
+- `examType`: `논술` | `면접`
+- `univName` (optional)
+- `year` (optional, 정수)
+- `matchCount`, `matchThreshold` (optional)
+
+성공 응답: `data.matches[]` — `chunkText`, `similarity`, `univName`, `year`, `examType`, `deptName`, `metadata`
+
+에러: `UNAUTHORIZED`(401), `VALIDATION_ERROR`(422), `INTERNAL_ERROR`(500).
+
+---
+
 ## 8. PRD v2 확장 API (예정 · 경로 가칭)
 
 스키마·Track 1 확정 후 본 절을 구체 요청/응답 스키마로 대체한다.
@@ -1597,6 +1629,7 @@ Query (optional): `year=2027`
 | P1-15 | 전국 탐색기(전형·지역·신호등) | `GET /api/explore` |
 | P1-16 | 조건부 필터(수능최저·면접 AND) | `GET /api/explore` (`suneungMin`, `noInterview`) |
 | P2-9 | 입결 추이 지표 | `GET /api/trend-analysis` (구현됨) |
+| P2-4 | 논술·면접 기출 RAG | `GET/POST /api/exam-analysis` (구현됨, 데이터 없을 때 안내 UI) |
 | P2-10 | 정시 군별 조합·패턴 | `POST /api/jeongsi-gun` (구현됨) |
 | P3-4 | 과탐 가산 시뮬 | `POST /api/analysis/science2-bonus` 등 |
 
@@ -1630,6 +1663,7 @@ research-topics/route.ts                 # POST (P1-8 SSE)
 mock-interview/route.ts                  # GET, POST (P1-9 기록)
 mock-interview/questions/route.ts        # POST (P1-9 SSE)
 mock-interview/feedback/route.ts         # POST (P1-9 SSE)
+exam-analysis/route.ts                   # GET, POST (P2-4 기출 RAG)
 personal-statement/route.ts              # GET, POST (P1-6)
 personal-statement/[id]/route.ts         # PUT (P1-6)
 personal-statement/feedback/route.ts     # POST (P1-6 SSE)

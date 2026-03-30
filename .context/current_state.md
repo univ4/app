@@ -10,7 +10,7 @@
 ## Cursor rules (요약)
 
 - `00_project_overview.mdc`: 수험생·학부모 AI 대입 전략 플랫폼; Data coverage(199 / 18); Out of Scope는 PRD v2 5.2와 동일.
-- `02_architecture.mdc`: Two-Track, `admission_records`·data-collector, ingest, 핵심 테이블 목록(`guideline_chunks`, **`student_record_chunks`**, `calendar_events`, `simulator_portfolios`, 생활기록부 구조화 테이블 포함), Track 1에 `calcSchoolLevel`(P1-2)·`calcAdmissionSignal`·`calcAdmissionTrend`(P2-9)·`calcPortfolioRisk`·`calcNapchiRisk`·`calcRecordGapAnalysis`/`detectGibupGap`(P1-14)·`calcAdmissionTodos`(P1-12)·`calcRealCompetitionRate`(P1-3) 명시.
+- `02_architecture.mdc`: Two-Track, `admission_records`·data-collector, ingest, 핵심 테이블 목록(`guideline_chunks`, **`student_record_chunks`**, **`exam_chunks`**(P2-4, `match_exam_chunks`·`embed_exam_chunks.ts`), `calendar_events`, `simulator_portfolios`, 생활기록부 구조화 테이블 포함), Track 1에 `calcSchoolLevel`(P1-2)·`calcAdmissionSignal`·`calcAdmissionTrend`(P2-9)·`calcPortfolioRisk`·`calcNapchiRisk`·`calcRecordGapAnalysis`/`detectGibupGap`(P1-14)·`calcAdmissionTodos`(P1-12)·`calcRealCompetitionRate`(P1-3) 명시.
 - `04_domain_knowledge.mdc`: Target University Universe(199·18·P1-15·P0-4).
 - `05_change_protocol.mdc`: 문서 선행·연쇄 갱신(마이그레이션 시 `03_DATA_MODEL`+`03_DB_SCHEMA`+`current_state`); **마이그레이션과 `03_DATA_MODEL.md` 동시 커밋·커밋 메시지에 `docs: 03_DATA_MODEL.md 업데이트`**(CI 문서 싱크); 계산기/API 체크리스트; calculators **≥90%**·신규 API 구문 **≥70%**·`[id]` PUT/DELETE 성공 테스트 1건 이상; **완료 전 로컬 CI**: `tsc --noEmit` → `lint` → `npm test` → `build`; API route 테스트는 `NextRequest`(`next/server`)·`new Request()` 금지; 완료 보고에 커버리지·미커버 구간; **<90% calculators / <50% 신규 API** 시 완료 불가 또는 최소 테스트 추가; Supabase 모킹은 `jest.mock("@/lib/supabase/server")`+`getAuthUser` (`scores.route.test.ts` 표준).
 
@@ -54,10 +54,12 @@
 | `20260330250000_student_record_chunks.sql` | 생기부 RAG `student_record_chunks` + HNSW + RLS + `match_student_record_chunks` |
 | `20260330260000_personal_statements.sql` | P1-6 `personal_statements` + RLS(본인·admin) |
 | `20260330270000_mock_interviews.sql` | P1-9 `mock_interviews` + RLS(본인·admin) |
+| `20260330280000_exam_chunks.sql` | P2-4 `exam_chunks` + HNSW + RLS(authenticated 읽기·admin 쓰기) + `match_exam_chunks` |
 
 ### 대시보드 UI (발췌)
 
 - **P1-1** `src/app/dashboard/chat/page.tsx` — AI 요강 챗봇(`ChatInterface`, `ChatMessage`, `UnivFilter`; `POST /api/chat` SSE)
+- **P2-4** `src/app/dashboard/exam-analysis/page.tsx` — 논술·면접 기출 분석(`ExamAnalysisView`; `GET/POST /api/exam-analysis`, 데이터 없을 때 안내 카드)
 - **P1-7** `src/app/dashboard/simulator/page.tsx` — 원서 배분 시뮬레이터(`PortfolioBuilder`, `PortfolioSummary`; `GET/POST /api/simulator`)
 - **P1-11** `src/app/dashboard/subject-analysis/page.tsx` — 선택과목 분석(`SubjectProfileForm`, `EligibilityResult`, `AdvantageResult`; `GET /api/subject-analysis`, `POST /api/subject-analysis/profile`)
 - **P2-9** `src/app/dashboard/trend-analysis/page.tsx` — 입결 추이 분석(`TrendAnalysisClient`, `TrendChart`, `TrendFilter`; `GET /api/trend-analysis`)
@@ -72,6 +74,7 @@
 - `api/scores/route.ts`, **`api/scores/zscore/route.ts`** (P1-2), **`api/scores/parse-image/route.ts`** (P2-11 NEIS Vision)
 - `api/analysis/probability/route.ts`, `api/analysis/minimum-check/route.ts`
 - `api/chat/route.ts`
+- **`api/exam-analysis/route.ts`** (P2-4)
 - **`api/signals/route.ts`**
 - **`api/trend-analysis/route.ts`** (P2-9)
 - **`api/explore/route.ts`** (P1-15·P1-16)

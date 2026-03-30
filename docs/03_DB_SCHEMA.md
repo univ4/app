@@ -4,7 +4,7 @@
 (보관 PRD: [`docs/01_PRD.md`](./01_PRD.md)) · 아키텍처 요약: [`docs/02_SYSTEM_DESIGN.md`](./02_SYSTEM_DESIGN.md)
 
 실제 적용 SQL은 아래 마이그레이션(파일명 순)에 포함됩니다:  
-`20260325000000_init.sql`, `20260326000000_multi_student.sql`, `20260327000000_subject_profiles.sql`, `20260329000001_admission_records.sql`, `20260329000002_admission_records.sql`, `20260329120000_chat_rag.sql`, `20260329140000_academic_records_neis.sql`, `20260329150000_academic_records_neis_upsert_unique.sql`, `20260329160000_student_record_tables.sql`, `20260329170000_academic_records_fix_unique.sql`, `20260330180000_calendar_events.sql`, `20260330190000_student_certificates_school_violence.sql`, `20260330210000_simulator_portfolios.sql`, `20260330230000_susi_gpa_rules_interview_required.sql`, `20260330240000_admission_records_nulsul_type.sql`.  
+`20260325000000_init.sql`, `20260326000000_multi_student.sql`, `20260327000000_subject_profiles.sql`, `20260329000001_admission_records.sql`, `20260329000002_admission_records.sql`, `20260329120000_chat_rag.sql`, `20260329140000_academic_records_neis.sql`, `20260329150000_academic_records_neis_upsert_unique.sql`, `20260329160000_student_record_tables.sql`, `20260329170000_academic_records_fix_unique.sql`, `20260330180000_calendar_events.sql`, `20260330190000_student_certificates_school_violence.sql`, `20260330210000_simulator_portfolios.sql`, `20260330230000_susi_gpa_rules_interview_required.sql`, `20260330240000_admission_records_nulsul_type.sql`, `20260330280000_exam_chunks.sql`.  
 P1-11 확장 테이블 상세는 [`docs/03_DATA_MODEL.md`](./03_DATA_MODEL.md)를 참조합니다. 생활기록부 구조화 테이블은 [`docs/08_STUDENT_RECORD_SPEC.md`](./08_STUDENT_RECORD_SPEC.md)와 본 문서 §2.15를 참조합니다.
 
 ## 1) ER 다이어그램
@@ -765,6 +765,26 @@ DDL: `supabase/migrations/20260329000002_admission_records.sql` (`20260329000001
 - **인덱스**: `(student_id, created_at desc)`
 - **RLS**: SELECT/INSERT/UPDATE/DELETE는 `auth.uid() = student_id` 또는 `students.role = 'admin'`.
 
+### 2.21 `exam_chunks` (P2-4 논술·면접 기출 RAG) — `20260330280000_exam_chunks.sql`
+
+| 컬럼명 | 타입 | 제약 | 설명 |
+|---|---|---|---|
+| id | bigint | PK, identity | |
+| exam_type | text | not null, check `논술` \| `면접` | 전형 구분 |
+| univ_name | text | not null | 대학명 |
+| year | int | not null | 학년도 |
+| dept_name | text | nullable | 모집단위 |
+| chunk_text | text | not null | 청크 본문 |
+| embedding | vector(1536) | not null | OpenAI 임베딩 |
+| metadata | jsonb | not null, default `{}` | `source_file`, `page_section`, `citation_hint` 등 |
+| created_at | timestamptz | not null, default now() | |
+
+- **고유**: `unique (univ_name, year, exam_type, chunk_text)`
+- **인덱스**: HNSW `embedding vector_cosine_ops`, `(univ_name, year, exam_type)`
+- **RLS**: SELECT — `auth.role() = 'authenticated'`; INSERT/UPDATE/DELETE — `students.role = 'admin'`
+- **RPC**: `match_exam_chunks(query_embedding vector(1536), exam_type_filter text, univ_name_filter text, match_count int default 5, match_threshold double precision default 0.6, year_filter int default null)` — 반환 `id`, `chunk_text`, `metadata`, `similarity`, `univ_name`, `year`, `exam_type`, `dept_name`. 필터: `exam_type` 일치, `univ_name_filter`가 null/빈 문자열이면 대학 미필터, `year_filter`가 null이면 연도 미필터. 코사인 유사도 하한 이상, 거리 오름차순, `limit`는 `greatest(1, least(coalesce(match_count,5), 50))`.
+- **적재 스크립트(틀)**: `scripts/ingest/embed_exam_chunks.ts`
+
 ---
 
 ## 3) pgvector 설정 및 인덱스
@@ -792,6 +812,13 @@ create index if not exists idx_guideline_chunks_meta
 ```sql
 create index if not exists student_record_chunks_embedding_hnsw_idx
   on public.student_record_chunks using hnsw (embedding vector_cosine_ops);
+```
+
+`exam_chunks` 벡터 검색 인덱스:
+
+```sql
+create index if not exists exam_chunks_embedding_hnsw_idx
+  on public.exam_chunks using hnsw (embedding vector_cosine_ops);
 ```
 
 HNSW 선택 이유(요약):

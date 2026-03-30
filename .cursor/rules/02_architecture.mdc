@@ -29,6 +29,7 @@ Product baseline: `docs/01_PRD_v2.md`, roadmap: `docs/05_ROADMAP.md`.
   - `converted_standard_scores`
   - `guideline_chunks`
   - `student_record_chunks` (생기부 RAG; `match_student_record_chunks`, `scripts/ingest/embed_student_record.ts`)
+  - `exam_chunks` (P2-4 논술·면접 기출 RAG; `match_exam_chunks`, `scripts/ingest/embed_exam_chunks.ts`)
   - `personal_statements` (P1-6 자소서 코치)
   - `admission_schedules`
   - `admission_records` (data-collector 전형·입결 적재)

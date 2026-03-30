@@ -37,6 +37,12 @@ set -a && source .env.local && set +a
      `./node_modules/.bin/tsx scripts/ingest/embed_student_record.ts`  
      (`OPENAI_API_KEY` 필요, 청크당 `text-embedding-3-small`, 배치 50)
 
+4. **논술·면접 기출 RAG (`exam_chunks`, P2-4)**  
+   - 선행: `20260330280000_exam_chunks.sql` 적용.  
+   - 로컬 `record/exam/*.md` 준비(frontmatter에 `univ_name`, `year`, `exam_type` 필수).  
+   - `./node_modules/.bin/tsx scripts/ingest/embed_exam_chunks.ts`  
+     (`OPENAI_API_KEY`, `SUPABASE_SERVICE_ROLE_KEY` 필요)
+
 ## 스크립트 요약
 
 | 스크립트 | 대상 테이블 |
@@ -46,3 +52,4 @@ set -a && source .env.local && set +a
 | `load_neis_grades.ts` / `parse_neis_grades.ts` | `academic_records` |
 | `load_student_record.ts` | `student_*` 생기부 테이블 |
 | `embed_student_record.ts` | `student_record_chunks` |
+| `embed_exam_chunks.ts` | `exam_chunks` |

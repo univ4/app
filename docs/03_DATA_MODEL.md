@@ -7,7 +7,7 @@
 
 실제 DDL: `supabase/migrations/20260327000000_subject_profiles.sql`
 
-**RAG·챗봇 한도**: `guideline_chunks` 검색 RPC(`match_guideline_chunks`, `match_threshold` 포함), 생기부 `student_record_chunks`·`match_student_record_chunks`, 및 `chat_usage_daily` / `try_consume_chat_quota`는 [`docs/03_DB_SCHEMA.md`](./03_DB_SCHEMA.md) §2.17·§2.18 및 마이그레이션 `20260329120000_chat_rag.sql`, `20260329140000_match_guideline_chunks_threshold.sql`, `20260330250000_student_record_chunks.sql`을 참조.
+**RAG·챗봇 한도**: `guideline_chunks` 검색 RPC(`match_guideline_chunks`, `match_threshold` 포함), 생기부 `student_record_chunks`·`match_student_record_chunks`, 논술·면접 기출 `exam_chunks`·`match_exam_chunks`(P2-4), 및 `chat_usage_daily` / `try_consume_chat_quota`는 [`docs/03_DB_SCHEMA.md`](./03_DB_SCHEMA.md) §2.17·§2.18·§2.21 및 마이그레이션 `20260329120000_chat_rag.sql`, `20260329140000_match_guideline_chunks_threshold.sql`, `20260330250000_student_record_chunks.sql`, `20260330280000_exam_chunks.sql`을 참조.
 
 ---
 
@@ -183,6 +183,23 @@ NEIS 파싱 JSON 적재 스크립트 `scripts/ingest/load_neis_grades.ts`의 ups
 | `feedback` | AI 피드백(선택) |
 
 - **RLS**: SELECT/INSERT/UPDATE/DELETE는 본인 `student_id` 또는 `students.role = 'admin'`.
+
+### `exam_chunks` (P2-4 논술·면접 기출 RAG)
+
+마이그레이션 `supabase/migrations/20260330280000_exam_chunks.sql`. 논술·면접 기출 텍스트 청크·임베딩을 저장한다(`guideline_chunks`와 분리). DDL·RLS·RPC는 [`docs/03_DB_SCHEMA.md`](./03_DB_SCHEMA.md) §2.21.
+
+| 컬럼 | 요약 |
+|---|---|
+| `exam_type` | `논술` \| `면접` |
+| `univ_name`, `year` | 대학명·학년도 |
+| `dept_name` | 모집단위(선택) |
+| `chunk_text` | 청크 본문 |
+| `embedding` | `vector(1536)` |
+| `metadata` | `source_file`, `page_section`, `citation_hint` 등 JSON |
+
+- **고유 제약**: `unique (univ_name, year, exam_type, chunk_text)`
+- **RLS**: SELECT는 `authenticated`; INSERT/UPDATE/DELETE는 `students.role = 'admin'`
+- **적재(틀)**: `scripts/ingest/embed_exam_chunks.ts` — 입력 `record/exam/*.md`
 
 ---
 

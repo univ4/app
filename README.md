@@ -82,6 +82,10 @@ npx supabase start
 # 5. DB 마이그레이션 적용
 npx supabase db push
 
+# (선택) 논술·면접 기출 MD → exam_chunks 적재 — record/exam/*.md 준비 후
+# ./node_modules/.bin/tsx scripts/ingest/embed_exam_chunks.ts
+# 상세: scripts/ingest/README.md
+
 # 6. 개발 서버 실행
 npm run dev
 ```

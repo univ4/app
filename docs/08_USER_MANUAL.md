@@ -480,6 +480,12 @@ univ4의 핵심 기능입니다. 입력된 성적과 199개 대학 입결 데이
 
 API·계산 로직은 [`docs/04_API_SPEC.md`](./04_API_SPEC.md) `GET/POST /api/grade-simulator` 및 Track 1 `calcGradeSimulator` 설명을 따릅니다.
 
+### 9.5 논술·면접 기출 분석 (P2-4)
+
+**경로**: 대시보드 → **기출 분석** (`/dashboard/exam-analysis`)
+
+`exam_chunks`에 논술·면접 기출 청크가 적재되기 전에는 **데이터 준비 안내**만 표시됩니다. 적재 후에는 대학·전형(논술/면접)·연도를 고르고 질문을 입력해 **유사 기출 검색**(`POST /api/exam-analysis`, `match_exam_chunks` RPC) 결과와 출처 메타데이터를 확인할 수 있습니다. 적재 틀: `scripts/ingest/embed_exam_chunks.ts` — [`docs/04_API_SPEC.md`](./04_API_SPEC.md) `GET/POST /api/exam-analysis`.
+
 ---
 
 ## 10. 정시 군별 지원 전략 분석기 (P2-10)
