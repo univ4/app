@@ -89,3 +89,24 @@ jobs:
             echo "ERROR: 테스트 없는 계산 함수 ${MISSING}개 발견"
             exit 1
           fi
+
+  data-validation:
+    name: 데이터 검증
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: 의존성 설치
+        run: npm ci
+
+      - name: 데이터 검증
+        run: ./node_modules/.bin/tsx scripts/validate/run_all_validations.ts
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}

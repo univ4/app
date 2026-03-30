@@ -76,8 +76,25 @@ function getOptionalNumber(
   obj: Record<string, unknown>,
   keys: string[],
 ): number | null {
+  const getValueByPath = (
+    source: Record<string, unknown>,
+    path: string,
+  ): unknown => {
+    if (!path.includes(".")) return source[path];
+
+    const parts = path.split(".");
+    let current: unknown = source;
+    for (const part of parts) {
+      if (!current || typeof current !== "object" || Array.isArray(current)) {
+        return undefined;
+      }
+      current = (current as Record<string, unknown>)[part];
+    }
+    return current;
+  };
+
   for (const k of keys) {
-    const v = obj[k];
+    const v = getValueByPath(obj, k);
     if (v === undefined || v === null) continue;
     if (typeof v === "number" && Number.isFinite(v)) return v;
     if (typeof v === "string") {
@@ -181,14 +198,14 @@ function mapJsonlToRow(
     year,
     cutoff_score: getOptionalNumber(raw, [
       "cutoff_score",
-      "cut_off_score",
-      "cutoff",
+      "입결.컷오프_50",
+      "입결.컷오프_70",
+      "컷오프_50",
       "컷오프",
-      "최종컷",
     ]),
     competition_ratio: getOptionalNumber(raw, [
       "competition_ratio",
-      "competition_rate",
+      "입결.경쟁률",
       "경쟁률",
     ]),
     med_shift_coeff: getOptionalNumber(raw, [
