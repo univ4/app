@@ -478,9 +478,21 @@ API·계산 로직은 [`docs/04_API_SPEC.md`](./04_API_SPEC.md) `GET/POST /api/g
 
 ---
 
-## 10. 정시 군별·연도별 입결
+## 10. 정시 군별 지원 전략 분석기 (P2-10)
 
-**가·나·다군 조합을 한 화면에서 시뮬레이션**하는 전용 메뉴는 없습니다. 다만 **연도별 컷오프 추이**는 **입결 추이 분석** (`/dashboard/trend-analysis`, P2-9)에서 `admission_records` 기준으로 대학·모집단위·전형을 고른 뒤 확인할 수 있습니다. 정시 전략 전반은 **수능 가채점** (`/dashboard/gachaejeom`), **합격 신호등** (`/dashboard/signals`), **전국 대학 탐색** (`/dashboard/explore`), **AI 요강 챗봇** (`/dashboard/chat`) 등에서 점수·신호등·요강 근거를 참고해 수립하세요.
+**경로**: 대시보드 → **정시 군별 전략** (`/dashboard/jeongsi-gun`)
+
+**데이터**: `admission_records`의 정시 입결(대학 목록), 최신 모의고사·반영규칙 기준 합격 신호등(`GET /api/signals`와 동일 스택). 정시자료 RAG는 `guideline_chunks` 중 서울권·수도권·전문대·총론 Markdown(`source_kind: jeongsi_material_md`)을 검색합니다.
+
+**사용 방법**:
+
+1. 가군·나군·다군 각각 **대학 1교**를 선택합니다(미선택 가능). 선택 즉시 해당 대학 **정시 신호등**이 표시됩니다(모의고사·규칙이 없으면 계산 불가 안내).
+2. **분석 실행**을 누르면 Track 1 `calcJeongsiGunStrategy`로 **조합 위험도**(안정권 포함 여부, 세 군 모두 도전 등), **경고**(안전망 없음, 동일 대학 중복), **권고** 문구가 나옵니다.
+3. 하단 **정시자료 기반 요약**은 RAG 검색 + Claude 비스트리밍 요약입니다. **합격 보장이 아니며**, 자료에 없는 내용은 확인 불가일 수 있습니다.
+
+API·스키마는 [`docs/04_API_SPEC.md`](./04_API_SPEC.md) `POST /api/jeongsi-gun`을 따릅니다.
+
+**연도별 컷오프 추이**는 **입결 추이 분석** (`/dashboard/trend-analysis`, P2-9)에서 추가로 확인할 수 있습니다.
 
 ---
 

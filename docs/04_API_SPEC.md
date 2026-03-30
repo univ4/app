@@ -302,6 +302,35 @@ Query Params:
 
 ---
 
+### POST `/api/jeongsi-gun` — P2-10 정시 군별 지원 전략
+
+설명:
+
+- 로그인 사용자만 (`401`). `try_consume_chat_quota`로 일일 호출 한도(`CHAT_DAILY_LIMIT`, 기본 50) — 챗봇·기타 RAG API와 공유.
+- `GET /api/signals`와 동일한 데이터 로드(입결·반영규칙·모의고사 등) 후 **대학별 대표 정시 행 1건**으로 `calcAdmissionSignal` 결과를 쓰고, Track 1 `calcJeongsiGunStrategy`로 조합 위험도·경고·권고를 산출한다.
+- `guideline_chunks`에서 `metadata.source_kind === "jeongsi_material_md"`인 청크만 `match_guideline_chunks`로 검색한 뒤, Claude **비스트리밍**으로 요약(`ragSummary`). 임베딩·검색·LLM 실패 시에도 `strategy`는 반환하고 `ragSummary`에 오류·안내 문구를 담을 수 있다.
+- 선택한 대학명이 비어 있지 않은데 정시 신호를 계산할 수 없으면 `422` `VALIDATION_ERROR`(모의고사·환산 규칙·입결 확인).
+
+JSON Body:
+
+| 필드 | 값 | 기본 |
+|---|---|---|
+| `gaUniv` | 문자열(대학명, 빈 문자열=미선택) | `""` |
+| `naUniv` | 동일 | `""` |
+| `daUniv` | 동일 | `""` |
+| `admissionYear` | 2020–2035 | 2026 |
+| `medShift` | `0` \| `1` | `0` |
+
+성공: `{ data: { strategy, ragSummary, ragCitations }, error: null }`
+
+- `strategy`: `riskLevel` (`safe` \| `moderate` \| `danger`), `warnings[]`, `safeNetExists`, `recommendation`, `cards: { ga, na, da }` (각 슬롯 `null` 또는 `{ university, signal, probability_percent, gap }`).
+- `ragSummary`: 정시자료 RAG+Claude 요약 문자열.
+- `ragCitations`: 검색된 청크 출처(`rowToCitation` 형식); 미검색 시 빈 배열.
+
+구현 경로: `src/app/api/jeongsi-gun/route.ts`, `src/lib/calculators/calcJeongsiGunStrategy.ts`, `src/lib/jeongsi-gun/pickJeongsiSignalRow.ts`.
+
+---
+
 ### GET `/api/trend-analysis` — P2-9 연도별 입결 추이
 
 설명:
@@ -1524,7 +1553,7 @@ Query (optional): `year=2027`
 | P1-15 | 전국 탐색기(전형·지역·신호등) | `GET /api/explore` |
 | P1-16 | 조건부 필터(수능최저·면접 AND) | `GET /api/explore` (`suneungMin`, `noInterview`) |
 | P2-9 | 입결 추이 지표 | `GET /api/trend-analysis` (구현됨) |
-| P2-10 | 정시 군별 조합·패턴 | `POST /api/strategy/jeonsi-groups` 등 |
+| P2-10 | 정시 군별 조합·패턴 | `POST /api/jeongsi-gun` (구현됨) |
 | P3-4 | 과탐 가산 시뮬 | `POST /api/analysis/science2-bonus` 등 |
 
 ---
@@ -1540,6 +1569,7 @@ scores/route.ts                          # GET, POST
 signals/route.ts                         # GET
 trend-analysis/route.ts                  # GET (P2-9)
 placement-table/route.ts                 # GET (P2-12)
+jeongsi-gun/route.ts                     # POST (P2-10)
 gachaejeom/route.ts                      # POST (P1-10)
 simulator/route.ts                       # GET, POST (P1-7)
 integrated-strategy/route.ts             # GET (P2-6)

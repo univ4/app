@@ -164,6 +164,17 @@ export default async function DashboardPage() {
             </Card>
           </Link>
 
+          <Link href="/dashboard/jeongsi-gun" className="block">
+            <Card>
+              <CardHeader>
+                <CardTitle>정시 군별 전략</CardTitle>
+                <CardDescription>
+                  가·나·다군 조합 위험도·안전망·정시자료 RAG (P2-10)
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </Link>
+
           <Link href="/dashboard/trend-analysis" className="block">
             <Card>
               <CardHeader>
