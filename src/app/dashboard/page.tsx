@@ -99,6 +99,17 @@ export default async function DashboardPage() {
         </Card>
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <Link href="/dashboard/early-roadmap" className="block">
+            <Card>
+              <CardHeader>
+                <CardTitle>조기 설계 로드맵</CardTitle>
+                <CardDescription>
+                  고1·고2 학기별 내신·활동·마일스톤 참고 로드맵 (P3-3)
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </Link>
+
           <Link href="/dashboard/scores" className="block">
             <Card>
               <CardHeader>

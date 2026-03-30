@@ -1352,6 +1352,29 @@ university=서강대
 
 ---
 
+### POST `/api/early-roadmap` *(구현, P3-3)*
+
+설명: 고1·고2 **네 학기** 조기 설계 로드맵을 Track1 `calcEarlyRoadmap`으로 생성합니다. DB 조회 없음.
+
+권한: 로그인 사용자만 (`401`).
+
+요청 Body:
+
+| 필드 | 형식 |
+|---|---|
+| `currentGrade` | `1` \| `2` (현재 학년) |
+| `currentSemester` | `1` \| `2` (현재 학기) |
+| `targetUnivType` | `top` \| `mid` \| `local` (목표 대학 수준) |
+| `targetDept` | `science` \| `liberal` \| `art` (목표 계열) |
+
+성공: `{ data: { phases, keyMilestones, summary }, error: null }` — `phases`는 학기별 `phase`, `period`, `priority`, `gpaTarget`, `activities`, 선택 `warning`; `keyMilestones`는 `timing`, `milestone`, `importance`.
+
+에러: `UNAUTHORIZED`(401), `VALIDATION_ERROR`(422).
+
+구현: `src/app/api/early-roadmap/route.ts`, `src/lib/calculators/calcEarlyRoadmap.ts`
+
+---
+
 ### POST `/api/subject-profile` *(스펙 예정 경로 — 앱 구현은 `POST /api/subject-analysis/profile`)*
 
 설명: 선택과목 프로필 저장(upsert: `student_id`+`year` 유니크).
@@ -1667,6 +1690,7 @@ scores/route.ts                          # GET, POST
 scores/parse-image/route.ts              # POST (P2-11 NEIS 이미지·JSON commit)
 signals/route.ts                         # GET
 science-combo/route.ts                 # POST (P3-4)
+early-roadmap/route.ts                 # POST (P3-3)
 trend-analysis/route.ts                  # GET (P2-9)
 placement-table/route.ts                 # GET (P2-12)
 jeongsi-gun/route.ts                     # POST (P2-10)
