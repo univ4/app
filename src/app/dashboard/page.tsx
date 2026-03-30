@@ -252,6 +252,17 @@ export default async function DashboardPage() {
             </Card>
           </Link>
 
+          <Link href="/dashboard/research-topics" className="block">
+            <Card>
+              <CardHeader>
+                <CardTitle>탐구 주제 추천</CardTitle>
+                <CardDescription>
+                  세특·인재상 연계 탐구 주제·난이도·소요 기간 (P1-8)
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </Link>
+
           <Link href="/dashboard/record-check" className="block">
             <Card>
               <CardHeader>
