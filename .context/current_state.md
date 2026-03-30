@@ -118,6 +118,7 @@
 
 ## PRD v2 백로그 메모
 
+- **P3**: 카카오톡 알림 연동은 PRD v2·로드맵에서 제외됨(2026-03-30); P3 기능 수 **5개**(P3-1·P3-3~P3-6, 번호 갭 P3-2).
 - **P2-11** 나이스 성적표 이미지 파싱 — 구현: `POST /api/scores/parse-image`, `/dashboard/scores` **이미지로 입력** 탭, `docs/08_USER_MANUAL.md` §2.2.
 - **생활기록부 RAG** `student_record_chunks` — 임베딩 적재 후 **P1-5** `POST /api/student-record/analyze`·`/dashboard/hakjong-analysis`로 역량 분석 스트리밍.
 
