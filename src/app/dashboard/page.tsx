@@ -219,6 +219,17 @@ export default async function DashboardPage() {
             </Card>
           </Link>
 
+          <Link href="/dashboard/hakjong-analysis" className="block">
+            <Card>
+              <CardHeader>
+                <CardTitle>학종 역량 분석</CardTitle>
+                <CardDescription>
+                  학업·진로·공동체 역량 · 생기부 청크 RAG 스트리밍 (P1-5)
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </Link>
+
           <Link href="/dashboard/record-check" className="block">
             <Card>
               <CardHeader>

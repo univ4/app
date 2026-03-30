@@ -907,6 +907,22 @@ university=서강대
 
 - Admin만, `student_id` 일치 필요.
 
+### POST `/api/student-record/analyze` (P1-5 학종 역량 분석)
+
+- **인증**: 필수. `try_consume_chat_quota`로 일일 호출 한도(`CHAT_DAILY_LIMIT`, 기본 50) 공유.
+- **Body (JSON)**:
+  - `studentId?` (UUID): 생략 시 본인. **Admin**만 다른 학생 UUID 지정 가능(§5c `student_id` 쿼리와 동일 정책).
+  - `targetUniv?` (string, 최대 120자): 목표 대학 맥락(선택). 생기부 청크에 없는 내용은 추측하지 않음.
+- **처리**:
+  1. 대상 학생의 `student_record_chunks` **전체** 행을 `id` 오름차순으로 조회.
+  2. 청크 0건: SSE로 안내 문구만 전송 후 `done` (`finish_reason: no_context`, `sections: []`).
+  3. 청크 1건 이상: Claude Sonnet 스트리밍. 시스템 프롬프트는 생기부 텍스트만 근거로 학업·진로·공동체 역량 분석.
+- **응답**: `Content-Type: text/event-stream` (SSE)
+  - `event: chunk` — `{ "text": "<델타>" }` 누적
+  - `event: done` — `{ "finish_reason": "stop" | "no_context", "sections": [ { "key": "academic"|"career"|"community", "title": string, "content": string } ] }`  
+    `sections`는 스트리밍 완료 후 모델 출력에서 `## 학업역량` 등 마크다운 제목 기준 파싱.
+- **오류**: 한도 초과 **429** `RATE_LIMIT`; 검증 실패 **400** `VALIDATION_ERROR`; 그 외 **5xx** `INTERNAL_ERROR` / **502** 업스트림.
+
 ---
 
 ## 6. 데이터 적재 API (`/api/ingest`) - Admin 전용
@@ -1269,6 +1285,7 @@ analysis/minimum-check/route.ts          # GET
 chat/route.ts                            # POST
 calendar/route.ts                        # GET, POST
 calendar/[id]/route.ts                   # PUT, DELETE
+student-record/analyze/route.ts          # POST (P1-5 SSE)
 student-record/subject-notes/route.ts
 student-record/subject-notes/[id]/route.ts
 student-record/activities/route.ts

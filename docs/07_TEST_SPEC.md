@@ -6,7 +6,7 @@
 통합 테스트 전략·기존 케이스는 [`docs/06_TEST_PLAN.md`](./06_TEST_PLAN.md)를 참조합니다.  
 본 문서는 Track 1 함수·`POST /api/chat`에 대한 **단위·라우트 테스트 스펙**을 정의한다(§2·3·8 등은 구현됨, §4·5·6·7 등은 예정).
 
-**실행 스냅샷 (2026-03-30):** `npm test` — **34** suites, **262** tests, FAIL 0. (추가: P1-10 `calcGachaejeomScore` / `POST /api/gachaejeom`: `src/__tests__/calculators/calcGachaejeomScore.test.ts`, `src/__tests__/api/gachaejeom.route.test.ts`; P1-3 `calcRealCompetitionRate` / `GET /api/nulsul`: `src/__tests__/calculators/calcRealCompetitionRate.test.ts`, `src/__tests__/api/nulsul.route.test.ts`; `GET/POST /api/simulator`: `src/__tests__/api/simulator.route.test.ts`; `calcSubjectAdvantage` / `GET /api/subject-analysis`: `src/__tests__/calculators/calcSubjectAdvantage.test.ts`, `src/__tests__/api/subject-analysis.route.test.ts`; `calcPortfolioRisk` / `calcNapchiRisk`: `src/__tests__/calculators/calcPortfolioRisk.test.ts`, `calcNapchiRisk.test.ts`; `GET /api/signals`: `src/__tests__/api/signals.route.test.ts`; 생기부 `[id]`·출결 PUT: `src/__tests__/api/student-record-api.test.ts`; `calcAdmissionSignal`: `src/__tests__/calculators/calcAdmissionSignal.test.ts`; 캘린더·D-Day: `src/__tests__/calendar/calendarDday.integration.test.ts`; P1-12 `calcAdmissionTodos` / `GET /api/calendar/todos`: `src/__tests__/calculators/calcAdmissionTodos.test.ts`, `src/__tests__/api/calendar-todos.route.test.ts`; P1-2 `calcSchoolLevel` / `GET /api/scores/zscore`: `src/__tests__/calculators/calcSchoolLevel.test.ts`, `src/__tests__/api/scores-zscore.route.test.ts`)
+**실행 스냅샷 (2026-03-30):** `npm test` — **38** suites, **277** tests, FAIL 0. (추가: P1-5 `POST /api/student-record/analyze`: `src/__tests__/api/student-record-analyze.route.test.ts`, `src/__tests__/lib/chat/hakjongAnalyze.test.ts`; P1-10 `calcGachaejeomScore` / `POST /api/gachaejeom`: `src/__tests__/calculators/calcGachaejeomScore.test.ts`, `src/__tests__/api/gachaejeom.route.test.ts`; P1-3 `calcRealCompetitionRate` / `GET /api/nulsul`: `src/__tests__/calculators/calcRealCompetitionRate.test.ts`, `src/__tests__/api/nulsul.route.test.ts`; `GET/POST /api/simulator`: `src/__tests__/api/simulator.route.test.ts`; `calcSubjectAdvantage` / `GET /api/subject-analysis`: `src/__tests__/calculators/calcSubjectAdvantage.test.ts`, `src/__tests__/api/subject-analysis.route.test.ts`; `calcPortfolioRisk` / `calcNapchiRisk`: `src/__tests__/calculators/calcPortfolioRisk.test.ts`, `calcNapchiRisk.test.ts`; `GET /api/signals`: `src/__tests__/api/signals.route.test.ts`; 생기부 `[id]`·출결 PUT: `src/__tests__/api/student-record-api.test.ts`; `calcAdmissionSignal`: `src/__tests__/calculators/calcAdmissionSignal.test.ts`; 캘린더·D-Day: `src/__tests__/calendar/calendarDday.integration.test.ts`; P1-12 `calcAdmissionTodos` / `GET /api/calendar/todos`: `src/__tests__/calculators/calcAdmissionTodos.test.ts`, `src/__tests__/api/calendar-todos.route.test.ts`; P1-2 `calcSchoolLevel` / `GET /api/scores/zscore`: `src/__tests__/calculators/calcSchoolLevel.test.ts`, `src/__tests__/api/scores-zscore.route.test.ts`)
 
 ---
 
@@ -246,6 +246,17 @@
 | CHAT-02 | `try_consume_chat_quota`가 `RATE_LIMIT` | HTTP **429** |
 | CHAT-03 | `match_guideline_chunks` 결과 0건 | SSE에 **`확인 불가`**, Anthropic `fetch` 미호출 |
 | CHAT-04 | 청크 1건 이상 | OpenAI 임베딩 + Anthropic 스트림 → SSE `chunk`/`done`, `done.citations`에 청크 메타 |
+
+---
+
+## 9b. `POST /api/student-record/analyze` (P1-5)
+
+구현·테스트: `src/app/api/student-record/analyze/route.ts`, `src/lib/chat/hakjongAnalyze.ts`, `src/__tests__/api/student-record-analyze.route.test.ts`, `src/__tests__/lib/chat/hakjongAnalyze.test.ts`
+
+| ID | 시나리오 | 기대 |
+|---|---|---|
+| HAKJONG-01 | 미인증 요청 | HTTP **401**, `UNAUTHORIZED` |
+| HAKJONG-02 | 인증·청크 1건 이상·Anthropic 스트림 모킹 | HTTP **200**, SSE에 `event: chunk` 및 `event: done` 포함 |
 
 ---
 

@@ -99,12 +99,12 @@
 ## 테스트·품질 현황
 
 - **Jest:** `jest.config.ts` (next/jest), `testMatch`: `src/__tests__/**/*.test.ts`
-- **결과:** **228 tests PASS** / **28 suites** / FAIL 0 (`npm test`, 2026-03-30)
+- **결과:** **277 tests PASS** / **38 suites** / FAIL 0 (`npm test`, 2026-03-30)
 
 ## PRD v2 백로그 메모
 
 - **P2-11** 나이스 PDF 자동 파싱·적재 — `docs/01_PRD_v2.md` §6, `docs/08_USER_MANUAL.md` §2.3.
-- **생활기록부 RAG** `student_record_chunks` — 구조화 입력은 완료; 임베딩·챗봇 연동 미구현.
+- **생활기록부 RAG** `student_record_chunks` — 임베딩 적재 후 **P1-5** `POST /api/student-record/analyze`·`/dashboard/hakjong-analysis`로 역량 분석 스트리밍.
 
 ## 알려진 미완·주의
 
