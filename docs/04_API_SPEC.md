@@ -1375,6 +1375,30 @@ university=서강대
 
 ---
 
+### POST `/api/nsu-strategy` *(구현, P2-8a)*
+
+설명: 재수생·N수 지원 **참고 전략**을 Track 1 `calcNsuStrategy`로 생성합니다. DB 조회 없음.
+
+권한: 로그인 사용자만 (`401`).
+
+요청 Body:
+
+| 필드 | 형식 |
+|---|---|
+| `nsuYear` | 정수 `1`~`8` (재수 연차: 1=재수, 2=삼수 …) |
+| `suneungScore` | 선택, 유한 실수 (현재 또는 최근 수능 점수) |
+| `prevScore` | 선택, 유한 실수 (전년도 동일 기준 점수) |
+| `gpa` | 선택, 유한 실수 (내신 평균 등급) |
+| `targetType` | `jeongsi` \| `susi` \| `both` |
+
+성공: `{ data: { strategy }, error: null }` — `strategy`는 `recommendedStrategy`, `jeongsiAdvantage`, `susiCaution[]`, `keyUnivTypes[]`, 선택 `scoreImprovement`, `warnings[]`.
+
+에러: `UNAUTHORIZED`(401), `VALIDATION_ERROR`(422).
+
+구현: `src/app/api/nsu-strategy/route.ts`, `src/lib/calculators/calcNsuStrategy.ts`
+
+---
+
 ### POST `/api/subject-profile` *(스펙 예정 경로 — 앱 구현은 `POST /api/subject-analysis/profile`)*
 
 설명: 선택과목 프로필 저장(upsert: `student_id`+`year` 유니크).
@@ -1691,6 +1715,7 @@ scores/parse-image/route.ts              # POST (P2-11 NEIS 이미지·JSON comm
 signals/route.ts                         # GET
 science-combo/route.ts                 # POST (P3-4)
 early-roadmap/route.ts                 # POST (P3-3)
+nsu-strategy/route.ts                   # POST (P2-8a)
 trend-analysis/route.ts                  # GET (P2-9)
 placement-table/route.ts                 # GET (P2-12)
 jeongsi-gun/route.ts                     # POST (P2-10)

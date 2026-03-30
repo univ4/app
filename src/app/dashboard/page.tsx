@@ -231,6 +231,17 @@ export default async function DashboardPage() {
             </Card>
           </Link>
 
+          <Link href="/dashboard/nsu-strategy" className="block">
+            <Card>
+              <CardHeader>
+                <CardTitle>N수생 전략</CardTitle>
+                <CardDescription>
+                  재수 연차·점수 추이·내신 기준 정시·수시 참고 전략
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </Link>
+
           <Link href="/dashboard/simulator" className="block">
             <Card>
               <CardHeader>

@@ -72,6 +72,7 @@
 | `calcJeongsiGunStrategy(...)` | 가·나·다군 조합 리스크·안전망 경고 (P2-10) · `POST /api/jeongsi-gun` |
 | `calcPlacementTable(...)` | 정시 입결 컷 대비 안정·적정·도전 3단 배치 (±5점, P2-12) · `GET /api/placement-table` |
 | `calcScienceComboSimulator(...)` | 탐구1·2 조합별 과탐Ⅱ 가산 적용 대학 비교 (P3-4) · `POST /api/science-combo` |
+| `calcNsuStrategy(...)` | 재수·N수 연차·점수 추이·내신 기준 정시·수시 참고 문구 (P2-8a) · `POST /api/nsu-strategy` |
 
 이름은 구현 시 모듈 분할에 맞게 조정한다. 기존 함수(`calculateSuneungScore`, `calculateSusiGPA`, `calculateZScore`, `calcSchoolLevel`, `calculateAdmissionProbability`, `checkSuneungMinimum` 등)와 동일 원칙을 따른다.
 
