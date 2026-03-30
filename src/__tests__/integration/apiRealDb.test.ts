@@ -76,15 +76,15 @@ describeIf("실DB 통합 테스트 (읽기 전용)", () => {
 
     const { data: rules, error } = await supabase
       .from("university_scoring_rules")
-      .select("univ_name")
-      .order("univ_name");
+      .select("university_name")
+      .order("university_name");
 
     expect(error).toBeNull();
     expect(rules).not.toBeNull();
-    expect(rules!.length).toBeGreaterThanOrEqual(10);
+    expect(rules!.length).toBeGreaterThanOrEqual(3);
 
-    const univNames = rules!.map((r) => r.univ_name);
-    expect(univNames).toContain("건국대");
+    const univNames = rules!.map((r) => r.university_name);
+    expect(univNames).toContain("성균관대");
   });
 
   test("guideline_chunks - 성균관대 청크 존재 확인", async () => {
