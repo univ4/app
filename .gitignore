@@ -50,6 +50,9 @@ __pycache__/
 
 # 테스트 커버리지
 /coverage
+/playwright/.auth
+/playwright-report
+/test-results
 
 # 로컬 Python 가상환경 (레포 루트)
 .venv/
