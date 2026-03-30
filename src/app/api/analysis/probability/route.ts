@@ -191,6 +191,18 @@ export async function GET(request: NextRequest) {
     const rules = rulesRow as UniversityScoringRules;
 
     const converted_score = calculateSuneungScore(scoresForCalc, rules);
+    if (converted_score == null) {
+      return NextResponse.json(
+        {
+          data: null,
+          error: {
+            code: "VALIDATION_ERROR",
+            message: `영어 환산표 누락으로 환산점수를 계산할 수 없습니다 (${uni}).`,
+          },
+        },
+        { status: 422 },
+      );
+    }
     let cutline_70: number;
     try {
       cutline_70 = await getCutline70({

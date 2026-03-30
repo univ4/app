@@ -15,13 +15,29 @@ export default async function SignalsPage() {
 
   if (!user) redirect("/login");
 
+  const { data: latestAdmissionRecord } = await supabase
+    .from("admission_records")
+    .select("created_at")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const dataUpdatedLabel = latestAdmissionRecord?.created_at
+    ? new Intl.DateTimeFormat("ko-KR", { year: "numeric", month: "long" }).format(
+        new Date(latestAdmissionRecord.created_at),
+      )
+    : null;
+
   return (
-    <div className="min-h-screen bg-background p-4 sm:p-6">
+    <div className="min-h-screen bg-background p-4 sm:p-6" data-testid="signals-page">
       <div className="mx-auto w-full min-w-0 max-w-6xl space-y-6">
         <PageHeader
           title="합격 가능성 신호등"
           description="/dashboard/signals — P0-4 · P1-17 (Track 1 컷 대비 확률 %)"
         />
+        {dataUpdatedLabel ? (
+          <p className="text-xs text-muted-foreground">데이터 기준: {dataUpdatedLabel}</p>
+        ) : null}
 
         <DisclaimerBanner variant="calculation" />
         <CalcBasis

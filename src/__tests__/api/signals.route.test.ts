@@ -15,6 +15,7 @@ const mockGetAuthUser = getAuthUser as jest.MockedFunction<typeof getAuthUser>;
 
 function buildSignalsSupabase(opts: {
   admissionRows?: unknown[];
+  univRows?: unknown[];
   scoringRows?: unknown[];
   susiRows?: unknown[];
   gpaRows?: unknown[];
@@ -22,22 +23,45 @@ function buildSignalsSupabase(opts: {
 }) {
   const {
     admissionRows = [],
+    univRows = [],
     scoringRows = [],
     susiRows = [],
     gpaRows = [],
     latestMock = null,
   } = opts;
 
+  let admissionFromCount = 0;
   let academicFromCount = 0;
+  let admissionRangeCallCount = 0;
 
   return {
+    rpc(fn: string) {
+      if (fn === "get_distinct_univ_names") {
+        return Promise.resolve({ data: univRows, error: null });
+      }
+      throw new Error(`unexpected rpc ${fn}`);
+    },
     from(table: string) {
       if (table === "admission_records") {
-        return {
-          select: jest.fn(() => ({
-            eq: jest.fn().mockResolvedValue({ data: admissionRows, error: null }),
-          })),
-        };
+        admissionFromCount += 1;
+        if (admissionFromCount === 1) {
+          return {
+            select: jest.fn(() => ({
+              eq: jest.fn(() => ({
+                order: jest.fn(() => ({
+                  range: jest.fn(() => {
+                    admissionRangeCallCount += 1;
+                    if (admissionRangeCallCount === 1) {
+                      return Promise.resolve({ data: admissionRows, error: null });
+                    }
+                    return Promise.resolve({ data: [], error: null });
+                  }),
+                })),
+              })),
+            })),
+          };
+        }
+        throw new Error(`unexpected admission_records call ${admissionFromCount}`);
       }
       if (table === "university_scoring_rules") {
         return {
@@ -118,6 +142,7 @@ describe("GET /api/signals", () => {
             med_shift_coeff: null,
           },
         ],
+        univRows: [{ univ_name: "테스트대" }],
         scoringRows: [],
         susiRows: [],
         gpaRows: [],
@@ -130,10 +155,12 @@ describe("GET /api/signals", () => {
     const body = await res.json();
     expect(body.error).toBeNull();
     expect(Array.isArray(body.data.items)).toBe(true);
+    expect(body.data.availableUnivs).toEqual(["테스트대"]);
     expect(body.data.meta).toMatchObject({
       admission_year: 2026,
       med_shift_enabled: false,
       has_mock_exam: false,
+      suneungScoreAvailable: false,
       has_school_gpa: false,
     });
   });

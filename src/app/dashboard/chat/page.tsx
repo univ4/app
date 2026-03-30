@@ -14,7 +14,7 @@ export default async function DashboardChatPage() {
   if (!user) redirect("/login");
 
   return (
-    <div className="min-h-screen bg-background p-4 sm:p-6">
+    <div className="min-h-screen bg-background p-4 sm:p-6" data-testid="chat-page">
       <div className="mx-auto flex w-full min-w-0 max-w-3xl flex-col">
         <div className="mb-4">
           <PageHeader

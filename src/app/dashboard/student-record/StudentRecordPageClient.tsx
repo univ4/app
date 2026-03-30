@@ -1007,15 +1007,15 @@ export function StudentRecordPageClient(props: {
           variant="line"
           className="mb-2 !h-auto flex-wrap gap-1 [&_[data-slot=tabs-trigger]]:min-h-11 [&_[data-slot=tabs-trigger]]:px-3 sm:[&_[data-slot=tabs-trigger]]:min-h-0 sm:[&_[data-slot=tabs-trigger]]:px-1.5"
         >
-          <TabsTrigger value="subject">세특</TabsTrigger>
-          <TabsTrigger value="activity">창체</TabsTrigger>
-          <TabsTrigger value="award">수상</TabsTrigger>
-          <TabsTrigger value="behavior">행동특성</TabsTrigger>
-          <TabsTrigger value="attendance">출결</TabsTrigger>
-          <TabsTrigger value="volunteer">봉사</TabsTrigger>
-          <TabsTrigger value="reading">독서</TabsTrigger>
-          <TabsTrigger value="certificates">자격증</TabsTrigger>
-          <TabsTrigger value="school-violence">학교폭력</TabsTrigger>
+          <TabsTrigger value="subject" data-testid="tab-세특">세특</TabsTrigger>
+          <TabsTrigger value="activity" data-testid="tab-창체">창체</TabsTrigger>
+          <TabsTrigger value="award" data-testid="tab-수상">수상</TabsTrigger>
+          <TabsTrigger value="behavior" data-testid="tab-행동특성">행동특성</TabsTrigger>
+          <TabsTrigger value="attendance" data-testid="tab-출결">출결</TabsTrigger>
+          <TabsTrigger value="volunteer" data-testid="tab-봉사">봉사</TabsTrigger>
+          <TabsTrigger value="reading" data-testid="tab-독서">독서</TabsTrigger>
+          <TabsTrigger value="certificates" data-testid="tab-자격증">자격증</TabsTrigger>
+          <TabsTrigger value="school-violence" data-testid="tab-학교폭력">학교폭력</TabsTrigger>
         </TabsList>
 
         <TabsContent value="subject">

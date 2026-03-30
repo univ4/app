@@ -38,7 +38,7 @@ function validateFinite(value: number, label: string) {
 export function calculateSuneungScore(
   scores: SuneungScores,
   rules: UniversityScoringRules,
-): number {
+): number | null {
   validateFinite(scores.korean_standard_score, "scores.korean_standard_score");
   validateFinite(scores.math_standard_score, "scores.math_standard_score");
   validateFinite(scores.english_grade, "scores.english_grade");
@@ -52,8 +52,11 @@ export function calculateSuneungScore(
   validateFinite(rules.science_2_bonus, "rules.science_2_bonus");
 
   const englishConverted = rules.english_conversion_table[String(scores.english_grade)];
-  if (!Number.isFinite(englishConverted)) {
-    throw new Error("ValidationError: english conversion table is missing for this grade.");
+  let englishScore = 0;
+  if (Number.isFinite(englishConverted)) {
+    englishScore = Number(englishConverted) * rules.english_ratio;
+  } else if (rules.english_ratio !== 0) {
+    return null;
   }
 
   const scienceAverage =
@@ -61,7 +64,6 @@ export function calculateSuneungScore(
 
   const korean = scores.korean_standard_score * rules.korean_ratio;
   const math = scores.math_standard_score * rules.math_ratio;
-  const english = englishConverted * rules.english_ratio;
   const science = scienceAverage * rules.science_ratio;
 
   const science2Bonus =
@@ -79,6 +81,6 @@ export function calculateSuneungScore(
    * - 이는 `sci2`의 1.03배(65*1.03=66.95)로 바꿨을 때와 같은 '추가분' 관점으로 해석할 수 있습니다.
    */
 
-  const totalScore = korean + math + english + science + science2Bonus;
+  const totalScore = korean + math + englishScore + science + science2Bonus;
   return Number(totalScore.toFixed(2));
 }

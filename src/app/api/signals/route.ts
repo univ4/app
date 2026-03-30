@@ -16,6 +16,36 @@ const querySchema = z.object({
   medShift: z.enum(["0", "1"]).optional(),
 });
 
+const ADMISSION_PAGE_SIZE = 1000;
+
+async function fetchAllAdmissionRows(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  admissionYear: number,
+) {
+  const rows: DbAdmissionRecord[] = [];
+  let from = 0;
+
+  while (true) {
+    const to = from + ADMISSION_PAGE_SIZE - 1;
+    const { data, error } = await supabase
+      .from("admission_records")
+      .select(
+        "id, univ_name, dept_name, admission_type, year, cutoff_score, med_shift_coeff, created_at",
+      )
+      .eq("year", admissionYear)
+      .order("id", { ascending: true })
+      .range(from, to);
+
+    if (error) return { data: null as DbAdmissionRecord[] | null, error };
+    const page = (data ?? []) as DbAdmissionRecord[];
+    rows.push(...page);
+    if (page.length < ADMISSION_PAGE_SIZE) break;
+    from += ADMISSION_PAGE_SIZE;
+  }
+
+  return { data: rows, error: null as { message: string } | null };
+}
+
 export async function GET(request: NextRequest) {
   const started = performance.now();
   const supabase = await createClient();
@@ -66,10 +96,7 @@ export async function GET(request: NextRequest) {
     { data: gpaRows, error: gpaErr },
     { data: latestMock, error: mockErr },
   ] = await Promise.all([
-    supabase
-      .from("admission_records")
-      .select("id, univ_name, dept_name, admission_type, year, cutoff_score, med_shift_coeff")
-      .eq("year", admissionYear),
+    fetchAllAdmissionRows(supabase, admissionYear),
     supabase
       .from("university_scoring_rules")
       .select(
@@ -113,6 +140,14 @@ export async function GET(request: NextRequest) {
     );
   }
 
+  const { data: univData, error: univErr } = await supabase.rpc("get_distinct_univ_names");
+  if (univErr) {
+    return NextResponse.json(
+      { data: null, error: { code: "INTERNAL_ERROR", message: univErr.message } },
+      { status: 500 },
+    );
+  }
+
   let suneungScores: SuneungScores | null = null;
   if (latestMock) {
     const sci2IsTypeTwo = parseSci2IsTypeTwo(latestMock.subject_name);
@@ -125,10 +160,12 @@ export async function GET(request: NextRequest) {
       sci2_is_type_two: sci2IsTypeTwo,
     };
   }
+  const admissionRowsTyped = (admissionRows ?? []) as DbAdmissionRecord[];
+  const scoringRowsTyped = (scoringRows ?? []) as BuildAdmissionSignalRowsInput["scoringRules"];
 
   const items = buildAdmissionSignalRows({
-    admissionRows: (admissionRows ?? []) as DbAdmissionRecord[],
-    scoringRules: (scoringRows ?? []) as BuildAdmissionSignalRowsInput["scoringRules"],
+    admissionRows: admissionRowsTyped,
+    scoringRules: scoringRowsTyped,
     susiRules: (susiRows ?? []) as BuildAdmissionSignalRowsInput["susiRules"],
     schoolGpaRows: gpaRows ?? [],
     suneungScores,
@@ -137,10 +174,24 @@ export async function GET(request: NextRequest) {
 
   const duration_ms = Math.round(performance.now() - started);
   const uniqueUniversities = new Set(items.map((r) => r.university_name)).size;
+  const normalizedUnivs: string[] = (univData ?? [])
+    .map((row: { univ_name?: string | null }) => row.univ_name?.trim() ?? "")
+    .filter((name: string) => name.length > 0);
+  const availableUnivs = Array.from(new Set(normalizedUnivs)).sort((a, b) =>
+    a.localeCompare(b, "ko-KR"),
+  );
+  const latestDataUpdatedAt =
+    (admissionRows ?? []).reduce<string | null>((latest, row) => {
+      const createdAt = (row as { created_at?: string | null }).created_at ?? null;
+      if (!createdAt) return latest;
+      if (!latest) return createdAt;
+      return createdAt > latest ? createdAt : latest;
+    }, null) ?? null;
 
   return NextResponse.json({
     data: {
       items,
+      availableUnivs,
       meta: {
         admission_year: admissionYear,
         row_count: items.length,
@@ -148,7 +199,9 @@ export async function GET(request: NextRequest) {
         duration_ms,
         med_shift_enabled: applyMedShift,
         has_mock_exam: latestMock != null,
+        suneungScoreAvailable: suneungScores != null,
         has_school_gpa: (gpaRows?.length ?? 0) > 0,
+        dataUpdatedAt: latestDataUpdatedAt,
       },
     },
     error: null,

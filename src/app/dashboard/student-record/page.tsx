@@ -34,7 +34,7 @@ export default async function StudentRecordPage({
   const recordStudentId = resolveRecordStudentId(user.id, role, sp.student_id);
 
   return (
-    <div className="min-h-screen bg-background p-4 sm:p-6">
+    <div className="min-h-screen bg-background p-4 sm:p-6" data-testid="student-record-page">
       <div className="mx-auto mb-4 min-w-0 max-w-5xl">
         <PageHeader
           title="생활기록부"

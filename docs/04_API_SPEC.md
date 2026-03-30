@@ -299,6 +299,7 @@ medShift=0|1       (optional, 1이면 행별 med_shift_coeff를 컷에 가산)
         "med_shift_applied": false
       }
     ],
+    "availableUnivs": ["가톨릭대", "건국대", "경희대", "고려대"],
     "meta": {
       "admission_year": 2026,
       "row_count": 3393,
@@ -306,7 +307,9 @@ medShift=0|1       (optional, 1이면 행별 med_shift_coeff를 컷에 가산)
       "duration_ms": 1200,
       "med_shift_enabled": false,
       "has_mock_exam": true,
-      "has_school_gpa": true
+      "suneungScoreAvailable": true,
+      "has_school_gpa": true,
+      "dataUpdatedAt": "2025-03-18T02:30:00.000Z"
     }
   },
   "error": null
@@ -314,6 +317,10 @@ medShift=0|1       (optional, 1이면 행별 med_shift_coeff를 컷에 가산)
 ```
 
 구현 경로: `src/app/api/signals/route.ts`, `src/lib/signals/buildAdmissionSignalRows.ts`, `src/lib/calculators/calcAdmissionSignal.ts`.
+
+- `meta.dataUpdatedAt`: `admission_records.created_at` 최신 시각(ISO 문자열). UI에서는 `YYYY년 M월` 형식으로 표시.
+- `availableUnivs`: `admission_records.univ_name` 전체(연도 기준)에서 중복 제거 후 가나다순 정렬한 대학명 목록. 클라이언트 대학명 필터 옵션 생성에 사용.
+- `meta.suneungScoreAvailable`: 최신 모의고사 기반 수능 점수 파이프(`suneungScores`) 준비 여부. `false`이면 정시 신호등 행이 0건일 수 있으며, UI에서 점수 입력 안내를 노출한다.
 
 ---
 

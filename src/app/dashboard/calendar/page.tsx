@@ -40,7 +40,7 @@ export default async function DashboardCalendarPage() {
   const isAdmin = student?.role === "admin";
 
   return (
-    <div className="min-h-screen bg-background p-4 sm:p-6">
+    <div className="min-h-screen bg-background p-4 sm:p-6" data-testid="calendar-page">
       <div className="mx-auto w-full min-w-0 max-w-6xl space-y-6">
         <PageHeader
           title="입시 D-Day 캘린더"

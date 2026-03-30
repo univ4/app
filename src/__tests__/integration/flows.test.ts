@@ -55,7 +55,7 @@ describe("통합 플로우 테스트", () => {
     );
 
     const placement = calcPlacementTable({
-      myScore,
+      myScore: myScore ?? 0,
       admissionRecords: [
         { univName: "A대", deptName: "공학", admissionType: "정시", cutoffScore: 660 },
         { univName: "B대", deptName: "공학", admissionType: "정시", cutoffScore: 670 },

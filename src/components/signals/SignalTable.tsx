@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 
 import { EmptyState } from "@/components/common/EmptyState";
 import { ErrorState } from "@/components/common/ErrorState";
@@ -21,10 +22,12 @@ import type { SignalScanRow } from "@/lib/signals/buildAdmissionSignalRows";
 import type { UnivRegionBucket } from "@/lib/signals/univRegion";
 
 import { SignalLight } from "./SignalLight";
+import { UncertaintyBadge } from "./UncertaintyBadge";
 
 export type AdmissionTypeFilter = "all" | "정시" | "학생부교과" | "학생부종합";
 export type SignalFilter = "all" | AdmissionSignalTier;
 export type RegionFilter = "all" | "seoul" | "capital" | "nationwide";
+export type UniversityFilter = "all" | string;
 
 function formatGap(gap: number, admissionType: string): string {
   const decimals = Math.abs(gap) < 10 ? 2 : 1;
@@ -41,8 +44,15 @@ function regionMatch(rowRegion: UnivRegionBucket, filter: RegionFilter): boolean
   return true;
 }
 
+function rowHoverTone(signal: AdmissionSignalTier): string {
+  if (signal === "safe") return "hover:bg-emerald-50/30";
+  if (signal === "moderate") return "hover:bg-amber-50/30";
+  return "hover:bg-rose-50/30";
+}
+
 export type SignalTableProps = {
   rows: SignalScanRow[];
+  availableUnivs: string[];
   loading: boolean;
   error: string | null;
   meta: {
@@ -51,7 +61,9 @@ export type SignalTableProps = {
     unique_universities: number;
     med_shift_enabled: boolean;
     has_mock_exam: boolean;
+    suneungScoreAvailable: boolean;
     has_school_gpa: boolean;
+    dataUpdatedAt: string | null;
   } | null;
   medShiftEnabled: boolean;
   onMedShiftChange: (enabled: boolean) => void;
@@ -60,6 +72,7 @@ export type SignalTableProps = {
 
 export function SignalTable({
   rows,
+  availableUnivs,
   loading,
   error,
   meta,
@@ -70,15 +83,48 @@ export function SignalTable({
   const [admissionType, setAdmissionType] = useState<AdmissionTypeFilter>("all");
   const [signalFilter, setSignalFilter] = useState<SignalFilter>("all");
   const [region, setRegion] = useState<RegionFilter>("all");
+  const [university, setUniversity] = useState<UniversityFilter>("all");
+
+  const universityOptions = useMemo(() => {
+    if (availableUnivs.length > 0) {
+      return availableUnivs;
+    }
+    return Array.from(new Set(rows.map((r) => r.university_name))).sort((a, b) =>
+      a.localeCompare(b, "ko-KR")
+    );
+  }, [availableUnivs, rows]);
+
+  const hasActiveFilters =
+    admissionType !== "all" || signalFilter !== "all" || region !== "all" || university !== "all";
+
+  const resetFilters = () => {
+    setAdmissionType("all");
+    setSignalFilter("all");
+    setRegion("all");
+    setUniversity("all");
+  };
 
   const filtered = useMemo(() => {
     return rows.filter((r) => {
       if (admissionType !== "all" && r.admission_type !== admissionType) return false;
       if (signalFilter !== "all" && r.signal !== signalFilter) return false;
       if (!regionMatch(r.region, region)) return false;
+      if (university !== "all" && r.university_name !== university) return false;
       return true;
     });
-  }, [rows, admissionType, signalFilter, region]);
+  }, [rows, admissionType, signalFilter, region, university]);
+
+  const jeongsiRowCount = useMemo(
+    () => rows.filter((row) => row.admission_type === "정시").length,
+    [rows],
+  );
+
+  const dataUpdatedLabel = useMemo(() => {
+    if (!meta?.dataUpdatedAt) return null;
+    const date = new Date(meta.dataUpdatedAt);
+    if (Number.isNaN(date.getTime())) return null;
+    return new Intl.DateTimeFormat("ko-KR", { year: "numeric", month: "long" }).format(date);
+  }, [meta]);
 
   return (
     <div className="space-y-4">
@@ -87,6 +133,9 @@ export function SignalTable({
           <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
             <div>
               <CardTitle>합격 가능성 신호등</CardTitle>
+              {dataUpdatedLabel ? (
+                <p className="mt-1 text-xs text-muted-foreground">데이터 기준: {dataUpdatedLabel}</p>
+              ) : null}
             </div>
             <Button type="button" onClick={onScan} disabled={loading} className="w-full sm:w-auto">
               {loading ? "스캔 중…" : "전체 대학 스캔"}
@@ -115,7 +164,7 @@ export function SignalTable({
             </label>
           </div>
 
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <div className="flex flex-col gap-1">
               <Label className="text-xs text-muted-foreground">전형 유형</Label>
               <select
@@ -154,7 +203,30 @@ export function SignalTable({
                 <option value="capital">수도권</option>
               </select>
             </div>
+            <div className="flex flex-col gap-1">
+              <Label className="text-xs text-muted-foreground">대학명</Label>
+              <select
+                className="border-input bg-background min-h-11 rounded-md border px-2 text-sm sm:h-9 sm:min-h-9"
+                value={university}
+                onChange={(e) => setUniversity(e.target.value)}
+              >
+                <option value="all">전체 대학</option>
+                {universityOptions.map((name) => (
+                  <option key={name} value={name}>
+                    {name}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
+
+          {hasActiveFilters ? (
+            <div className="flex justify-end">
+              <Button type="button" variant="outline" size="sm" onClick={resetFilters}>
+                필터 초기화
+              </Button>
+            </div>
+          ) : null}
 
           {error ? <ErrorState message={error} onRetry={onScan} /> : null}
 
@@ -166,6 +238,23 @@ export function SignalTable({
               {!meta.has_school_gpa ? " · 교과·종합: 내신 행 없음(가능 시 전체 평균 등급만)" : ""}
             </p>
           ) : null}
+
+          {meta && !meta.suneungScoreAvailable && jeongsiRowCount === 0 ? (
+            <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
+              정시 신호등을 보려면 모의고사 점수를 입력해주세요.{" "}
+              <Link href="/dashboard/scores" className="underline underline-offset-2">
+                성적 입력하러 가기
+              </Link>
+            </div>
+          ) : null}
+
+          <div className="flex flex-wrap items-center gap-2 border-t border-border pt-2 text-xs text-muted-foreground">
+            <span>
+              컷오프 기준: 최종등록자 70%컷 · ±5점(정시) / ±0.3등급(교과) 범위로 안정/적정/도전
+              분류
+            </span>
+            <UncertaintyBadge />
+          </div>
         </CardContent>
       </Card>
 
@@ -199,7 +288,7 @@ export function SignalTable({
               </TableHeader>
               <TableBody>
                 {filtered.map((r) => (
-                  <TableRow key={r.id}>
+                  <TableRow key={r.id} className={rowHoverTone(r.signal)}>
                     <TableCell className="font-medium">{r.university_name}</TableCell>
                     <TableCell className="max-w-[200px] truncate text-sm">{r.admission_name}</TableCell>
                     <TableCell className="hidden text-sm md:table-cell">{r.track}</TableCell>

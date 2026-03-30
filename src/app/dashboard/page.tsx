@@ -71,6 +71,14 @@ export default async function DashboardPage() {
     .sort((a, b) => a.dday.dday - b.dday.dday)[0];
   const hasScores = (scoreCountRes.count ?? 0) > 0;
   const hasStudentRecord = (subjectNoteCountRes.count ?? 0) > 0;
+  const coreCardTestIds: Record<string, string> = {
+    "/dashboard/signals": "card-signals",
+    "/dashboard/chat": "card-chat",
+    "/dashboard/scores": "card-scores",
+    "/dashboard/calendar": "card-calendar",
+    "/dashboard/student-record": "card-student-record",
+    "/dashboard/simulator": "card-simulator",
+  };
 
   return (
     <div className="min-h-screen bg-background p-4 sm:p-6">
@@ -104,7 +112,12 @@ export default async function DashboardPage() {
           {DASHBOARD_CORE_CARDS.map((item) => {
             const Icon = item.icon;
             return (
-              <Link key={item.href} href={item.href} className="block">
+              <Link
+                key={item.href}
+                href={item.href}
+                className="block"
+                data-testid={coreCardTestIds[item.href]}
+              >
                 <Card className="h-36 border-border transition-all hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-md">
                   <CardHeader className="h-full justify-between space-y-0 p-4">
                     <div className="flex items-start justify-between gap-3">

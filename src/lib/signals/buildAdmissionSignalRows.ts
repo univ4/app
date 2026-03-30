@@ -58,16 +58,46 @@ type GpaDbRow = {
   achievement_level: string | null;
 };
 
-function firstMapByUniv<T extends { university_name: string }>(rows: T[]): Map<string, T> {
+function normalizeUnivName(name: string): string {
+  return name
+    .trim()
+    .replace(/\s+/g, "")
+    .replace(/대학교$/u, "대");
+}
+
+function normalizeMajorGroup(group: string): "자연계열" | "인문계열" | null {
+  const g = group.trim();
+  if (/자연/u.test(g)) return "자연계열";
+  if (/인문/u.test(g)) return "인문계열";
+  return null;
+}
+
+function inferMajorGroupFromDeptName(deptName: string): "자연계열" | "인문계열" | null {
+  const track = inferTrack(deptName);
+  if (track === "자연") return "자연계열";
+  if (track === "인문") return "인문계열";
+  return null;
+}
+
+function scoringKey(univ: string, majorGroup: "자연계열" | "인문계열") {
+  return `${normalizeUnivName(univ)}\0${majorGroup}`;
+}
+
+function firstMapByUnivAndGroup<T extends { university_name: string; major_group: string }>(
+  rows: T[],
+): Map<string, T> {
   const m = new Map<string, T>();
   for (const r of rows) {
-    if (!m.has(r.university_name)) m.set(r.university_name, r);
+    const majorGroup = normalizeMajorGroup(r.major_group);
+    if (!majorGroup) continue;
+    const key = scoringKey(r.university_name, majorGroup);
+    if (!m.has(key)) m.set(key, r);
   }
   return m;
 }
 
 function susiKey(univ: string, admissionType: string) {
-  return `${univ}\0${admissionType}`;
+  return `${normalizeUnivName(univ)}\0${admissionType.trim()}`;
 }
 
 function firstMapSusi(rows: SusiRulesRow[]): Map<string, SusiRulesRow> {
@@ -127,17 +157,25 @@ export function buildAdmissionSignalRows(input: BuildAdmissionSignalRowsInput): 
   const { admissionRows, scoringRules, susiRules, schoolGpaRows, suneungScores, applyMedShift } =
     input;
 
-  const rulesByUniv = firstMapByUniv(scoringRules);
+  const rulesByUnivAndGroup = firstMapByUnivAndGroup(scoringRules);
   const susiByKey = firstMapSusi(susiRules);
   const susiRecords = toSusiRecords(schoolGpaRows);
 
   const suneungCache = new Map<string, number>();
   const gpaCache = new Map<string, number>();
 
-  const resolveSuneung = (univ: string): number | null => {
+  const resolveSuneung = (univ: string, deptName: string): number | null => {
     if (!suneungScores) return null;
-    if (suneungCache.has(univ)) return suneungCache.get(univ)!;
-    const row = rulesByUniv.get(univ);
+    const inferredGroup = inferMajorGroupFromDeptName(deptName);
+    const key = inferredGroup ? scoringKey(univ, inferredGroup) : normalizeUnivName(univ);
+    const cacheKey = key;
+    if (suneungCache.has(cacheKey)) return suneungCache.get(cacheKey)!;
+
+    const primary = inferredGroup ? rulesByUnivAndGroup.get(scoringKey(univ, inferredGroup)) : undefined;
+    const fallbackMajorGroup = inferredGroup === "자연계열" ? "인문계열" : "자연계열";
+    const fallback =
+      inferredGroup != null ? rulesByUnivAndGroup.get(scoringKey(univ, fallbackMajorGroup)) : undefined;
+    const row = primary ?? fallback;
     if (!row) return null;
     const rules: UniversityScoringRules = {
       korean_ratio: Number(row.korean_ratio),
@@ -149,7 +187,8 @@ export function buildAdmissionSignalRows(input: BuildAdmissionSignalRowsInput): 
     };
     try {
       const v = calculateSuneungScore(suneungScores, rules);
-      suneungCache.set(univ, v);
+      if (v == null) return null;
+      suneungCache.set(cacheKey, v);
       return v;
     } catch {
       return null;
@@ -193,17 +232,21 @@ export function buildAdmissionSignalRows(input: BuildAdmissionSignalRowsInput): 
     let myScore: number | null = null;
     let scoreType: "suneung" | "gpa";
 
-    if (ar.admission_type === "정시") {
+    const admissionType = ar.admission_type.trim();
+
+    if (admissionType === "정시") {
       scoreType = "suneung";
-      myScore = resolveSuneung(ar.univ_name);
-    } else if (ar.admission_type === "학생부교과" || ar.admission_type === "학생부종합") {
+      myScore = resolveSuneung(ar.univ_name, ar.dept_name);
+    } else if (admissionType === "학생부교과" || admissionType === "학생부종합") {
       scoreType = "gpa";
-      myScore = resolveGpa(ar.univ_name, ar.admission_type);
+      myScore = resolveGpa(ar.univ_name, admissionType);
     } else {
       continue;
     }
 
-    if (myScore == null || !Number.isFinite(myScore)) continue;
+    if (myScore == null || !Number.isFinite(myScore)) {
+      continue;
+    }
 
     const { signal, probability, gap } = calcAdmissionSignal({
       myScore,
@@ -216,11 +259,11 @@ export function buildAdmissionSignalRows(input: BuildAdmissionSignalRowsInput): 
 
     out.push({
       id: ar.id,
-      university_name: ar.univ_name,
+      university_name: ar.univ_name.trim(),
       admission_name: ar.dept_name,
-      admission_type: ar.admission_type,
+      admission_type: admissionType,
       track: inferTrack(ar.dept_name),
-      region: classifyUnivRegion(ar.univ_name),
+      region: classifyUnivRegion(ar.univ_name.trim()),
       cutoff: cutoffN,
       adjusted_cutoff,
       my_score: myScore,

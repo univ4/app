@@ -51,13 +51,17 @@ describe("calculateSuneungScore", () => {
     expect(result).toBe(109.83);
   });
 
-  it("throws when English conversion mapping is missing", () => {
-    expect(() =>
-      calculateSuneungScore(
-        { ...baseScores, english_grade: 9 },
-        baseRules,
-      ),
-    ).toThrow("ValidationError");
+  it("returns null when English conversion mapping is missing and english_ratio > 0", () => {
+    expect(calculateSuneungScore({ ...baseScores, english_grade: 9 }, baseRules)).toBeNull();
+  });
+
+  it("treats missing English mapping as zero when english_ratio is 0", () => {
+    const score = calculateSuneungScore(
+      { ...baseScores, english_grade: 9 },
+      { ...baseRules, english_ratio: 0 },
+    );
+    expect(score).not.toBeNull();
+    expect(score).toBe(102.17);
   });
 
   it("throws ValidationError when rules are invalid", () => {

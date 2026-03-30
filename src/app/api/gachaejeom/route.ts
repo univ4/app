@@ -216,7 +216,7 @@ export async function POST(request: NextRequest) {
 
     let converted_score: number;
     try {
-      converted_score = calculateSuneungScore(suneungScores, {
+      const score = calculateSuneungScore(suneungScores, {
         korean_ratio: Number(ruleRow.korean_ratio),
         math_ratio: Number(ruleRow.math_ratio),
         english_ratio: Number(ruleRow.english_ratio),
@@ -224,6 +224,8 @@ export async function POST(request: NextRequest) {
         science_2_bonus: Number(ruleRow.science_2_bonus),
         english_conversion_table: ruleRow.english_conversion_table,
       });
+      if (score == null) continue;
+      converted_score = score;
     } catch {
       continue;
     }
