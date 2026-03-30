@@ -261,7 +261,7 @@
 
 ### 적재 테이블
 
-- **`student_record_chunks`** — 모집요강 RAG용 `guideline_chunks`와 분리하여 학생별 근거 검색에 사용.
+- **`student_record_chunks`** — 모집요강 RAG용 `guideline_chunks`와 분리하여 학생별 근거 검색에 사용. DDL·RLS·`match_student_record_chunks` RPC는 `supabase/migrations/20260330250000_student_record_chunks.sql`, SQL Editor용 함수만은 `scripts/ingest/match_student_record_chunks.sql`, 임베딩 적재는 `scripts/ingest/embed_student_record.ts` ([`scripts/ingest/README.md`](../scripts/ingest/README.md)).
 
 ### 청크 메타데이터 (예시)
 
@@ -271,7 +271,7 @@
 | `grade` | 학년 |
 | `subject_name` | 세특 과목명 등 |
 | `activity_type` | 창체 영역(자율/동아리/진로) |
-| `section` | `subject_note` / `activity` / `behavior` 등 구분 |
+| `section` | `세특` / `창체` / `행동특성` (적재 스크립트·`metadata` 키와 동일) |
 
 임베딩 모델·청크 분할 규칙은 [`docs/05_AI_PIPELINE.md`](./05_AI_PIPELINE.md)와 정합시킨다.
 

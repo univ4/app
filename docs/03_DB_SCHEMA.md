@@ -160,6 +160,7 @@ erDiagram
   students ||--o{ student_subject_notes : "student_id"
   students ||--o{ student_reading : "student_id"
   students ||--o{ student_behavior : "student_id"
+  students ||--o{ student_record_chunks : "student_id RAG"
   students ||--o{ calendar_events : "student_id"
   students ||--o| simulator_portfolios : "student_id unique"
   students ||--o| subject_profiles : "student_id year"
@@ -710,6 +711,26 @@ DDL: `supabase/migrations/20260329000002_admission_records.sql` (`20260329000001
   반환: `id bigint`, `chunk_text`, `metadata`, `similarity`(코사인 유사도 `1 - (embedding <=> query_embedding)`). `guideline_chunks`에서 `metadata @> coalesce(filter,'{}')`이고 유사도가 `coalesce(match_threshold, 0.75)` **이상**인 행만, `embedding <=> query_embedding` **거리 오름차순**, `limit`는 `greatest(1, least(coalesce(match_count,5), 50))`. (`20260329140000_match_guideline_chunks_threshold.sql`)
 - **`try_consume_chat_quota(p_limit int)`**  
   UTC 오늘 기준 `call_count`를 원자적으로 확인 후 한도 미만이면 +1, 반환 JSON `{ ok, used, code? }`.
+- **`match_student_record_chunks(query_embedding vector(1536), student_id_filter uuid, match_count int default 5, match_threshold double precision default 0.6)`** (`20260330250000_student_record_chunks.sql`)  
+  반환: `id bigint`, `chunk_text`, `metadata`, `similarity`. `student_record_chunks`에서 `student_id = student_id_filter`이고 코사인 유사도가 `match_threshold` 이상인 행만, 거리 오름차순, `limit`는 `greatest(1, least(coalesce(match_count,5), 50))`. `security invoker` + 테이블 RLS로 본인·admin만 해당 학생 행 검색 가능.
+
+### 2.18 `student_record_chunks` (생활기록부 RAG 청크) — `20260330250000_student_record_chunks.sql`
+
+도메인·청크 단위는 [`docs/08_STUDENT_RECORD_SPEC.md`](./08_STUDENT_RECORD_SPEC.md) RAG 적재 대상과 정합한다. `guideline_chunks`와 분리한다.
+
+| 컬럼명 | 타입 | 제약 | 설명 |
+|---|---|---|---|
+| id | bigint | PK, identity | |
+| student_id | uuid | FK → students, not null, ON DELETE CASCADE | |
+| chunk_text | text | not null | 임베딩·검색 본문 |
+| embedding | vector(1536) | not null | `text-embedding-3-small` |
+| metadata | jsonb | not null, default `{}` | `section`(세특/창체/행동특성), `grade`, `subject_name`(세특), `activity_type`(창체), `content_sha256` |
+| content_sha256 | text | not null, 64자 hex | 본문 해시; `metadata.content_sha256`과 동일·`UNIQUE (student_id, content_sha256)`로 upsert·중복 방지 |
+| created_at | timestamptz | not null, default now() | |
+
+- **인덱스**: HNSW `embedding vector_cosine_ops`, `(student_id)`
+- **RLS**: 생활기록부 구조화 테이블과 동일 — SELECT는 본인 `student_id` 또는 admin; INSERT/UPDATE/DELETE는 admin만 (`service_role`은 우회).
+- **적재 스크립트**: `scripts/ingest/embed_student_record.ts` (환경·순서는 [`scripts/ingest/README.md`](../scripts/ingest/README.md))
 
 ---
 
@@ -731,6 +752,13 @@ create index if not exists guideline_chunks_embedding_hnsw_idx
 ```sql
 create index if not exists idx_guideline_chunks_meta
   on public.guideline_chunks(university_name, admission_year, admission_type);
+```
+
+`student_record_chunks` 벡터 검색 인덱스:
+
+```sql
+create index if not exists student_record_chunks_embedding_hnsw_idx
+  on public.student_record_chunks using hnsw (embedding vector_cosine_ops);
 ```
 
 HNSW 선택 이유(요약):

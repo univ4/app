@@ -9,7 +9,7 @@
 ## Cursor rules (요약)
 
 - `00_project_overview.mdc`: 수험생·학부모 AI 대입 전략 플랫폼; Data coverage(199 / 18); Out of Scope는 PRD v2 5.2와 동일.
-- `02_architecture.mdc`: Two-Track, `admission_records`·data-collector, ingest, 핵심 테이블 목록(`calendar_events`, `simulator_portfolios`, 생활기록부 구조화 테이블 포함), Track 1에 `calcSchoolLevel`(P1-2)·`calcAdmissionSignal`·`calcPortfolioRisk`·`calcNapchiRisk`·`calcRecordGapAnalysis`/`detectGibupGap`(P1-14)·`calcAdmissionTodos`(P1-12)·`calcRealCompetitionRate`(P1-3) 명시.
+- `02_architecture.mdc`: Two-Track, `admission_records`·data-collector, ingest, 핵심 테이블 목록(`guideline_chunks`, **`student_record_chunks`**, `calendar_events`, `simulator_portfolios`, 생활기록부 구조화 테이블 포함), Track 1에 `calcSchoolLevel`(P1-2)·`calcAdmissionSignal`·`calcPortfolioRisk`·`calcNapchiRisk`·`calcRecordGapAnalysis`/`detectGibupGap`(P1-14)·`calcAdmissionTodos`(P1-12)·`calcRealCompetitionRate`(P1-3) 명시.
 - `04_domain_knowledge.mdc`: Target University Universe(199·18·P1-15·P0-4).
 - `05_change_protocol.mdc`: 문서 선행·연쇄 갱신(마이그레이션 시 `03_DATA_MODEL`+`03_DB_SCHEMA`+`current_state`); **마이그레이션과 `03_DATA_MODEL.md` 동시 커밋·커밋 메시지에 `docs: 03_DATA_MODEL.md 업데이트`**(CI 문서 싱크); 계산기/API 체크리스트; calculators **≥90%**·신규 API 구문 **≥70%**·`[id]` PUT/DELETE 성공 테스트 1건 이상; **완료 전 로컬 CI**: `tsc --noEmit` → `lint` → `npm test` → `build`; API route 테스트는 `NextRequest`(`next/server`)·`new Request()` 금지; 완료 보고에 커버리지·미커버 구간; **<90% calculators / <50% 신규 API** 시 완료 불가 또는 최소 테스트 추가; Supabase 모킹은 `jest.mock("@/lib/supabase/server")`+`getAuthUser` (`scores.route.test.ts` 표준).
 
@@ -50,6 +50,7 @@
 | `20260330210000_simulator_portfolios.sql` | P1-7 `simulator_portfolios` + RLS (학생당 1행) |
 | `20260330230000_susi_gpa_rules_interview_required.sql` | P1-16 `susi_gpa_rules.interview_required` (nullable) |
 | `20260330240000_admission_records_nulsul_type.sql` | P1-3 `admission_records.admission_type`에 `논술전형` CHECK 허용 |
+| `20260330250000_student_record_chunks.sql` | 생기부 RAG `student_record_chunks` + HNSW + RLS + `match_student_record_chunks` |
 
 ### 대시보드 UI (발췌)
 
@@ -78,6 +79,7 @@
 ### Ingest (`scripts/ingest/`)
 
 - `load_admission_db.ts` → `admission_records`
+- `embed_student_record.ts` → `student_record_chunks` (순서·환경: `scripts/ingest/README.md`)
 - `embed_and_store.ts` → `guideline_chunks`
 - `githubReleaseFetch.ts` (GitHub Releases + `GITHUB_TOKEN`)
 - `parse_neis_grades.ts`, `load_neis_grades.ts` — UNIQUE 정합 후 내신 JSON 적재(검증 **49**건, 2026-03-30)

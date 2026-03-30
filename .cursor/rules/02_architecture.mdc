@@ -28,6 +28,7 @@ Product baseline: `docs/01_PRD_v2.md`, roadmap: `docs/05_ROADMAP.md`.
   - `susi_gpa_rules`
   - `converted_standard_scores`
   - `guideline_chunks`
+  - `student_record_chunks` (생기부 RAG; `match_student_record_chunks`, `scripts/ingest/embed_student_record.ts`)
   - `admission_schedules`
   - `admission_records` (data-collector 전형·입결 적재)
   - `calendar_events` (P0-5 가족 입시 일정; RPC `ensure_default_admission_calendar_2027`)
@@ -45,6 +46,7 @@ Product baseline: `docs/01_PRD_v2.md`, roadmap: `docs/05_ROADMAP.md`.
   - `university_scoring_rules` ← 수능반영비율 필드
   - `susi_gpa_rules` ← 반영교과·학년별반영비율 필드
   - `guideline_chunks` ← 전형계획 Markdown (18개 대학 + 정시자료 4개)
+  - `student_record_chunks` ← 생기부 구조화 테이블 기반 임베딩 (`embed_student_record.ts`)
 - **갱신 주기**: 연 1회 (4~5월 신규 데이터 공개 시)
 - **ingest 실행 방법**:
   - `admission_db.jsonl` → `admission_records`: `./node_modules/.bin/tsx scripts/ingest/load_admission_db.ts`

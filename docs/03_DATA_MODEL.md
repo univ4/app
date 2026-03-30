@@ -7,7 +7,7 @@
 
 실제 DDL: `supabase/migrations/20260327000000_subject_profiles.sql`
 
-**RAG·챗봇 한도**: `guideline_chunks` 검색 RPC(`match_guideline_chunks`, `match_threshold` 포함) 및 `chat_usage_daily` / `try_consume_chat_quota`는 [`docs/03_DB_SCHEMA.md`](./03_DB_SCHEMA.md) §2.17 및 동일 문서의 RAG RPC 절, 마이그레이션 `20260329120000_chat_rag.sql`, `20260329140000_match_guideline_chunks_threshold.sql`을 참조.
+**RAG·챗봇 한도**: `guideline_chunks` 검색 RPC(`match_guideline_chunks`, `match_threshold` 포함), 생기부 `student_record_chunks`·`match_student_record_chunks`, 및 `chat_usage_daily` / `try_consume_chat_quota`는 [`docs/03_DB_SCHEMA.md`](./03_DB_SCHEMA.md) §2.17·§2.18 및 마이그레이션 `20260329120000_chat_rag.sql`, `20260329140000_match_guideline_chunks_threshold.sql`, `20260330250000_student_record_chunks.sql`을 참조.
 
 ---
 
@@ -150,6 +150,12 @@ NEIS 파싱 JSON 적재 스크립트 `scripts/ingest/load_neis_grades.ts`의 ups
 - **적재**: `scripts/ingest/load_student_record.ts` — `record/student_record.json` → 위 9테이블. 검증 배치(2026-03-29): `student_attendance` 3건, `student_awards` 3건, `student_activities` 6건, `student_volunteer` 14건, `student_subject_notes` 23건, `student_behavior` 2건(`student_reading`은 해당 배치에서 미적재 또는 0건).
 - **RLS**: SELECT는 본인 `student_id` 또는 `students.role = 'admin'`; INSERT/UPDATE/DELETE는 admin만(§2.15와 동일).
 
+### `student_record_chunks` (생활기록부 RAG)
+
+마이그레이션 `supabase/migrations/20260330250000_student_record_chunks.sql`. 세특(`student_subject_notes`)·창체(`student_activities`)·행동특성(`student_behavior`) 텍스트를 청크·임베딩하여 `guideline_chunks`와 분리 저장한다. DDL·RLS·RPC는 [`docs/03_DB_SCHEMA.md`](./03_DB_SCHEMA.md) §2.18.
+
+- **적재**: `scripts/ingest/embed_student_record.ts` — `NEIS_STUDENT_ID`(선택, 미설정 시 `auth.users` 첫 사용자)·`OPENAI_API_KEY`·서비스 키 필요. 실행 순서는 [`scripts/ingest/README.md`](../scripts/ingest/README.md) 참조.
+
 ---
 
 ## 5) 타입스크립트 타입 (참고)
@@ -200,7 +206,7 @@ NEIS 파싱 JSON 적재 스크립트 `scripts/ingest/load_neis_grades.ts`의 ups
 
 GitHub Actions `doc-sync-check`는 `supabase/migrations/*.sql` 중 **`docs/03_DATA_MODEL.md`보다 최근에 수정된 파일**이 있으면 실패합니다. 마이그레이션을 추가·변경한 커밋에서는 반드시 본 문서를 함께 갱신하세요.
 
-**현재 마이그레이션 파일 목록 (16개, `find supabase/migrations -name "*.sql" | sort` 기준)**
+**현재 마이그레이션 파일 목록 (17개, `find supabase/migrations -name "*.sql" | sort` 기준)**
 
 | 순서 | 파일명 |
 | ---: | --- |
@@ -220,3 +226,4 @@ GitHub Actions `doc-sync-check`는 `supabase/migrations/*.sql` 중 **`docs/03_DA
 | 14 | `20260330210000_simulator_portfolios.sql` |
 | 15 | `20260330230000_susi_gpa_rules_interview_required.sql` |
 | 16 | `20260330240000_admission_records_nulsul_type.sql` |
+| 17 | `20260330250000_student_record_chunks.sql` |
