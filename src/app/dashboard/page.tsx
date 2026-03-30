@@ -1,7 +1,7 @@
-import { addDays, format } from "date-fns";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { TodoList } from "@/components/calendar/TodoList";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -10,7 +10,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { calcDDay } from "@/lib/calculators/calcDDay";
+import type { CalendarEventRow } from "@/lib/calendar/calendarApiTypes";
+import { aggregateAdmissionTodosFromCalendarEvents } from "@/lib/calculators/calcAdmissionTodos";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function DashboardPage() {
@@ -38,22 +39,20 @@ export default async function DashboardPage() {
       .eq("student_id", user.id),
   ]);
 
-  const today = new Date();
-  const todayStr = format(today, "yyyy-MM-dd");
-  const weekEndStr = format(addDays(today, 7), "yyyy-MM-dd");
-
-  let weekCalendarItems: { title: string; event_date: string }[] = [];
+  let dashboardTodos = aggregateAdmissionTodosFromCalendarEvents([]);
   if (!rpcResult.error) {
-    const { data: weekRows } = await supabase
+    const { data: calRows } = await supabase
       .from("calendar_events")
-      .select("title, event_date")
+      .select("id, title, event_date, event_type")
       .eq("student_id", user.id)
-      .gte("event_date", todayStr)
-      .lte("event_date", weekEndStr)
       .order("event_date", { ascending: true })
-      .limit(10);
-    weekCalendarItems = weekRows ?? [];
+      .order("title", { ascending: true });
+    dashboardTodos = aggregateAdmissionTodosFromCalendarEvents(
+      (calRows ?? []) as Pick<CalendarEventRow, "id" | "title" | "event_date" | "event_type">[],
+    );
   }
+
+  const dashboardTodoPreview = dashboardTodos.slice(0, 12);
 
   const email = user.email ?? "사용자";
   const emailLocalPart = email.includes("@") ? email.split("@")[0] : email;
@@ -77,32 +76,19 @@ export default async function DashboardPage() {
           <CardHeader>
             <CardTitle>이번 주 할 일</CardTitle>
             <CardDescription>
-              오늘부터 7일 이내 캘린더 일정 ·{" "}
+              캘린더 일정 기준 역산 TO-DO(원서접수·수능·정시) ·{" "}
               <Link href="/dashboard/calendar" className="text-primary underline">
                 입시 캘린더
               </Link>
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {weekCalendarItems.length > 0 ? (
-              <ol className="list-decimal space-y-2 pl-5 text-sm">
-                {weekCalendarItems.map((row) => (
-                  <li key={`${row.event_date}-${row.title}`}>
-                    <span className="font-mono text-muted-foreground">
-                      {calcDDay(row.event_date).label}
-                    </span>{" "}
-                    {row.title}{" "}
-                    <span className="text-muted-foreground">({row.event_date})</span>
-                  </li>
-                ))}
-              </ol>
-            ) : (
-              <ol className="list-decimal space-y-2 pl-5 text-sm text-muted-foreground">
-                <li>수능최저 기준 과목별 목표 등급 재확인</li>
-                <li>지원 대학 최종 6장 결정</li>
-                <li>자기소개서 초안 완성</li>
-              </ol>
-            )}
+            <TodoList
+              items={dashboardTodoPreview}
+              showHeading={false}
+              numbered
+              className="border-0 p-0"
+            />
           </CardContent>
         </Card>
 

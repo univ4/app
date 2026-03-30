@@ -62,6 +62,7 @@
 | `calcSuneungMinimumProbability(...)` | 모의고사 분포 기반 수능최저 조건 충족 확률(%) (P1-13) |
 | `detectGibupGap(...)` | 생기부 항목별 공백·글자수 미달 탐지 (P1-14) |
 | `calcDDay(...)` | 기준일 대비 D-Day 정수 산출 (P1-12) |
+| `calcAdmissionTodos(...)` / `aggregateAdmissionTodosFromCalendarEvents(...)` | 입시 일정 유형·남은 일수 기준 역산 TO-DO 템플릿 (P1-12) |
 | `calcSuneungNapchiRisk(...)` | 수시 지원 조합 기준 정시 납치 리스크 등급 (P2-6) |
 | `scanAdmissionSignals(...)` *(가칭)* | 199개 대학·전형 배치 합격 신호등 산출 (P0-4 전체 스캔, P1-15 핵심) |
 | `filterUniversitiesByAdmissionCriteria(...)` *(가칭)* | 수능최저/면접/교과 반영 등 AND 조건 필터 (P1-16) |

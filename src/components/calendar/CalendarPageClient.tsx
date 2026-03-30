@@ -5,7 +5,9 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 
 import type { CalendarEventRow } from "@/lib/calendar/calendarApiTypes";
+import type { CalendarAdmissionTodoRow } from "@/lib/calculators/calcAdmissionTodos";
 import { calcDDay } from "@/lib/calculators/calcDDay";
+import { TodoList } from "@/components/calendar/TodoList";
 import { CalendarView, CalendarEventList } from "@/components/calendar/CalendarView";
 import { EventForm } from "@/components/calendar/EventForm";
 import { Button } from "@/components/ui/button";
@@ -19,12 +21,14 @@ import {
 
 export interface CalendarPageClientProps {
   initialItems: CalendarEventRow[];
+  initialTodos: CalendarAdmissionTodoRow[];
   isAdmin: boolean;
 }
 
-export function CalendarPageClient({ initialItems, isAdmin }: CalendarPageClientProps) {
+export function CalendarPageClient({ initialItems, initialTodos, isAdmin }: CalendarPageClientProps) {
   const router = useRouter();
   const [items, setItems] = React.useState<CalendarEventRow[]>(initialItems);
+  const [todoItems, setTodoItems] = React.useState<CalendarAdmissionTodoRow[]>(initialTodos);
   const [month, setMonth] = React.useState(() => new Date());
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
   const [formOpen, setFormOpen] = React.useState<"create" | "edit" | null>(null);
@@ -33,13 +37,26 @@ export function CalendarPageClient({ initialItems, isAdmin }: CalendarPageClient
     setItems(initialItems);
   }, [initialItems]);
 
+  React.useEffect(() => {
+    setTodoItems(initialTodos);
+  }, [initialTodos]);
+
   async function refreshFromApi() {
-    const res = await fetch("/api/calendar");
-    const json = (await res.json()) as {
+    const [calRes, todoRes] = await Promise.all([
+      fetch("/api/calendar"),
+      fetch("/api/calendar/todos"),
+    ]);
+    const calJson = (await calRes.json()) as {
       data: { items: CalendarEventRow[] } | null;
     };
-    if (json.data?.items) {
-      setItems(json.data.items);
+    const todoJson = (await todoRes.json()) as {
+      data: { todos: CalendarAdmissionTodoRow[] } | null;
+    };
+    if (calJson.data?.items) {
+      setItems(calJson.data.items);
+    }
+    if (todoJson.data?.todos) {
+      setTodoItems(todoJson.data.todos);
     }
     router.refresh();
   }
@@ -58,6 +75,24 @@ export function CalendarPageClient({ initialItems, isAdmin }: CalendarPageClient
 
   return (
     <div className="space-y-8">
+      <Card>
+        <CardHeader>
+          <CardTitle>역산 TO-DO</CardTitle>
+          <CardDescription>
+            등록된 일정(원서접수·수능·정시)을 기준으로 오늘 날짜에 맞춰 할 일을 골라 보여 줍니다. 완료 표시는 이
+            기기에만 저장됩니다.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <TodoList
+            items={todoItems}
+            numbered
+            showHeading={false}
+            className="border-0 p-0"
+          />
+        </CardContent>
+      </Card>
+
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-2">

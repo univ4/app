@@ -6,7 +6,7 @@
 통합 테스트 전략·기존 케이스는 [`docs/06_TEST_PLAN.md`](./06_TEST_PLAN.md)를 참조합니다.  
 본 문서는 Track 1 함수·`POST /api/chat`에 대한 **단위·라우트 테스트 스펙**을 정의한다(§2·3·8 등은 구현됨, §4·5·6·7 등은 예정).
 
-**실행 스냅샷 (2026-03-30):** `npm test` — **24** suites, **210** tests, FAIL 0. (`GET/POST /api/simulator`: `src/__tests__/api/simulator.route.test.ts`; `calcSubjectAdvantage` / `GET /api/subject-analysis`: `src/__tests__/calculators/calcSubjectAdvantage.test.ts`, `src/__tests__/api/subject-analysis.route.test.ts`; `calcPortfolioRisk` / `calcNapchiRisk`: `src/__tests__/calculators/calcPortfolioRisk.test.ts`, `calcNapchiRisk.test.ts`; `GET /api/signals`: `src/__tests__/api/signals.route.test.ts`; 생기부 `[id]`·출결 PUT: `src/__tests__/api/student-record-api.test.ts`; `calcAdmissionSignal`: `src/__tests__/calculators/calcAdmissionSignal.test.ts`; 캘린더·D-Day: `src/__tests__/calendar/calendarDday.integration.test.ts`)
+**실행 스냅샷 (2026-03-30):** `npm test` — **28** suites, **228** tests, FAIL 0. (`GET/POST /api/simulator`: `src/__tests__/api/simulator.route.test.ts`; `calcSubjectAdvantage` / `GET /api/subject-analysis`: `src/__tests__/calculators/calcSubjectAdvantage.test.ts`, `src/__tests__/api/subject-analysis.route.test.ts`; `calcPortfolioRisk` / `calcNapchiRisk`: `src/__tests__/calculators/calcPortfolioRisk.test.ts`, `calcNapchiRisk.test.ts`; `GET /api/signals`: `src/__tests__/api/signals.route.test.ts`; 생기부 `[id]`·출결 PUT: `src/__tests__/api/student-record-api.test.ts`; `calcAdmissionSignal`: `src/__tests__/calculators/calcAdmissionSignal.test.ts`; 캘린더·D-Day: `src/__tests__/calendar/calendarDday.integration.test.ts`; P1-12 `calcAdmissionTodos` / `GET /api/calendar/todos`: `src/__tests__/calculators/calcAdmissionTodos.test.ts`, `src/__tests__/api/calendar-todos.route.test.ts`)
 
 ---
 
@@ -60,6 +60,23 @@
 |---|---|---|
 | DD-01 | 이벤트일 `2026-09-07`, 오늘을 `2026-03-27`로 고정 | `dday` = **164**, 라벨 `D-164` (음수면 이미 지남 → `D+{n}`) |
 | DD-01b | 동일 이벤트, 오늘을 `2026-03-29`로 고정 | `dday` = **162**, 라벨 `D-162` |
+
+---
+
+## 3b. `calcAdmissionTodos(...)` (P1-12)
+
+구현·테스트: `src/lib/calculators/calcAdmissionTodos.ts`, `src/__tests__/calculators/calcAdmissionTodos.test.ts`
+
+`calcAdmissionTodos({ targetDate, eventType, dday })` — `targetDate`는 `YYYY-MM-DD` 검증용, 필터는 `dday`와 유형별 마일스톤 오프셋으로 결정한다. `aggregateAdmissionTodosFromCalendarEvents`는 캘린더 행 배열을 날짜 순으로 펼친다.
+
+| ID | 시나리오 | 기대 |
+|---|---|---|
+| AT-01 | `원서접수`, `dday` > 30 | D-30~D-1 전 항목(5개) |
+| AT-02 | `원서접수`, `dday` = 7 | D-7, D-3, D-1만 |
+| AT-03 | `수능`, `dday` = 1 | D-1 한 항목 |
+| AT-04 | 임의 유형, `dday` < 0 | 빈 배열 |
+
+**API**: `GET /api/calendar/todos` — `src/__tests__/api/calendar-todos.route.test.ts` (비인증 401, 인증 200·`data.todos` 배열)
 
 ---
 

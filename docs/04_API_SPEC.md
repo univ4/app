@@ -698,6 +698,34 @@ university=서강대
 - 권한: Admin만, 본인 `student_id` 행만.
 - 응답: `{ data: { deleted_id }, error: null }`
 
+### GET `/api/calendar/todos` — P1-12 역산 TO-DO
+
+- 권한: 인증 사용자(본인 `student_id` 일정만 기준).
+- 처리: `ensure_default_admission_calendar_2027` 호출 후 `calendar_events` 목록을 읽고, `원서접수`·`수능`·`정시` 유형에 대해 오늘 기준 D-Day로 `calcAdmissionTodos` 템플릿을 적용해 합친다. 지난 일정(`dday < 0`)·`면접`/`논술`/`기타`는 TO-DO에서 제외된다.
+
+응답 예시:
+
+```json
+{
+  "data": {
+    "todos": [
+      {
+        "timing": "D-30",
+        "task": "목표 대학 최종 6장 결정",
+        "category": "prepare",
+        "event_id": "uuid",
+        "event_title": "수시 원서접수 시작",
+        "event_date": "2026-09-07",
+        "event_type": "원서접수",
+        "dday": 162,
+        "dday_label": "D-162"
+      }
+    ]
+  },
+  "error": null
+}
+```
+
 ---
 
 ## 5c. 생활기록부 API (`/api/student-record/*`) — P1 입력 폼

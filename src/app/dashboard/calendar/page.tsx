@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 
 import { CalendarPageClient } from "@/components/calendar/CalendarPageClient";
 import type { CalendarEventRow } from "@/lib/calendar/calendarApiTypes";
+import { aggregateAdmissionTodosFromCalendarEvents } from "@/lib/calculators/calcAdmissionTodos";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 
@@ -36,6 +37,7 @@ export default async function DashboardCalendarPage() {
   }
 
   const initialItems = (rows ?? []) as CalendarEventRow[];
+  const initialTodos = aggregateAdmissionTodosFromCalendarEvents(initialItems);
   const isAdmin = student?.role === "admin";
 
   return (
@@ -55,7 +57,11 @@ export default async function DashboardCalendarPage() {
           </Button>
         </div>
 
-        <CalendarPageClient initialItems={initialItems} isAdmin={isAdmin} />
+        <CalendarPageClient
+          initialItems={initialItems}
+          initialTodos={initialTodos}
+          isAdmin={isAdmin}
+        />
       </div>
     </div>
   );

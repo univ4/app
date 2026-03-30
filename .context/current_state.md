@@ -9,7 +9,7 @@
 ## Cursor rules (요약)
 
 - `00_project_overview.mdc`: 수험생·학부모 AI 대입 전략 플랫폼; Data coverage(199 / 18); Out of Scope는 PRD v2 5.2와 동일.
-- `02_architecture.mdc`: Two-Track, `admission_records`·data-collector, ingest, 핵심 테이블 목록(`calendar_events`, `simulator_portfolios`, 생활기록부 구조화 테이블 포함), Track 1에 `calcAdmissionSignal`·`calcPortfolioRisk`·`calcNapchiRisk` 명시.
+- `02_architecture.mdc`: Two-Track, `admission_records`·data-collector, ingest, 핵심 테이블 목록(`calendar_events`, `simulator_portfolios`, 생활기록부 구조화 테이블 포함), Track 1에 `calcAdmissionSignal`·`calcPortfolioRisk`·`calcNapchiRisk`·`calcAdmissionTodos`(P1-12) 명시.
 - `04_domain_knowledge.mdc`: Target University Universe(199·18·P1-15·P0-4).
 - `05_change_protocol.mdc`: 문서 선행·연쇄 갱신(마이그레이션 시 `03_DATA_MODEL`+`03_DB_SCHEMA`+`current_state`); **마이그레이션과 `03_DATA_MODEL.md` 동시 커밋·커밋 메시지에 `docs: 03_DATA_MODEL.md 업데이트`**(CI 문서 싱크); 계산기/API 체크리스트; calculators **≥90%**·신규 API 구문 **≥70%**·`[id]` PUT/DELETE 성공 테스트 1건 이상; **완료 전 로컬 CI**: `tsc --noEmit` → `lint` → `npm test` → `build`; API route 테스트는 `NextRequest`(`next/server`)·`new Request()` 금지; 완료 보고에 커버리지·미커버 구간; **<90% calculators / <50% 신규 API** 시 완료 불가 또는 최소 테스트 추가; Supabase 모킹은 `jest.mock("@/lib/supabase/server")`+`getAuthUser` (`scores.route.test.ts` 표준).
 
@@ -21,11 +21,11 @@
 
 ## 완료된 핵심 산출물
 
-### Calculators (13개, `src/lib/calculators/`)
+### Calculators (14개, `src/lib/calculators/`)
 
 - `analyzeSubjectAdvantage.ts`, **`calcSubjectAdvantage.ts`** (P1-11 정시 반영비 유불리), `calculateAdmissionProbability.ts`, `calculateSuneungScore.ts`, `calculateSusiGPA.ts`, `calculateZScore.ts`
 - `checkSubjectEligibility.ts`, `checkSuneungMinimum.ts`
-- `calcDDay.ts`, `calcSuneungMinimumProbability.ts`, **`calcAdmissionSignal.ts`** (P0-4 / P1-17 대표 확률)
+- `calcDDay.ts`, **`calcAdmissionTodos.ts`** (P1-12 역산 TO-DO), `calcSuneungMinimumProbability.ts`, **`calcAdmissionSignal.ts`** (P0-4 / P1-17 대표 확률)
 - **`calcPortfolioRisk.ts`**, **`calcNapchiRisk.ts`** (P1-7 원서 배분 시뮬레이터)
 
 ### DB 마이그레이션 (적용 순, `supabase/migrations/`)
@@ -64,7 +64,7 @@
 - **`api/explore/route.ts`** (P1-15·P1-16)
 - **`api/subject-analysis/route.ts`**, **`api/subject-analysis/profile/route.ts`** (P1-11)
 - **`api/simulator/route.ts`** (P1-7)
-- **`api/calendar/route.ts`, `api/calendar/[id]/route.ts`**
+- **`api/calendar/route.ts`, `api/calendar/[id]/route.ts`**, **`api/calendar/todos/route.ts`** (P1-12)
 - **`api/student-record/*`** (subject-notes, activities, awards, behavior, attendance, volunteer, reading, certificates, school-violence)
 
 ### Ingest (`scripts/ingest/`)
@@ -77,7 +77,7 @@
 
 ### 테스트 (`src/__tests__/`)
 
-- Calculators × 13, API routes × 7+, lib/chat × 1, calendar 통합 × 1, explore 헬퍼 × 1 — **26+ suites** (스냅샷은 `npm test` 기준)
+- Calculators × 14, API routes × 7+, lib/chat × 1, calendar 통합 × 1, explore 헬퍼 × 1 — **28** suites 근사 (`npm test` 기준)
 
 ## 데이터 적재 스냅샷 (검증 배치)
 
@@ -89,7 +89,7 @@
 ## 테스트·품질 현황
 
 - **Jest:** `jest.config.ts` (next/jest), `testMatch`: `src/__tests__/**/*.test.ts`
-- **결과:** **201 tests PASS** / **22 suites** / FAIL 0 (`npm test`, 2026-03-30)
+- **결과:** **228 tests PASS** / **28 suites** / FAIL 0 (`npm test`, 2026-03-30)
 
 ## PRD v2 백로그 메모
 
