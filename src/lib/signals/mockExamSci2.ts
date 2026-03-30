@@ -5,5 +5,5 @@ export function parseSci2IsTypeTwo(subjectName: string | null): boolean {
   const sci2Part = parts.find((p) => p.startsWith("sci2:"));
   const sci2Subject = (sci2Part?.slice("sci2:".length) ?? "").trim();
   if (!sci2Subject) return false;
-  return sci2Subject.includes("II");
+  return sci2Subject.includes("II") || sci2Subject.includes("Ⅱ");
 }

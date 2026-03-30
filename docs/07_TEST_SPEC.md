@@ -98,6 +98,21 @@
 
 ---
 
+## 1b-2. `calcScienceComboSimulator` (P3-4)
+
+구현·테스트: `src/lib/calculators/calcScienceComboSimulator.ts`, `src/__tests__/calculators/calcScienceComboSimulator.test.ts`
+
+| ID | 시나리오 | 기대 |
+|---|---|---|
+| SCS-01 | 과탐Ⅱ 2과목 + 일부 대학만 `science_2_bonus`>0 | 해당 대학이 `advantageUnivs`, `isSci2Combo` true |
+| SCS-02 | 과탐Ⅰ 2과목 | `advantageUnivs` 빈 배열, `recommendation`에 과탐Ⅰ 2과목 문구 |
+| SCS-03 | 과탐Ⅰ+Ⅱ 혼합(탐구2가 과탐Ⅱ) | `advantageUnivs`에 가산 대학 포함, `recommendation`에 절충 문구 |
+| SCS-04 | `scoringRules` 빈 배열 | `advantageUnivs`·`disadvantageUnivs` 빈 배열, 안내 `recommendation` |
+
+**API**: `POST /api/science-combo` — `src/__tests__/api/science-combo.route.test.ts` (비인증 401, 인증 200·`result`)
+
+---
+
 ## 1c. `calcIntegratedStrategy` (P2-6)
 
 구현·테스트: `src/lib/calculators/calcIntegratedStrategy.ts`, `src/__tests__/calculators/calcIntegratedStrategy.test.ts`, `src/__tests__/calculators/calcIntegratedStrategy.edge.test.ts` (`calcNapchiRisk` 스텁·기회비용 대체 문구)

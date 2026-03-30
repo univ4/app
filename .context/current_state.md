@@ -22,9 +22,9 @@
 
 ## 완료된 핵심 산출물
 
-### Calculators (18개, `src/lib/calculators/`)
+### Calculators (19개, `src/lib/calculators/`)
 
-- `analyzeSubjectAdvantage.ts`, **`calcSubjectAdvantage.ts`** (P1-11 정시 반영비 유불리), **`calcAdmissionTrend.ts`** (P2-9 연도별 입결 추이), `calculateAdmissionProbability.ts`, `calculateSuneungScore.ts`, `calculateSusiGPA.ts`, `calculateZScore.ts`, **`calcSchoolLevel.ts`** (P1-2 Z·고교 수준 참고)
+- `analyzeSubjectAdvantage.ts`, **`calcSubjectAdvantage.ts`** (P1-11 정시 반영비 유불리), **`calcScienceComboSimulator.ts`** (P3-4 과탐 조합·가산), **`calcAdmissionTrend.ts`** (P2-9 연도별 입결 추이), `calculateAdmissionProbability.ts`, `calculateSuneungScore.ts`, `calculateSusiGPA.ts`, `calculateZScore.ts`, **`calcSchoolLevel.ts`** (P1-2 Z·고교 수준 참고)
 - `checkSubjectEligibility.ts`, `checkSuneungMinimum.ts`
 - `calcDDay.ts`, **`calcAdmissionTodos.ts`** (P1-12 역산 TO-DO), `calcSuneungMinimumProbability.ts`, **`calcAdmissionSignal.ts`** (P0-4 / P1-17 대표 확률)
 - **`calcPortfolioRisk.ts`**, **`calcNapchiRisk.ts`** (P1-7 원서 배분 시뮬레이터), **`calcIntegratedStrategy.ts`** (P2-6 수시·정시 통합 전략)
@@ -62,6 +62,7 @@
 - **P2-4** `src/app/dashboard/exam-analysis/page.tsx` — 논술·면접 기출 분석(`ExamAnalysisView`; `GET/POST /api/exam-analysis`, 데이터 없을 때 안내 카드)
 - **P1-7** `src/app/dashboard/simulator/page.tsx` — 원서 배분 시뮬레이터(`PortfolioBuilder`, `PortfolioSummary`; `GET/POST /api/simulator`)
 - **P1-11** `src/app/dashboard/subject-analysis/page.tsx` — 선택과목 분석(`SubjectProfileForm`, `EligibilityResult`, `AdvantageResult`; `GET /api/subject-analysis`, `POST /api/subject-analysis/profile`)
+- **P3-4** `src/app/dashboard/science-combo/page.tsx` — 과탐 조합 시뮬레이터(`ScienceComboForm`, `ScienceComboResult`; `POST /api/science-combo`)
 - **P2-9** `src/app/dashboard/trend-analysis/page.tsx` — 입결 추이 분석(`TrendAnalysisClient`, `TrendChart`, `TrendFilter`; `GET /api/trend-analysis`)
 - **P1-15·P1-16** `src/app/dashboard/explore/page.tsx` — 전국 대학 탐색(`ExploreClient`, `ExploreFilter`, `ExploreTable`; `GET /api/explore`)
 - **P1-3** `src/app/dashboard/nulsul/page.tsx` — 논술 실질 경쟁률(`NulsulDashboardClient`, `NulsulCalculator`, `NulsulCompareTable`; `GET /api/nulsul`)
@@ -80,6 +81,7 @@
 - **`api/explore/route.ts`** (P1-15·P1-16)
 - **`api/nulsul/route.ts`** (P1-3)
 - **`api/subject-analysis/route.ts`**, **`api/subject-analysis/profile/route.ts`** (P1-11)
+- **`api/science-combo/route.ts`** (P3-4)
 - **`api/simulator/route.ts`** (P1-7)
 - **`api/calendar/route.ts`, `api/calendar/[id]/route.ts`**, **`api/calendar/todos/route.ts`** (P1-12)
 - **`api/student-record/*`** (subject-notes, activities, awards, behavior, attendance, volunteer, reading, certificates, school-violence)
@@ -98,7 +100,7 @@
 
 ### 테스트 (`src/__tests__/`)
 
-- Calculators × 18+, API routes × 8+, lib/chat × 1, calendar 통합 × 1, explore 헬퍼 × 1 — `npm test` 스위트 수는 실행 시 확인
+- Calculators × 19+, API routes × 8+, lib/chat × 1, calendar 통합 × 1, explore 헬퍼 × 1 — `npm test` 스위트 수는 실행 시 확인
 
 ## 데이터 적재 스냅샷 (검증 배치)
 

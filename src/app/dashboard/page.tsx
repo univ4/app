@@ -132,6 +132,17 @@ export default async function DashboardPage() {
             </Card>
           </Link>
 
+          <Link href="/dashboard/science-combo" className="block">
+            <Card>
+              <CardHeader>
+                <CardTitle>과탐 조합 시뮬레이터</CardTitle>
+                <CardDescription>
+                  탐구1·2 조합별 과탐Ⅱ 가산 적용 대학 비교 (P3-4)
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </Link>
+
           <Link href="/dashboard/gachaejeom" className="block">
             <Card>
               <CardHeader>

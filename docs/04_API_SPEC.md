@@ -1331,6 +1331,27 @@ university=서강대
 
 ---
 
+### POST `/api/science-combo` *(구현, P3-4)*
+
+설명: 탐구1·탐구2 과목명과 `university_scoring_rules`(자연계열, 대학별 최신 `admission_year`)로 Track1 `calcScienceComboSimulator`를 실행해 과탐Ⅱ 가산 적용 가능 대학과 그렇지 않은 대학을 구분합니다. 탐구2가 과탐Ⅱ인지는 `buildScienceSubjectPipe` + `parseSci2IsTypeTwo`와 동일하게 판정합니다.
+
+권한: 로그인 사용자만 (`401`).
+
+요청 Body:
+
+| 필드 | 형식 |
+|---|---|
+| `science1` | string (필수, trim) |
+| `science2` | string (필수, trim) |
+
+성공: `{ data: { result }, error: null }` — `result`는 `CalcScienceComboSimulatorResult` (`advantageUnivs`, `disadvantageUnivs`, `isSci2Combo`, `recommendation`).
+
+에러: `UNAUTHORIZED`(401), `VALIDATION_ERROR`(422), `INTERNAL_ERROR`(500).
+
+구현: `src/app/api/science-combo/route.ts`, `src/lib/calculators/calcScienceComboSimulator.ts`
+
+---
+
 ### POST `/api/subject-profile` *(스펙 예정 경로 — 앱 구현은 `POST /api/subject-analysis/profile`)*
 
 설명: 선택과목 프로필 저장(upsert: `student_id`+`year` 유니크).
@@ -1631,7 +1652,7 @@ Query (optional): `year=2027`
 | P2-9 | 입결 추이 지표 | `GET /api/trend-analysis` (구현됨) |
 | P2-4 | 논술·면접 기출 RAG | `GET/POST /api/exam-analysis` (구현됨, 데이터 없을 때 안내 UI) |
 | P2-10 | 정시 군별 조합·패턴 | `POST /api/jeongsi-gun` (구현됨) |
-| P3-4 | 과탐 가산 시뮬 | `POST /api/analysis/science2-bonus` 등 |
+| P3-4 | 과탐 가산 시뮬 | `POST /api/science-combo` *(구현)* |
 
 ---
 
@@ -1645,6 +1666,7 @@ Query (optional): `year=2027`
 scores/route.ts                          # GET, POST
 scores/parse-image/route.ts              # POST (P2-11 NEIS 이미지·JSON commit)
 signals/route.ts                         # GET
+science-combo/route.ts                 # POST (P3-4)
 trend-analysis/route.ts                  # GET (P2-9)
 placement-table/route.ts                 # GET (P2-12)
 jeongsi-gun/route.ts                     # POST (P2-10)
