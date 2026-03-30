@@ -302,6 +302,34 @@ Query Params:
 
 ---
 
+### GET `/api/trend-analysis` — P2-9 연도별 입결 추이
+
+설명:
+
+- `admission_records`에서 `univ_name`·`dept_name`·`admission_type`이 일치하는 행을 **연도 오름차순**으로 조회한다.
+- `cutoff_score`가 유효한 행만 Track 1 `calcAdmissionTrend`에 넘겨 **최근 2개년** 컷오프 변화율·상승/하락/유지·분석 문구를 산출한다.
+- 권한: 로그인 사용자만 (`401`).
+
+Query Params (필수):
+
+| 파라미터 | 값 |
+|---|---|
+| `univName` | 비어 있지 않은 문자열 |
+| `deptName` | 비어 있지 않은 문자열 |
+| `admissionType` | `학생부교과` \| `학생부종합` \| `논술전형` \| `정시` |
+
+- 잘못된 쿼리 → `422` `VALIDATION_ERROR`.
+- DB 오류 → `500` `INTERNAL_ERROR`.
+
+성공: `{ data: { records, trend }, error: null }`
+
+- `records`: `{ year, cutoffScore, competitionRatio }[]` (`competition_ratio`가 없으면 0).
+- `trend`: `calcAdmissionTrend` 결과 — `trend` ∈ `up` \| `down` \| `stable`, `changeRate`, `latestCutoff`, `previousCutoff`, `analysis`.
+
+구현 경로: `src/app/api/trend-analysis/route.ts`, `src/lib/calculators/calcAdmissionTrend.ts`.
+
+---
+
 ### POST `/api/gachaejeom` — P1-10 수능 가채점 환산
 
 설명:
@@ -1397,7 +1425,7 @@ Query (optional): `year=2027`
 | P0-4 | 199개 대학 일괄 신호등(3초 이내 AC) | `GET /api/signals` |
 | P1-15 | 전국 탐색기(전형·지역·신호등) | `GET /api/explore` |
 | P1-16 | 조건부 필터(수능최저·면접 AND) | `GET /api/explore` (`suneungMin`, `noInterview`) |
-| P2-9 | 입결 추이 지표 | `GET /api/analysis/cutoff-trends` 등 |
+| P2-9 | 입결 추이 지표 | `GET /api/trend-analysis` (구현됨) |
 | P2-10 | 정시 군별 조합·패턴 | `POST /api/strategy/jeonsi-groups` 등 |
 | P3-4 | 과탐 가산 시뮬 | `POST /api/analysis/science2-bonus` 등 |
 
@@ -1412,6 +1440,7 @@ Query (optional): `year=2027`
 ```txt
 scores/route.ts                          # GET, POST
 signals/route.ts                         # GET
+trend-analysis/route.ts                  # GET (P2-9)
 placement-table/route.ts                 # GET (P2-12)
 gachaejeom/route.ts                      # POST (P1-10)
 simulator/route.ts                       # GET, POST (P1-7)

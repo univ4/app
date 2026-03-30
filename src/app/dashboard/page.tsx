@@ -164,6 +164,17 @@ export default async function DashboardPage() {
             </Card>
           </Link>
 
+          <Link href="/dashboard/trend-analysis" className="block">
+            <Card>
+              <CardHeader>
+                <CardTitle>입결 추이 분석</CardTitle>
+                <CardDescription>
+                  연도별 컷오프 추이·상승·하락·유지 (P2-9)
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </Link>
+
           <Link href="/dashboard/nulsul" className="block">
             <Card>
               <CardHeader>

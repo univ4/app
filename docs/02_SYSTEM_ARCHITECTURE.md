@@ -68,7 +68,7 @@
 | `calcSuneungNapchiRisk(...)` | 수시 지원 조합 기준 정시 납치 리스크 등급 (P2-6) |
 | `scanAdmissionSignals(...)` *(가칭)* | 199개 대학·전형 배치 합격 신호등 산출 (P0-4 전체 스캔, P1-15 핵심) |
 | `filterUniversitiesByAdmissionCriteria(...)` *(가칭)* | 수능최저/면접/교과 반영 등 AND 조건 필터 (P1-16) |
-| `summarizeCutoffTrends(...)` *(가칭)* | 연도별 컷오프 추이 지표 (P2-9) |
+| `calcAdmissionTrend(...)` | 연도별 컷오프 추이 지표 (P2-9) |
 | `evaluateJeonsiGroupPortfolio(...)` *(가칭)* | 가·나·다군 조합 리스크·패턴 (P2-10) |
 | `calcPlacementTable(...)` | 정시 입결 컷 대비 안정·적정·도전 3단 배치 (±5점, P2-12) · `GET /api/placement-table` |
 | `simulateScience2BonusImpact(...)` *(가칭)* | 과탐II 가산 시뮬 (P3-4) |

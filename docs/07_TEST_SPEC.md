@@ -6,7 +6,7 @@
 통합 테스트 전략·기존 케이스는 [`docs/06_TEST_PLAN.md`](./06_TEST_PLAN.md)를 참조합니다.  
 본 문서는 Track 1 함수·`POST /api/chat`에 대한 **단위·라우트 테스트 스펙**을 정의한다(§2·3·8 등은 구현됨, §4·5·6·7 등은 예정).
 
-**실행 스냅샷 (2026-03-30):** `npm test` — 스위트·케이스 수는 로컬 `npm test` 기준. (추가: P1-9 `POST /api/mock-interview/questions`, `POST /api/mock-interview/feedback`, `GET/POST /api/mock-interview`: `src/__tests__/api/mock-interview-questions.route.test.ts`, `mock-interview-feedback.route.test.ts`, `mock-interview.route.test.ts`, `src/__tests__/lib/chat/mockInterview.test.ts`; P1-8 `POST /api/research-topics`: `src/__tests__/api/research-topics.route.test.ts`, `src/__tests__/lib/chat/researchTopics.test.ts`; P1-6 `GET/POST /api/personal-statement`, `PUT /api/personal-statement/[id]`, `POST /api/personal-statement/feedback`: `src/__tests__/api/personal-statement.route.test.ts`, `personal-statement-id.route.test.ts`, `personal-statement-feedback.route.test.ts`, `src/__tests__/lib/chat/personalStatementFeedback.test.ts`; P1-5 `POST /api/student-record/analyze`: `src/__tests__/api/student-record-analyze.route.test.ts`, `src/__tests__/lib/chat/hakjongAnalyze.test.ts`; P1-10 `calcGachaejeomScore` / `POST /api/gachaejeom`: `src/__tests__/calculators/calcGachaejeomScore.test.ts`, `src/__tests__/api/gachaejeom.route.test.ts`; P1-3 `calcRealCompetitionRate` / `GET /api/nulsul`: `src/__tests__/calculators/calcRealCompetitionRate.test.ts`, `src/__tests__/api/nulsul.route.test.ts`; `GET/POST /api/simulator`: `src/__tests__/api/simulator.route.test.ts`; `calcSubjectAdvantage` / `GET /api/subject-analysis`: `src/__tests__/calculators/calcSubjectAdvantage.test.ts`, `src/__tests__/api/subject-analysis.route.test.ts`; `calcPortfolioRisk` / `calcNapchiRisk`: `src/__tests__/calculators/calcPortfolioRisk.test.ts`, `calcNapchiRisk.test.ts`; `GET /api/signals`: `src/__tests__/api/signals.route.test.ts`; 생기부 `[id]`·출결 PUT: `src/__tests__/api/student-record-api.test.ts`; `calcAdmissionSignal`: `src/__tests__/calculators/calcAdmissionSignal.test.ts`; 캘린더·D-Day: `src/__tests__/calendar/calendarDday.integration.test.ts`; P1-12 `calcAdmissionTodos` / `GET /api/calendar/todos`: `src/__tests__/calculators/calcAdmissionTodos.test.ts`, `src/__tests__/api/calendar-todos.route.test.ts`; P1-2 `calcSchoolLevel` / `GET /api/scores/zscore`: `src/__tests__/calculators/calcSchoolLevel.test.ts`, `src/__tests__/api/scores-zscore.route.test.ts`)
+**실행 스냅샷 (2026-03-30):** `npm test` — 스위트·케이스 수는 로컬 `npm test` 기준. (추가: P2-9 `calcAdmissionTrend` / `GET /api/trend-analysis`: `src/__tests__/calculators/calcAdmissionTrend.test.ts`, `src/__tests__/api/trend-analysis.route.test.ts`; P1-9 `POST /api/mock-interview/questions`, `POST /api/mock-interview/feedback`, `GET/POST /api/mock-interview`: `src/__tests__/api/mock-interview-questions.route.test.ts`, `mock-interview-feedback.route.test.ts`, `mock-interview.route.test.ts`, `src/__tests__/lib/chat/mockInterview.test.ts`; P1-8 `POST /api/research-topics`: `src/__tests__/api/research-topics.route.test.ts`, `src/__tests__/lib/chat/researchTopics.test.ts`; P1-6 `GET/POST /api/personal-statement`, `PUT /api/personal-statement/[id]`, `POST /api/personal-statement/feedback`: `src/__tests__/api/personal-statement.route.test.ts`, `personal-statement-id.route.test.ts`, `personal-statement-feedback.route.test.ts`, `src/__tests__/lib/chat/personalStatementFeedback.test.ts`; P1-5 `POST /api/student-record/analyze`: `src/__tests__/api/student-record-analyze.route.test.ts`, `src/__tests__/lib/chat/hakjongAnalyze.test.ts`; P1-10 `calcGachaejeomScore` / `POST /api/gachaejeom`: `src/__tests__/calculators/calcGachaejeomScore.test.ts`, `src/__tests__/api/gachaejeom.route.test.ts`; P1-3 `calcRealCompetitionRate` / `GET /api/nulsul`: `src/__tests__/calculators/calcRealCompetitionRate.test.ts`, `src/__tests__/api/nulsul.route.test.ts`; `GET/POST /api/simulator`: `src/__tests__/api/simulator.route.test.ts`; `calcSubjectAdvantage` / `GET /api/subject-analysis`: `src/__tests__/calculators/calcSubjectAdvantage.test.ts`, `src/__tests__/api/subject-analysis.route.test.ts`; `calcPortfolioRisk` / `calcNapchiRisk`: `src/__tests__/calculators/calcPortfolioRisk.test.ts`, `calcNapchiRisk.test.ts`; `GET /api/signals`: `src/__tests__/api/signals.route.test.ts`; 생기부 `[id]`·출결 PUT: `src/__tests__/api/student-record-api.test.ts`; `calcAdmissionSignal`: `src/__tests__/calculators/calcAdmissionSignal.test.ts`; 캘린더·D-Day: `src/__tests__/calendar/calendarDday.integration.test.ts`; P1-12 `calcAdmissionTodos` / `GET /api/calendar/todos`: `src/__tests__/calculators/calcAdmissionTodos.test.ts`, `src/__tests__/api/calendar-todos.route.test.ts`; P1-2 `calcSchoolLevel` / `GET /api/scores/zscore`: `src/__tests__/calculators/calcSchoolLevel.test.ts`, `src/__tests__/api/scores-zscore.route.test.ts`)
 
 ---
 
@@ -32,6 +32,21 @@
 | PT-04 | 동일 `gap` | `univName`·`deptName`로 정렬 |
 
 **API**: `GET /api/placement-table` — `src/__tests__/api/placement-table.route.test.ts` (비인증 401, 인증 200·`meta`)
+
+---
+
+## 1a2. `calcAdmissionTrend(params)` (P2-9)
+
+구현·테스트: `src/lib/calculators/calcAdmissionTrend.ts`, `src/__tests__/calculators/calcAdmissionTrend.test.ts`
+
+| ID | 시나리오 | 기대 |
+|---|---|---|
+| CAT-01 | 최근 2개년 컷, 변화율 > 2% | `trend === "up"` |
+| CAT-02 | 변화율 < -2% | `trend === "down"` |
+| CAT-03 | 변화율 ±2% 구간 | `trend === "stable"` |
+| CAT-04 | 연도별 행 0~1건 또는 직전 컷 0 | 비교 불가 문구·`stable` |
+
+**API**: `GET /api/trend-analysis` — `src/__tests__/api/trend-analysis.route.test.ts` (비인증 401, 인증 200·`records`·`trend`)
 
 ---
 
