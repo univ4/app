@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { ChatInterface } from "@/components/chat/ChatInterface";
 import { DisclaimerBanner } from "@/components/common/DisclaimerBanner";
 import { PageHeader } from "@/components/common/PageHeader";
+import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function DashboardChatPage() {
@@ -26,7 +27,11 @@ export default async function DashboardChatPage() {
         <div className="mb-4">
           <DisclaimerBanner variant="ai" />
         </div>
-        <ChatInterface />
+        <Card>
+          <CardContent className="p-4 sm:p-6">
+            <ChatInterface />
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

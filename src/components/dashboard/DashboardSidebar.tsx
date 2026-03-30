@@ -24,7 +24,7 @@ export function DashboardSidebar() {
         <Link
           href="/dashboard"
           className={cn(
-            "rounded-md px-3 py-1 text-sm font-semibold text-foreground transition-colors hover:bg-accent hover:text-accent-foreground",
+            "text-heading rounded-md px-3 py-1 text-foreground transition-colors hover:bg-accent hover:text-accent-foreground",
             collapsed && "px-2",
           )}
         >
@@ -46,7 +46,7 @@ export function DashboardSidebar() {
         {DASHBOARD_MORE_SECTIONS.map((section) => (
           <div key={section.title}>
             {!collapsed ? (
-              <p className="cursor-default px-3 pb-1 pt-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <p className="text-caption cursor-default px-3 pb-1 pt-4 font-semibold uppercase tracking-wider">
                 {section.title}
               </p>
             ) : null}
@@ -59,14 +59,22 @@ export function DashboardSidebar() {
                     <Link
                       href={item.href}
                       className={cn(
-                        "flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm text-foreground transition-colors",
+                        "text-body group flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-foreground transition-colors",
                         active
                           ? "bg-primary/10 font-medium text-primary"
                           : "hover:bg-accent hover:text-accent-foreground",
                         collapsed && "justify-center",
                       )}
                     >
-                      {ItemIcon ? <ItemIcon className="size-4 shrink-0" aria-hidden /> : null}
+                      {ItemIcon ? (
+                        <ItemIcon
+                          className={cn(
+                            "size-4 shrink-0 text-muted-foreground transition-colors group-hover:text-primary",
+                            active && "text-primary",
+                          )}
+                          aria-hidden
+                        />
+                      ) : null}
                       {!collapsed ? <span>{item.label}</span> : null}
                     </Link>
                   </li>

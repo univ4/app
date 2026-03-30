@@ -22,8 +22,8 @@ export function PageHeader({
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div className="min-w-0">
-        <h1 className="break-words text-xl font-semibold text-foreground sm:text-2xl">{title}</h1>
-        {description ? <p className="mt-1 break-words text-sm text-muted-foreground">{description}</p> : null}
+        <h1 className="text-title break-words text-foreground">{title}</h1>
+        {description ? <p className="text-caption mt-1 break-words">{description}</p> : null}
       </div>
       <div className="flex w-full items-center gap-2 sm:w-auto sm:justify-end">
         <Button asChild variant="outline" className="w-full sm:w-auto">

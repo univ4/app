@@ -134,14 +134,14 @@ export function SignalTable({
             <div>
               <CardTitle>합격 가능성 신호등</CardTitle>
               {dataUpdatedLabel ? (
-                <p className="mt-1 text-xs text-muted-foreground">데이터 기준: {dataUpdatedLabel}</p>
+                <p className="text-caption mt-1">데이터 기준: {dataUpdatedLabel}</p>
               ) : null}
             </div>
             <Button type="button" onClick={onScan} disabled={loading} className="w-full sm:w-auto">
               {loading ? "스캔 중…" : "전체 대학 스캔"}
             </Button>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-body text-muted-foreground">
             매뉴얼 §3 — 입결 컷과 내 성적을 비교해 안정·적정·도전을 표시합니다.
           </p>
         </CardHeader>
@@ -158,17 +158,17 @@ export function SignalTable({
                 onChange={(e) => onMedShiftChange(e.target.checked)}
                 className="size-5 shrink-0 rounded border border-input sm:size-4"
               />
-              <span className="text-sm font-normal">
-                의대 증원 보정 (행별 <code className="text-xs">med_shift_coeff</code> 반영)
+              <span className="text-body font-normal">
+                의대 증원 보정 (행별 <code className="text-caption">med_shift_coeff</code> 반영)
               </span>
             </label>
           </div>
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <div className="flex flex-col gap-1">
-              <Label className="text-xs text-muted-foreground">전형 유형</Label>
+              <Label className="text-caption">전형 유형</Label>
               <select
-                className="border-input bg-background min-h-11 rounded-md border px-2 text-sm sm:h-9 sm:min-h-9"
+                className="text-body border-input bg-background min-h-11 rounded-md border px-2 sm:h-9 sm:min-h-9"
                 value={admissionType}
                 onChange={(e) => setAdmissionType(e.target.value as AdmissionTypeFilter)}
               >
@@ -179,9 +179,9 @@ export function SignalTable({
               </select>
             </div>
             <div className="flex flex-col gap-1">
-              <Label className="text-xs text-muted-foreground">신호등</Label>
+              <Label className="text-caption">신호등</Label>
               <select
-                className="border-input bg-background min-h-11 rounded-md border px-2 text-sm sm:h-9 sm:min-h-9"
+                className="text-body border-input bg-background min-h-11 rounded-md border px-2 sm:h-9 sm:min-h-9"
                 value={signalFilter}
                 onChange={(e) => setSignalFilter(e.target.value as SignalFilter)}
               >
@@ -192,9 +192,9 @@ export function SignalTable({
               </select>
             </div>
             <div className="flex flex-col gap-1">
-              <Label className="text-xs text-muted-foreground">지역</Label>
+              <Label className="text-caption">지역</Label>
               <select
-                className="border-input bg-background min-h-11 rounded-md border px-2 text-sm sm:h-9 sm:min-h-9"
+                className="text-body border-input bg-background min-h-11 rounded-md border px-2 sm:h-9 sm:min-h-9"
                 value={region}
                 onChange={(e) => setRegion(e.target.value as RegionFilter)}
               >
@@ -204,9 +204,9 @@ export function SignalTable({
               </select>
             </div>
             <div className="flex flex-col gap-1">
-              <Label className="text-xs text-muted-foreground">대학명</Label>
+              <Label className="text-caption">대학명</Label>
               <select
-                className="border-input bg-background min-h-11 rounded-md border px-2 text-sm sm:h-9 sm:min-h-9"
+                className="text-body border-input bg-background min-h-11 rounded-md border px-2 sm:h-9 sm:min-h-9"
                 value={university}
                 onChange={(e) => setUniversity(e.target.value)}
               >
@@ -231,7 +231,7 @@ export function SignalTable({
           {error ? <ErrorState message={error} onRetry={onScan} /> : null}
 
           {meta ? (
-            <p className="text-xs text-muted-foreground">
+            <p className="text-caption">
               스캔 {meta.row_count}행 · 고유 대학 약 {meta.unique_universities}개 · 응답 {meta.duration_ms}
               ms
               {!meta.has_mock_exam ? " · 정시 행: 최신 모의고사 없음" : ""}
@@ -240,7 +240,7 @@ export function SignalTable({
           ) : null}
 
           {meta && !meta.suneungScoreAvailable && jeongsiRowCount === 0 ? (
-            <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
+            <div className="text-body rounded-md border border-amber-300 bg-amber-50 p-3 text-amber-900">
               정시 신호등을 보려면 모의고사 점수를 입력해주세요.{" "}
               <Link href="/dashboard/scores" className="underline underline-offset-2">
                 성적 입력하러 가기
@@ -248,7 +248,7 @@ export function SignalTable({
             </div>
           ) : null}
 
-          <div className="flex flex-wrap items-center gap-2 border-t border-border pt-2 text-xs text-muted-foreground">
+          <div className="text-caption flex flex-wrap items-center gap-2 border-t border-border pt-2">
             <span>
               컷오프 기준: 최종등록자 70%컷 · ±5점(정시) / ±0.3등급(교과) 범위로 안정/적정/도전
               분류
@@ -290,13 +290,13 @@ export function SignalTable({
                 {filtered.map((r) => (
                   <TableRow key={r.id} className={rowHoverTone(r.signal)}>
                     <TableCell className="font-medium">{r.university_name}</TableCell>
-                    <TableCell className="max-w-[200px] truncate text-sm">{r.admission_name}</TableCell>
-                    <TableCell className="hidden text-sm md:table-cell">{r.track}</TableCell>
+                    <TableCell className="text-body max-w-[200px] truncate">{r.admission_name}</TableCell>
+                    <TableCell className="text-body hidden md:table-cell">{r.track}</TableCell>
                     <TableCell className="text-right tabular-nums">
                       {r.med_shift_applied ? (
                         <span title="보정 적용 컷">
                           {r.adjusted_cutoff.toFixed(2)}
-                          <span className="text-xs text-muted-foreground">*</span>
+                          <span className="text-caption">*</span>
                         </span>
                       ) : (
                         r.cutoff.toFixed(2)

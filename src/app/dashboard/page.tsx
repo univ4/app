@@ -85,10 +85,10 @@ export default async function DashboardPage() {
       <div className="mx-auto w-full min-w-0 max-w-5xl">
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
-            <h1 className="break-words text-xl font-semibold text-foreground sm:text-2xl">
+            <h1 className="text-title break-words text-foreground">
               안녕하세요, {greetingName}님
             </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="text-caption mt-1">
               {todayLabel}
               {nearestEvent ? ` · ${nearestEvent.title} ${nearestEvent.dday.label}` : ""}
             </p>
@@ -121,14 +121,14 @@ export default async function DashboardPage() {
                 <Card className="h-36 border-border transition-all hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-md">
                   <CardHeader className="h-full justify-between space-y-0 p-4">
                     <div className="flex items-start justify-between gap-3">
-                      <div className="rounded-md bg-accent p-2 text-accent-foreground">
-                        {Icon ? <Icon className="size-4" aria-hidden /> : null}
+                      <div className="rounded-lg bg-primary/10 p-2 text-primary">
+                        {Icon ? <Icon className="size-6" aria-hidden /> : null}
                       </div>
                       <ArrowRight className="size-4 shrink-0 text-muted-foreground" aria-hidden />
                     </div>
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold text-foreground sm:text-base">{item.label}</p>
-                      <p className="mt-1 line-clamp-2 text-xs text-muted-foreground sm:text-sm">{item.description}</p>
+                      <p className="text-heading truncate text-foreground">{item.label}</p>
+                      <p className="text-caption mt-1 line-clamp-2">{item.description}</p>
                     </div>
                   </CardHeader>
                 </Card>

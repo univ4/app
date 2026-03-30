@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { CalcBasis } from "@/components/common/CalcBasis";
 import { DisclaimerBanner } from "@/components/common/DisclaimerBanner";
 import { PageHeader } from "@/components/common/PageHeader";
+import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/server";
 
 import { SignalsClient } from "./SignalsClient";
@@ -36,7 +37,7 @@ export default async function SignalsPage() {
           description="/dashboard/signals — P0-4 · P1-17 (Track 1 컷 대비 확률 %)"
         />
         {dataUpdatedLabel ? (
-          <p className="text-xs text-muted-foreground">데이터 기준: {dataUpdatedLabel}</p>
+          <p className="text-caption">데이터 기준: {dataUpdatedLabel}</p>
         ) : null}
 
         <DisclaimerBanner variant="calculation" />
@@ -45,7 +46,11 @@ export default async function SignalsPage() {
           formula="내 점수와 입결 컷오프(70%컷) 비교: ±5점(정시), ±0.3등급(교과)"
           year={2027}
         />
-        <SignalsClient studentId={user.id} />
+        <Card>
+          <CardContent className="p-4 sm:p-6">
+            <SignalsClient studentId={user.id} />
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

@@ -128,3 +128,21 @@
     @apply font-sans;
   }
 }
+
+@layer utilities {
+  .text-display {
+    @apply text-2xl font-bold tracking-tight;
+  }
+  .text-title {
+    @apply text-xl font-semibold;
+  }
+  .text-heading {
+    @apply text-base font-semibold;
+  }
+  .text-body {
+    @apply text-sm;
+  }
+  .text-caption {
+    @apply text-xs text-muted-foreground;
+  }
+}

@@ -290,15 +290,15 @@ export function ChatInterface() {
       >
         {showEmptyHints ? (
           <div className="text-muted-foreground mx-auto max-w-2xl space-y-3 px-1 py-4 text-sm">
-            <p className="text-foreground font-medium">잘 맞는 질문 예시 (매뉴얼 §12)</p>
-            <p>아래를 누르면 입력창에 채워집니다. 필요하면 고친 뒤 전송하세요.</p>
+            <p className="text-heading text-foreground">잘 맞는 질문 예시 (매뉴얼 §12)</p>
+            <p className="text-body">아래를 누르면 입력창에 채워집니다. 필요하면 고친 뒤 전송하세요.</p>
             <ul className="flex flex-col gap-2">
               {CHAT_EXAMPLE_QUESTIONS.map((q) => (
                 <li key={q}>
                   <button
                     type="button"
                     disabled={sending}
-                    className="hover:bg-muted border-border text-foreground w-full rounded-lg border bg-card px-3 py-2.5 text-left text-sm break-words transition-colors disabled:opacity-50"
+                    className="text-body hover:bg-muted border-border text-foreground w-full rounded-lg border bg-card px-3 py-2.5 text-left break-words transition-colors disabled:opacity-50"
                     onClick={() => {
                       setInput(q);
                       textareaRef.current?.focus();
@@ -336,7 +336,7 @@ export function ChatInterface() {
             rows={2}
             maxLength={12000}
             placeholder="전형계획·정시 자료 범위에서 질문해 주세요…"
-            className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring max-h-40 min-h-11 w-full flex-1 resize-y rounded-md border px-3 py-2.5 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+            className="text-body border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring max-h-40 min-h-11 w-full flex-1 resize-y rounded-md border px-3 py-2.5 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
             value={input}
             disabled={sending}
             onChange={(e) => setInput(e.target.value)}
@@ -357,7 +357,7 @@ export function ChatInterface() {
             전송
           </Button>
         </div>
-        <p className="text-muted-foreground mt-2 text-[0.7rem] sm:text-xs">
+        <p className="text-caption mt-2">
           자료에 없는 내용은 「확인 불가」로 답할 수 있습니다. 수치·환산은 분석·성적 메뉴를 이용하세요.
         </p>
       </form>

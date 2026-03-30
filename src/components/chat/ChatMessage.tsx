@@ -97,11 +97,11 @@ export function ChatMessage({
                       {c.admission_type ? ` · ${c.admission_type}` : ""}
                     </span>
                     {c.page_section ? (
-                      <span className="block text-[0.7rem] opacity-90 sm:text-xs">
+                      <span className="text-caption block opacity-90">
                         {c.page_section}
                       </span>
                     ) : null}
-                    <span className="block font-mono text-[0.65rem] opacity-80 sm:text-xs">
+                    <span className="text-caption block font-mono opacity-80">
                       {c.citation_hint}
                     </span>
                   </li>
