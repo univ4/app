@@ -923,6 +923,35 @@ university=서강대
     `sections`는 스트리밍 완료 후 모델 출력에서 `## 학업역량` 등 마크다운 제목 기준 파싱.
 - **오류**: 한도 초과 **429** `RATE_LIMIT`; 검증 실패 **400** `VALIDATION_ERROR`; 그 외 **5xx** `INTERNAL_ERROR` / **502** 업스트림.
 
+### GET/POST `/api/personal-statement` (P1-6 자소서 초안)
+
+- **인증**: 필수.
+- **GET**: 본인 `personal_statements` 목록(`updated_at` 내림차순). 성공 `{ data: { items: PersonalStatementRow[] }, error: null }`.
+- **POST**: Body — `university` (1–200자), `question_number` (1–4), `question_text` (1–20000자), `draft_text` (선택, 기본 `''`, 최대 120000자), `max_length` (선택, 기본 1500, 100–20000). `student_id`는 `auth.uid()`로 저장. 성공 **201** `{ data: { item }, error: null }`.
+
+### PUT `/api/personal-statement/[id]` (P1-6)
+
+- **인증**: 필수. 본인 행만 수정(RLS).
+- **Body**: 부분 갱신 — `university?`, `question_number?`, `question_text?`, `draft_text?`, `max_length?` (모두 선택이나 최소 1개 필드 필요).
+- **성공**: **200** `{ data: { item }, error: null }`. 대상 없음 **404** `NOT_FOUND`. 유효하지 않은 UUID **422** `VALIDATION_ERROR`.
+
+### POST `/api/personal-statement/feedback` (P1-6 자소서 코치 SSE)
+
+- **인증**: 필수. `try_consume_chat_quota`로 일일 호출 한도(`CHAT_DAILY_LIMIT`, 기본 50) — P1-5·챗봇과 공유.
+- **Body (JSON)**:
+  - `statementId` (UUID): **필수.** 본인 `personal_statements.id`.
+  - `targetUniv` (string, 최대 120자): 목표 대학 맥락(선택, 공백 허용).
+- **처리**:
+  1. 해당 초안 행 조회(본인·없으면 404).
+  2. `student_record_chunks` 전체를 `id` 오름차순으로 조회.
+  3. 청크 0건: SSE 안내 문구만 전송 후 `done` (`finish_reason: no_context`, `sections: []`).
+  4. 청크 1건 이상: Claude Sonnet 스트리밍. 시스템 프롬프트는 생기부 텍스트만 근거로 글자수·학업/진로/공동체 역량·개선 제안 형식(문장 대필 금지).
+- **응답**: `Content-Type: text/event-stream` (SSE)
+  - `event: chunk` — `{ "text": "<델타>" }` 누적
+  - `event: done` — `{ "finish_reason": "stop" | "no_context", "sections": [ { "key": "char_count"|"academic"|"career"|"community"|"suggestions", "title": string, "content": string } ] }`  
+    `sections`는 스트리밍 완료 후 `## 글자수 확인` 등 마크다운 제목 기준 파싱.
+- **오류**: 비인증 **401**; `statementId` 누락·UUID 아님 **422** `VALIDATION_ERROR`; 한도 초과 **429** `RATE_LIMIT`; 초안 없음 **404** `NOT_FOUND`; 그 외 **5xx** / **502** 업스트림.
+
 ### POST `/api/student-record/gap-analysis` (P1-4 세특 Gap 분석)
 
 - **인증**: 필수. `try_consume_chat_quota`로 일일 호출 한도(`CHAT_DAILY_LIMIT`, 기본 50) 공유.
@@ -1306,6 +1335,9 @@ calendar/route.ts                        # GET, POST
 calendar/[id]/route.ts                   # PUT, DELETE
 student-record/analyze/route.ts          # POST (P1-5 SSE)
 student-record/gap-analysis/route.ts     # POST (P1-4 SSE)
+personal-statement/route.ts              # GET, POST (P1-6)
+personal-statement/[id]/route.ts         # PUT (P1-6)
+personal-statement/feedback/route.ts     # POST (P1-6 SSE)
 student-record/subject-notes/route.ts
 student-record/subject-notes/[id]/route.ts
 student-record/activities/route.ts

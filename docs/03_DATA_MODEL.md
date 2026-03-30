@@ -156,6 +156,20 @@ NEIS 파싱 JSON 적재 스크립트 `scripts/ingest/load_neis_grades.ts`의 ups
 
 - **적재**: `scripts/ingest/embed_student_record.ts` — `NEIS_STUDENT_ID`(선택, 미설정 시 `auth.users` 첫 사용자)·`OPENAI_API_KEY`·서비스 키 필요. 실행 순서는 [`scripts/ingest/README.md`](../scripts/ingest/README.md) 참조.
 
+### `personal_statements` (P1-6 자소서 코치)
+
+마이그레이션 `supabase/migrations/20260330260000_personal_statements.sql`. 대학·문항(1–4)별 자소서 초안·글자수 제한을 저장한다. DDL·RLS는 [`docs/03_DB_SCHEMA.md`](./03_DB_SCHEMA.md) §2.19.
+
+| 컬럼 | 요약 |
+|---|---|
+| `university` | 지원 대학명(텍스트) |
+| `question_number` | 문항 번호 1–4 |
+| `question_text` | 자소서 문항 본문 |
+| `draft_text` | 초안 |
+| `max_length` | 글자수 제한(기본 1500) |
+
+- **RLS**: SELECT는 본인 `student_id` 또는 admin 전체 조회. INSERT/UPDATE/DELETE는 본인 `student_id` 행 또는 admin.
+
 ---
 
 ## 5) 타입스크립트 타입 (참고)
@@ -206,7 +220,7 @@ NEIS 파싱 JSON 적재 스크립트 `scripts/ingest/load_neis_grades.ts`의 ups
 
 GitHub Actions `doc-sync-check`는 `supabase/migrations/*.sql` 중 **`docs/03_DATA_MODEL.md`보다 최근에 수정된 파일**이 있으면 실패합니다. 마이그레이션을 추가·변경한 커밋에서는 반드시 본 문서를 함께 갱신하세요.
 
-**현재 마이그레이션 파일 목록 (17개, `find supabase/migrations -name "*.sql" | sort` 기준)**
+**현재 마이그레이션 파일 목록 (18개, `find supabase/migrations -name "*.sql" | sort` 기준)**
 
 | 순서 | 파일명 |
 | ---: | --- |
@@ -227,3 +241,4 @@ GitHub Actions `doc-sync-check`는 `supabase/migrations/*.sql` 중 **`docs/03_DA
 | 15 | `20260330230000_susi_gpa_rules_interview_required.sql` |
 | 16 | `20260330240000_admission_records_nulsul_type.sql` |
 | 17 | `20260330250000_student_record_chunks.sql` |
+| 18 | `20260330260000_personal_statements.sql` |

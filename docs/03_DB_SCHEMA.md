@@ -732,6 +732,23 @@ DDL: `supabase/migrations/20260329000002_admission_records.sql` (`20260329000001
 - **RLS**: 생활기록부 구조화 테이블과 동일 — SELECT는 본인 `student_id` 또는 admin; INSERT/UPDATE/DELETE는 admin만 (`service_role`은 우회).
 - **적재 스크립트**: `scripts/ingest/embed_student_record.ts` (환경·순서는 [`scripts/ingest/README.md`](../scripts/ingest/README.md))
 
+### 2.19 `personal_statements` (P1-6 자소서 코치) — `20260330260000_personal_statements.sql`
+
+| 컬럼명 | 타입 | 제약 | 설명 |
+|---|---|---|---|
+| id | uuid | PK, default `gen_random_uuid()` | |
+| student_id | uuid | FK → `students(id)` ON DELETE CASCADE, not null | |
+| university | text | not null | 지원 대학명 |
+| question_number | integer | not null, check 1–4 | 문항 번호 |
+| question_text | text | not null | 문항 내용 |
+| draft_text | text | not null, default `''` | 초안 |
+| max_length | integer | not null, default 1500, check 1–20000 | 글자수 상한(피드백 기준) |
+| created_at | timestamptz | not null, default now() | |
+| updated_at | timestamptz | not null, default now() | |
+
+- **인덱스**: `(student_id)`
+- **RLS**: SELECT는 `auth.uid() = student_id` 또는 `students.role = 'admin'`인 사용자(전체 읽기). INSERT/UPDATE/DELETE는 `auth.uid() = student_id` 또는 admin.
+
 ---
 
 ## 3) pgvector 설정 및 인덱스

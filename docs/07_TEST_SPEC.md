@@ -6,7 +6,7 @@
 통합 테스트 전략·기존 케이스는 [`docs/06_TEST_PLAN.md`](./06_TEST_PLAN.md)를 참조합니다.  
 본 문서는 Track 1 함수·`POST /api/chat`에 대한 **단위·라우트 테스트 스펙**을 정의한다(§2·3·8 등은 구현됨, §4·5·6·7 등은 예정).
 
-**실행 스냅샷 (2026-03-30):** `npm test` — **38** suites, **277** tests, FAIL 0. (추가: P1-5 `POST /api/student-record/analyze`: `src/__tests__/api/student-record-analyze.route.test.ts`, `src/__tests__/lib/chat/hakjongAnalyze.test.ts`; P1-10 `calcGachaejeomScore` / `POST /api/gachaejeom`: `src/__tests__/calculators/calcGachaejeomScore.test.ts`, `src/__tests__/api/gachaejeom.route.test.ts`; P1-3 `calcRealCompetitionRate` / `GET /api/nulsul`: `src/__tests__/calculators/calcRealCompetitionRate.test.ts`, `src/__tests__/api/nulsul.route.test.ts`; `GET/POST /api/simulator`: `src/__tests__/api/simulator.route.test.ts`; `calcSubjectAdvantage` / `GET /api/subject-analysis`: `src/__tests__/calculators/calcSubjectAdvantage.test.ts`, `src/__tests__/api/subject-analysis.route.test.ts`; `calcPortfolioRisk` / `calcNapchiRisk`: `src/__tests__/calculators/calcPortfolioRisk.test.ts`, `calcNapchiRisk.test.ts`; `GET /api/signals`: `src/__tests__/api/signals.route.test.ts`; 생기부 `[id]`·출결 PUT: `src/__tests__/api/student-record-api.test.ts`; `calcAdmissionSignal`: `src/__tests__/calculators/calcAdmissionSignal.test.ts`; 캘린더·D-Day: `src/__tests__/calendar/calendarDday.integration.test.ts`; P1-12 `calcAdmissionTodos` / `GET /api/calendar/todos`: `src/__tests__/calculators/calcAdmissionTodos.test.ts`, `src/__tests__/api/calendar-todos.route.test.ts`; P1-2 `calcSchoolLevel` / `GET /api/scores/zscore`: `src/__tests__/calculators/calcSchoolLevel.test.ts`, `src/__tests__/api/scores-zscore.route.test.ts`)
+**실행 스냅샷 (2026-03-30):** `npm test` — **44** suites, **290** tests, FAIL 0. (추가: P1-6 `GET/POST /api/personal-statement`, `PUT /api/personal-statement/[id]`, `POST /api/personal-statement/feedback`: `src/__tests__/api/personal-statement.route.test.ts`, `personal-statement-id.route.test.ts`, `personal-statement-feedback.route.test.ts`, `src/__tests__/lib/chat/personalStatementFeedback.test.ts`; P1-5 `POST /api/student-record/analyze`: `src/__tests__/api/student-record-analyze.route.test.ts`, `src/__tests__/lib/chat/hakjongAnalyze.test.ts`; P1-10 `calcGachaejeomScore` / `POST /api/gachaejeom`: `src/__tests__/calculators/calcGachaejeomScore.test.ts`, `src/__tests__/api/gachaejeom.route.test.ts`; P1-3 `calcRealCompetitionRate` / `GET /api/nulsul`: `src/__tests__/calculators/calcRealCompetitionRate.test.ts`, `src/__tests__/api/nulsul.route.test.ts`; `GET/POST /api/simulator`: `src/__tests__/api/simulator.route.test.ts`; `calcSubjectAdvantage` / `GET /api/subject-analysis`: `src/__tests__/calculators/calcSubjectAdvantage.test.ts`, `src/__tests__/api/subject-analysis.route.test.ts`; `calcPortfolioRisk` / `calcNapchiRisk`: `src/__tests__/calculators/calcPortfolioRisk.test.ts`, `calcNapchiRisk.test.ts`; `GET /api/signals`: `src/__tests__/api/signals.route.test.ts`; 생기부 `[id]`·출결 PUT: `src/__tests__/api/student-record-api.test.ts`; `calcAdmissionSignal`: `src/__tests__/calculators/calcAdmissionSignal.test.ts`; 캘린더·D-Day: `src/__tests__/calendar/calendarDday.integration.test.ts`; P1-12 `calcAdmissionTodos` / `GET /api/calendar/todos`: `src/__tests__/calculators/calcAdmissionTodos.test.ts`, `src/__tests__/api/calendar-todos.route.test.ts`; P1-2 `calcSchoolLevel` / `GET /api/scores/zscore`: `src/__tests__/calculators/calcSchoolLevel.test.ts`, `src/__tests__/api/scores-zscore.route.test.ts`)
 
 ---
 
@@ -268,6 +268,22 @@
 |---|---|---|
 | GAP-01 | 미인증 요청 | HTTP **401**, `UNAUTHORIZED` |
 | GAP-02 | `targetUniv` 누락 | HTTP **422**, `VALIDATION_ERROR` |
+
+---
+
+## 9d. `GET/POST /api/personal-statement`, `PUT /api/personal-statement/[id]`, `POST /api/personal-statement/feedback` (P1-6)
+
+구현·테스트: `src/app/api/personal-statement/route.ts`, `src/app/api/personal-statement/[id]/route.ts`, `src/app/api/personal-statement/feedback/route.ts`, `src/lib/chat/personalStatementFeedback.ts`, `src/__tests__/api/personal-statement.route.test.ts`, `src/__tests__/api/personal-statement-id.route.test.ts`, `src/__tests__/api/personal-statement-feedback.route.test.ts`, `src/__tests__/lib/chat/personalStatementFeedback.test.ts`
+
+| ID | 시나리오 | 기대 |
+|---|---|---|
+| PS-01 | `GET` 미인증 | HTTP **401**, `UNAUTHORIZED` |
+| PS-02 | `GET` 인증·목록 조회 | HTTP **200**, `data.items` 배열 |
+| PS-03 | `POST` 미인증 | HTTP **401** |
+| PS-04 | `POST` 유효 본문 저장 | HTTP **201**, `data.item` |
+| PS-05 | `PUT` 인증·본인 행 수정 | HTTP **200**, `data.item` |
+| PS-FEED-01 | `POST /feedback` 미인증 | HTTP **401** |
+| PS-FEED-02 | `statementId` 누락 | HTTP **422**, `VALIDATION_ERROR` |
 
 ---
 

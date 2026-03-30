@@ -230,6 +230,17 @@ export default async function DashboardPage() {
             </Card>
           </Link>
 
+          <Link href="/dashboard/personal-statement" className="block">
+            <Card>
+              <CardHeader>
+                <CardTitle>자소서 코치</CardTitle>
+                <CardDescription>
+                  초안·글자수 · 생기부 근거 피드백 · 문장 대필 없음 (P1-6)
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </Link>
+
           <Link href="/dashboard/gap-analysis" className="block">
             <Card>
               <CardHeader>

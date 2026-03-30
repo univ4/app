@@ -51,6 +51,7 @@
 | `20260330230000_susi_gpa_rules_interview_required.sql` | P1-16 `susi_gpa_rules.interview_required` (nullable) |
 | `20260330240000_admission_records_nulsul_type.sql` | P1-3 `admission_records.admission_type`에 `논술전형` CHECK 허용 |
 | `20260330250000_student_record_chunks.sql` | 생기부 RAG `student_record_chunks` + HNSW + RLS + `match_student_record_chunks` |
+| `20260330260000_personal_statements.sql` | P1-6 `personal_statements` + RLS(본인·admin) |
 
 ### 대시보드 UI (발췌)
 
@@ -61,6 +62,7 @@
 - **P1-3** `src/app/dashboard/nulsul/page.tsx` — 논술 실질 경쟁률(`NulsulDashboardClient`, `NulsulCalculator`, `NulsulCompareTable`; `GET /api/nulsul`)
 - **P1-2** `src/app/dashboard/scores/page.tsx` 내신 탭 — `ZScoreDisplay`, `GET /api/scores/zscore`
 - **P1-14** `src/app/dashboard/record-check/page.tsx` — 생기부 점검(`RecordCheckResult`, `RecordCheckSummary`; `loadRecordGapAnalysisForStudent`)
+- **P1-6** `src/app/dashboard/personal-statement/page.tsx` — 자소서 코치(`PersonalStatementCoach`, `StatementEditor`, `FeedbackView`; `GET/POST /api/personal-statement`, `POST /api/personal-statement/feedback` SSE)
 
 ### API routes (`src/app/api/**/route.ts`)
 
@@ -75,6 +77,7 @@
 - **`api/calendar/route.ts`, `api/calendar/[id]/route.ts`**, **`api/calendar/todos/route.ts`** (P1-12)
 - **`api/student-record/*`** (subject-notes, activities, awards, behavior, attendance, volunteer, reading, certificates, school-violence)
 - **`api/record-check/route.ts`** (P1-14, `GET` — `calcRecordGapAnalysis`)
+- **`api/personal-statement/route.ts`**, **`api/personal-statement/[id]/route.ts`**, **`api/personal-statement/feedback/route.ts`** (P1-6)
 
 ### Ingest (`scripts/ingest/`)
 
