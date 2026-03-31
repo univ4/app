@@ -41,8 +41,17 @@ describe("/api/scores", () => {
 
     it("로그인 시 목록·페이지네이션 반환 (type 미지정)", async () => {
       const listResult = { data: [{ id: 1 }], count: 1, error: null };
-      mockAuthedClient({
-        from: jest.fn(() => ({
+      const from = jest.fn((table: string) => {
+        if (table === "students") {
+          return {
+            select: jest.fn(() => ({
+              eq: jest.fn(() => ({
+                maybeSingle: jest.fn().mockResolvedValue({ data: { role: "admin" }, error: null }),
+              })),
+            })),
+          };
+        }
+        return {
           select: jest.fn(() => ({
             order: jest.fn(() => ({
               order: jest.fn(() => ({
@@ -50,12 +59,14 @@ describe("/api/scores", () => {
               })),
             })),
           })),
-        })),
+        };
       });
+      mockAuthedClient({ from });
       const res = await GET(new Request("http://localhost/api/scores"));
       expect(res.status).toBe(200);
       const body = await res.json();
       expect(body.data.items).toHaveLength(1);
+      expect(body.data.canManageAcademicRecords).toBe(true);
       expect(body.data.pagination.total).toBe(1);
       expect(body.error).toBeNull();
     });
@@ -63,8 +74,17 @@ describe("/api/scores", () => {
     it("엣지: type=MOCK_EXAM 필터 시 eq 체인 후 동일 응답 형식", async () => {
       const listResult = { data: [], count: 0, error: null };
       const eqMock = jest.fn().mockResolvedValue(listResult);
-      mockAuthedClient({
-        from: jest.fn(() => ({
+      const from = jest.fn((table: string) => {
+        if (table === "students") {
+          return {
+            select: jest.fn(() => ({
+              eq: jest.fn(() => ({
+                maybeSingle: jest.fn().mockResolvedValue({ data: { role: "viewer" }, error: null }),
+              })),
+            })),
+          };
+        }
+        return {
           select: jest.fn(() => ({
             order: jest.fn(() => ({
               order: jest.fn(() => ({
@@ -74,18 +94,30 @@ describe("/api/scores", () => {
               })),
             })),
           })),
-        })),
+        };
       });
+      mockAuthedClient({ from });
       const res = await GET(
         new Request("http://localhost/api/scores?type=MOCK_EXAM"),
       );
       expect(res.status).toBe(200);
       expect(eqMock).toHaveBeenCalledWith("record_type", "MOCK_EXAM");
+      const body = await res.json();
+      expect(body.data.canManageAcademicRecords).toBe(false);
     });
 
     it("GET: DB 조회 에러 시 500 INTERNAL_ERROR", async () => {
-      mockAuthedClient({
-        from: jest.fn(() => ({
+      const from = jest.fn((table: string) => {
+        if (table === "students") {
+          return {
+            select: jest.fn(() => ({
+              eq: jest.fn(() => ({
+                maybeSingle: jest.fn().mockResolvedValue({ data: { role: "admin" }, error: null }),
+              })),
+            })),
+          };
+        }
+        return {
           select: jest.fn(() => ({
             order: jest.fn(() => ({
               order: jest.fn(() => ({
@@ -97,13 +129,35 @@ describe("/api/scores", () => {
               })),
             })),
           })),
-        })),
+        };
       });
+      mockAuthedClient({ from });
       const res = await GET(new Request("http://localhost/api/scores"));
       expect(res.status).toBe(500);
       const body = await res.json();
       expect(body.error?.code).toBe("INTERNAL_ERROR");
       expect(body.error?.message).toContain("db select failed");
+    });
+
+    it("GET: 학생 역할 조회 실패 시 500 INTERNAL_ERROR", async () => {
+      const from = jest.fn((table: string) => {
+        if (table === "students") {
+          return {
+            select: jest.fn(() => ({
+              eq: jest.fn(() => ({
+                maybeSingle: jest.fn().mockResolvedValue({ data: null, error: { message: "role failed" } }),
+              })),
+            })),
+          };
+        }
+        return {};
+      });
+      mockAuthedClient({ from });
+      const res = await GET(new Request("http://localhost/api/scores"));
+      expect(res.status).toBe(500);
+      const body = await res.json();
+      expect(body.error?.code).toBe("INTERNAL_ERROR");
+      expect(body.error?.message).toContain("role failed");
     });
   });
 

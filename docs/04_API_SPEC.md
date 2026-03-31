@@ -239,13 +239,46 @@ offset=0 (optional, default 0)
 
 ---
 
-### DELETE `/api/scores/:id` *(미구현)*
+### PUT `/api/scores/academic-records/:id`
 
 설명:
-- 성적 1건 삭제(스펙 예정)
-- **현재 레포에는** `src/app/api/scores/[id]/route.ts`가 없으며, `GET`·`POST`는 `src/app/api/scores/route.ts`, P2-11 **`POST /api/scores/parse-image`** 는 `src/app/api/scores/parse-image/route.ts`에 구현되어 있다.
+- 내신(`record_type = SCHOOL_GPA`) 1건 수정.
+- 권한: 로그인 + `students.role = 'admin'`만 허용.
+- 본인(`student_id = auth.uid()`)의 내신 행만 수정 가능.
 
-성공 응답(구현 시 예시):
+요청 Body:
+- `POST /api/scores`의 내신 스키마(`semester`, `subject_category`, `subject_name`, `credit_unit` + 과목구분별 필수 필드)와 동일.
+
+성공 응답:
+
+```json
+{
+  "data": {
+    "id": 1024,
+    "record_type": "SCHOOL_GPA",
+    "subject_name": "수학I"
+  },
+  "error": null
+}
+```
+
+오류 코드:
+- `UNAUTHORIZED` 401
+- `FORBIDDEN` 403 (Admin 아님)
+- `VALIDATION_ERROR` 422 (`id`/입력값 오류, 내신 외 레코드 수정 시도)
+- `NOT_FOUND` 404 (본인 내신 행 없음)
+- `INTERNAL_ERROR` 500
+
+---
+
+### DELETE `/api/scores/academic-records/:id`
+
+설명:
+- 내신(`record_type = SCHOOL_GPA`) 1건 삭제.
+- 권한: 로그인 + `students.role = 'admin'`만 허용.
+- 본인(`student_id = auth.uid()`)의 내신 행만 삭제 가능.
+
+성공 응답:
 
 ```json
 {
@@ -255,6 +288,13 @@ offset=0 (optional, default 0)
   "error": null
 }
 ```
+
+오류 코드:
+- `UNAUTHORIZED` 401
+- `FORBIDDEN` 403 (Admin 아님)
+- `VALIDATION_ERROR` 422 (`id` 오류)
+- `NOT_FOUND` 404 (본인 내신 행 없음)
+- `INTERNAL_ERROR` 500
 
 ---
 

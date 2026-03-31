@@ -84,6 +84,20 @@ function schoolGpaInsertRow(data: SchoolGpaPostBody, studentId: string) {
   };
 }
 
+async function getIsAdmin(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+): Promise<{ isAdmin: boolean; errorMessage: string | null }> {
+  const { data: row, error } = await supabase
+    .from("students")
+    .select("role")
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (error) return { isAdmin: false, errorMessage: error.message };
+  return { isAdmin: row?.role === "admin", errorMessage: null };
+}
+
 export async function GET(request: Request) {
   const supabase = await createClient();
   const user = await getAuthUser(supabase);
@@ -92,6 +106,14 @@ export async function GET(request: Request) {
     return NextResponse.json(
       { data: null, error: { code: "UNAUTHORIZED", message: "인증이 필요합니다." } },
       { status: 401 },
+    );
+  }
+
+  const { isAdmin, errorMessage } = await getIsAdmin(supabase, user.id);
+  if (errorMessage) {
+    return NextResponse.json(
+      { data: null, error: { code: "INTERNAL_ERROR", message: errorMessage } },
+      { status: 500 },
     );
   }
 
@@ -123,6 +145,7 @@ export async function GET(request: Request) {
   return NextResponse.json({
     data: {
       items: data ?? [],
+      canManageAcademicRecords: isAdmin,
       pagination: {
         limit,
         offset,

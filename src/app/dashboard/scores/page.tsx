@@ -56,7 +56,11 @@ type AcademicRecord = {
   english_grade: number | null;
   subject_name: string | null;
   raw_score: number | null;
+  total_score: number | null;
   avg_score: number | null;
+  stddev_score: number | null;
+  student_count: number | null;
+  credit_unit: number | null;
   school_grade: number | null;
   semester: string | null;
   subject_category: SubjectCategory | null;
@@ -84,6 +88,9 @@ export default function ScoresPage() {
   const [apiError, setApiError] = useState<string | null>(null);
   const [zscoreData, setZscoreData] = useState<ZScoreDisplayData | null>(null);
   const [zscoreLoading, setZscoreLoading] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [editingRecordId, setEditingRecordId] = useState<number | null>(null);
+  const [rowActionLoadingId, setRowActionLoadingId] = useState<number | null>(null);
 
   const mockForm = useForm<MockExamFormValues>({
     resolver: zodResolver(mockExamSchema) as unknown as Resolver<MockExamFormValues>,
@@ -104,12 +111,24 @@ export default function ScoresPage() {
       achievement_level: "",
     } as unknown as SchoolGpaFormValues,
   });
+  const editForm = useForm<SchoolGpaFormValues>({
+    resolver: zodResolver(schoolGpaFormSchema) as unknown as Resolver<SchoolGpaFormValues>,
+    defaultValues: {
+      semester: "3-1",
+      subject_category: "general",
+      subject_name: "",
+      credit_unit: 4,
+      achievement_level: "",
+    } as unknown as SchoolGpaFormValues,
+  });
 
   const schoolCategory = schoolForm.watch("subject_category");
+  const editCategory = editForm.watch("subject_category");
   const schoolErrors = schoolForm.formState.errors as Record<
     string,
     { message?: string } | undefined
   >;
+  const editErrors = editForm.formState.errors as Record<string, { message?: string } | undefined>;
 
   useEffect(() => {
     if (schoolCategory === "career_choice") {
@@ -126,6 +145,22 @@ export default function ScoresPage() {
       ]);
     }
   }, [schoolCategory, schoolForm]);
+
+  useEffect(() => {
+    if (editCategory === "career_choice") {
+      editForm.unregister(["class_rank", "rank_total", "school_grade"]);
+    } else if (editCategory === "pe_art") {
+      editForm.unregister([
+        "total_score",
+        "avg_score",
+        "stddev_score",
+        "student_count",
+        "class_rank",
+        "rank_total",
+        "school_grade",
+      ]);
+    }
+  }, [editCategory, editForm]);
 
   const recordListType: "MOCK_EXAM" | "SCHOOL_GPA" =
     activeTab === "MOCK_EXAM" ? "MOCK_EXAM" : "SCHOOL_GPA";
@@ -163,6 +198,7 @@ export default function ScoresPage() {
         return;
       }
       setRecords(json.data.items ?? []);
+      setIsAdmin(Boolean(json.data?.canManageAcademicRecords));
     } catch {
       setApiError("성적 목록을 불러오지 못했습니다.");
     } finally {
@@ -236,6 +272,71 @@ export default function ScoresPage() {
       credit_unit: 4,
       achievement_level: "",
     } as unknown as SchoolGpaFormValues);
+    await fetchRecords();
+    await fetchZscoreSummary();
+  }
+
+  function buildEditDefaults(record: AcademicRecord): SchoolGpaFormValues {
+    return {
+      semester: (record.semester ?? "3-1") as SchoolGpaFormValues["semester"],
+      subject_category: (record.subject_category ?? "general") as SchoolGpaFormValues["subject_category"],
+      subject_name: record.subject_name ?? "",
+      credit_unit: record.credit_unit ?? 1,
+      total_score: record.total_score ?? undefined,
+      raw_score: record.raw_score ?? 0,
+      avg_score: record.avg_score ?? undefined,
+      stddev_score: record.stddev_score ?? undefined,
+      student_count: record.student_count ?? undefined,
+      class_rank: record.class_rank ?? undefined,
+      rank_total: record.rank_total ?? undefined,
+      school_grade: record.school_grade ?? undefined,
+      achievement_level: (record.achievement_level ?? "") as SchoolGpaFormValues["achievement_level"],
+    } as unknown as SchoolGpaFormValues;
+  }
+
+  function startEdit(record: AcademicRecord) {
+    if (!isAdmin || record.record_type !== "SCHOOL_GPA") return;
+    setEditingRecordId(record.id);
+    editForm.reset(buildEditDefaults(record));
+  }
+
+  async function submitEdit(values: SchoolGpaFormValues) {
+    if (!editingRecordId) return;
+    setApiError(null);
+    setRowActionLoadingId(editingRecordId);
+    const response = await fetch(`/api/scores/academic-records/${editingRecordId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(values),
+    });
+    const json = await response.json();
+    if (!response.ok) {
+      setApiError(json?.error?.message ?? "수정에 실패했습니다.");
+      setRowActionLoadingId(null);
+      return;
+    }
+
+    setEditingRecordId(null);
+    setRowActionLoadingId(null);
+    await fetchRecords();
+    await fetchZscoreSummary();
+  }
+
+  async function deleteRecord(id: number) {
+    if (!isAdmin) return;
+    if (!window.confirm("정말 삭제하시겠습니까?")) return;
+    setApiError(null);
+    setRowActionLoadingId(id);
+    const response = await fetch(`/api/scores/academic-records/${id}`, { method: "DELETE" });
+    const json = await response.json();
+    if (!response.ok) {
+      setApiError(json?.error?.message ?? "삭제에 실패했습니다.");
+      setRowActionLoadingId(null);
+      return;
+    }
+
+    if (editingRecordId === id) setEditingRecordId(null);
+    setRowActionLoadingId(null);
     await fetchRecords();
     await fetchZscoreSummary();
   }
@@ -575,6 +676,7 @@ export default function ScoresPage() {
                       <TableHead>과목명</TableHead>
                       <TableHead>석차등급·성취</TableHead>
                       <TableHead>원점수/평균</TableHead>
+                      {isAdmin ? <TableHead>작업</TableHead> : null}
                     </>
                   )}
                 </TableRow>
@@ -582,7 +684,7 @@ export default function ScoresPage() {
               <TableBody>
                 {filteredRecords.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={recordListType === "MOCK_EXAM" ? 5 : 5}>
+                    <TableCell colSpan={recordListType === "MOCK_EXAM" ? 5 : isAdmin ? 6 : 5}>
                       입력된 성적이 없습니다.
                     </TableCell>
                   </TableRow>
@@ -614,6 +716,30 @@ export default function ScoresPage() {
                         <TableCell>
                           {record.raw_score ?? "-"} / {record.avg_score ?? "-"}
                         </TableCell>
+                        {isAdmin ? (
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => startEdit(record)}
+                                disabled={rowActionLoadingId === record.id}
+                              >
+                                수정
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => void deleteRecord(record.id)}
+                                disabled={rowActionLoadingId === record.id}
+                              >
+                                삭제
+                              </Button>
+                            </div>
+                          </TableCell>
+                        ) : null}
                       </TableRow>
                     ),
                   )
@@ -622,6 +748,105 @@ export default function ScoresPage() {
             </Table>
             </div>
           )}
+          {isAdmin && recordListType === "SCHOOL_GPA" && editingRecordId ? (
+            <div className="mt-6 space-y-4 border-t pt-6">
+              <p className="text-sm font-medium">내신 성적 수정</p>
+              <form onSubmit={editForm.handleSubmit(submitEdit)} className="space-y-4">
+                <div className="grid gap-4 md:grid-cols-3">
+                  <Field label="학년·학기" error={editErrors.semester?.message}>
+                    <select
+                      className="border-input bg-background min-h-11 w-full rounded-md border px-3 text-sm sm:h-10 sm:min-h-10"
+                      {...editForm.register("semester")}
+                    >
+                      {NEIS_SEMESTERS.map((s) => (
+                        <option key={s} value={s}>
+                          {s}
+                        </option>
+                      ))}
+                    </select>
+                  </Field>
+                  <Field label="과목 구분" error={editErrors.subject_category?.message}>
+                    <select
+                      className="border-input bg-background min-h-11 w-full rounded-md border px-3 text-sm sm:h-10 sm:min-h-10"
+                      {...editForm.register("subject_category")}
+                    >
+                      {SUBJECT_CATEGORIES.map((c) => (
+                        <option key={c} value={c}>
+                          {SUBJECT_CATEGORY_LABEL[c]}
+                        </option>
+                      ))}
+                    </select>
+                  </Field>
+                  <Field label="과목명" error={editErrors.subject_name?.message}>
+                    <Input {...editForm.register("subject_name")} />
+                  </Field>
+                </div>
+                <div className="grid gap-4 md:grid-cols-3">
+                  <Field label="단위수" error={editErrors.credit_unit?.message}>
+                    <Input type="number" {...editForm.register("credit_unit")} />
+                  </Field>
+                  <Field label="원점수" error={editErrors.raw_score?.message}>
+                    <Input type="number" step="any" {...editForm.register("raw_score")} />
+                  </Field>
+                  <Field label="성취도" error={editErrors.achievement_level?.message}>
+                    <select
+                      className="border-input bg-background min-h-11 w-full rounded-md border px-3 text-sm sm:h-10 sm:min-h-10"
+                      {...editForm.register("achievement_level")}
+                    >
+                      {editCategory === "general" ? <option value="">선택 안 함</option> : null}
+                      <option value="A">A</option>
+                      <option value="B">B</option>
+                      <option value="C">C</option>
+                      <option value="D">D</option>
+                      <option value="E">E</option>
+                    </select>
+                  </Field>
+                </div>
+                {editCategory !== "pe_art" ? (
+                  <div className="grid gap-4 md:grid-cols-4">
+                    <Field label="합계" error={editErrors.total_score?.message}>
+                      <Input type="number" step="any" {...editForm.register("total_score")} />
+                    </Field>
+                    <Field label="과목평균" error={editErrors.avg_score?.message}>
+                      <Input type="number" step="any" {...editForm.register("avg_score")} />
+                    </Field>
+                    <Field label="표준편차" error={editErrors.stddev_score?.message}>
+                      <Input type="number" step="any" {...editForm.register("stddev_score")} />
+                    </Field>
+                    <Field label="수강자수" error={editErrors.student_count?.message}>
+                      <Input type="number" {...editForm.register("student_count")} />
+                    </Field>
+                  </div>
+                ) : null}
+                {editCategory === "general" ? (
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <Field label="석차" error={editErrors.class_rank?.message}>
+                      <Input type="number" {...editForm.register("class_rank")} />
+                    </Field>
+                    <Field label="전체인원" error={editErrors.rank_total?.message}>
+                      <Input type="number" {...editForm.register("rank_total")} />
+                    </Field>
+                    <Field label="석차등급" error={editErrors.school_grade?.message}>
+                      <Input type="number" step="0.1" {...editForm.register("school_grade")} />
+                    </Field>
+                  </div>
+                ) : null}
+                <div className="flex items-center gap-2">
+                  <Button type="submit" disabled={editForm.formState.isSubmitting}>
+                    수정 저장
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setEditingRecordId(null)}
+                    disabled={editForm.formState.isSubmitting}
+                  >
+                    취소
+                  </Button>
+                </div>
+              </form>
+            </div>
+          ) : null}
         </CardContent>
       </Card>
     </div>
