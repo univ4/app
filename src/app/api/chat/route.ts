@@ -126,6 +126,15 @@ export async function POST(request: Request) {
     match_threshold: similarityThreshold,
   });
 
+  console.log(
+    "[RAG] rows count:",
+    rows?.length,
+    "threshold:",
+    similarityThreshold,
+    "filter:",
+    filter,
+  );
+
   if (matchErr) {
     return NextResponse.json(
       {
