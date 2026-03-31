@@ -1,11 +1,14 @@
 "use client";
 
-import { Info, SendHorizontal } from "lucide-react";
+import { Info, SendHorizontal, X } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
 
 import { ErrorState } from "@/components/common/ErrorState";
 import { Button } from "@/components/ui/button";
-import { CHAT_EXAMPLE_QUESTIONS } from "@/lib/chat/guidelineUnivOptions";
+import {
+  CHAT_EXAMPLE_QUESTIONS,
+  GUIDELINE_PLAN_UNIV_NAMES,
+} from "@/lib/chat/guidelineUnivOptions";
 import type { ChatCitation, ChatDonePayload } from "@/types/chat";
 
 import { ChatMessage } from "./ChatMessage";
@@ -67,6 +70,7 @@ function flushSseBuffer(
 
 export function ChatInterface() {
   const [univName, setUnivName] = useState("");
+  const [autoDetectedUnivName, setAutoDetectedUnivName] = useState("");
   const [year, setYear] = useState("2027");
   const [messages, setMessages] = useState<ChatRow[]>([]);
   const [input, setInput] = useState("");
@@ -82,10 +86,31 @@ export function ChatInterface() {
     });
   }, []);
 
+  const handleUnivNameChange = useCallback((nextUnivName: string) => {
+    setUnivName(nextUnivName);
+    setAutoDetectedUnivName("");
+  }, []);
+
   const sendMessage = useCallback(
     async (rawText: string) => {
       const text = rawText.trim();
       if (!text || sending) return;
+
+      let effectiveUnivName = univName.trim();
+      if (effectiveUnivName.length === 0) {
+        const detectedUnivName = GUIDELINE_PLAN_UNIV_NAMES.find((candidate) =>
+          text.includes(candidate),
+        );
+        if (detectedUnivName) {
+          effectiveUnivName = detectedUnivName;
+          setUnivName(detectedUnivName);
+          setAutoDetectedUnivName(detectedUnivName);
+        } else {
+          setAutoDetectedUnivName("");
+        }
+      } else {
+        setAutoDetectedUnivName("");
+      }
 
       setErrorBanner(null);
       setSending(true);
@@ -108,8 +133,7 @@ export function ChatInterface() {
       scrollToBottom();
 
       const body: Record<string, unknown> = { message: text };
-      const u = univName.trim();
-      if (u.length > 0) body.univName = u;
+      if (effectiveUnivName.length > 0) body.univName = effectiveUnivName;
       const y = year.trim();
       if (y.length > 0) {
         const n = Number.parseInt(y, 10);
@@ -275,7 +299,7 @@ export function ChatInterface() {
       <UnivFilter
         univName={univName}
         year={year}
-        onUnivNameChange={setUnivName}
+        onUnivNameChange={handleUnivNameChange}
         onYearChange={setYear}
         disabled={sending}
       />
@@ -328,6 +352,22 @@ export function ChatInterface() {
         onSubmit={onSubmit}
         className="bg-background/95 supports-[backdrop-filter]:bg-background/90 sticky z-10 mt-auto border-t border-border pt-3 pb-1 backdrop-blur-sm max-md:bottom-[calc(4.25rem+env(safe-area-inset-bottom,0px))] md:bottom-0"
       >
+        {autoDetectedUnivName ? (
+          <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs text-blue-700 dark:border-blue-900/60 dark:bg-blue-950/40 dark:text-blue-200">
+            <span>🔍 {autoDetectedUnivName} 자료를 검색합니다</span>
+            <button
+              type="button"
+              className="inline-flex size-4 items-center justify-center rounded hover:bg-blue-100 dark:hover:bg-blue-900/60"
+              onClick={() => {
+                setAutoDetectedUnivName("");
+                setUnivName("");
+              }}
+              aria-label="자동 감지된 대학 필터 해제"
+            >
+              <X className="size-3" aria-hidden />
+            </button>
+          </div>
+        ) : null}
         {univName.trim().length === 0 ? (
           <div className="text-muted-foreground mb-2 flex gap-2 text-sm">
             <Info
