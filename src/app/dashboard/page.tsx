@@ -32,8 +32,7 @@ export default async function DashboardPage() {
 
   if (!user) redirect("/login");
 
-  const [{ data: student }, rpcResult, subjectNoteCountRes, scoreCountRes] = await Promise.all([
-    supabase.from("students").select("name").eq("id", user.id).maybeSingle(),
+  const [rpcResult, subjectNoteCountRes, scoreCountRes] = await Promise.all([
     supabase.rpc("ensure_default_admission_calendar_2027"),
     supabase
       .from("student_subject_notes")
@@ -56,9 +55,13 @@ export default async function DashboardPage() {
     calendarRows = (calRows ?? []) as Pick<CalendarEventRow, "id" | "title" | "event_date" | "event_type">[];
   }
 
+  const userMetadata = (user.user_metadata ?? {}) as Record<string, unknown>;
+  const metadataFullName =
+    typeof userMetadata.full_name === "string" ? userMetadata.full_name.trim() : "";
+  const metadataName = typeof userMetadata.name === "string" ? userMetadata.name.trim() : "";
   const email = user.email ?? "사용자";
   const emailLocalPart = email.includes("@") ? email.split("@")[0] : email;
-  const greetingName = student?.name?.trim() || emailLocalPart;
+  const greetingName = metadataFullName || metadataName || emailLocalPart;
   const todayLabel = new Intl.DateTimeFormat("ko-KR", {
     year: "numeric",
     month: "long",
