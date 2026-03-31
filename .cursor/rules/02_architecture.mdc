@@ -18,6 +18,14 @@ Product baseline: `docs/01_PRD_v2.md`, roadmap: `docs/05_ROADMAP.md`.
   - Location: `src/app/api/chat/`
   - Uses retrieval + Claude; when numeric logic is required, call Track 1 functions as tools.
 
+## UI Component Boundaries
+
+- Help UI는 `src/components/help/` 하위에 구성한다.
+- 공통 재사용 UI는 `src/components/common/` 하위에 둔다.
+- 대시보드 내 정보 구조/탐색 컴포넌트는 `src/components/dashboard/`에서 관리한다.
+  - `DashboardSidebar.tsx`
+  - `OnboardingGuide.tsx`
+
 ## Data Model Baseline
 
 - Core tables include:
@@ -60,3 +68,10 @@ Product baseline: `docs/01_PRD_v2.md`, roadmap: `docs/05_ROADMAP.md`.
 - RLS applies to all tables.
 - User-owned data tables must enforce `auth.uid()` scope (e.g., `id` or `student_id`).
 - Shared reference tables are read-only for authenticated users.
+
+## Signals API / RPC Contract Notes
+
+- `GET /api/signals` 응답은 기존 데이터 외에 아래 필드를 포함할 수 있다.
+  - `availableUnivs`
+  - `suneungScoreAvailable`
+- 대학명 집계/중복 제거는 DB RPC `get_distinct_univ_names()`를 사용한다.

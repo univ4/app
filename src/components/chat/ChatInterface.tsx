@@ -1,6 +1,6 @@
 "use client";
 
-import { SendHorizontal } from "lucide-react";
+import { Info, SendHorizontal } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
 
 import { ErrorState } from "@/components/common/ErrorState";
@@ -328,6 +328,19 @@ export function ChatInterface() {
         onSubmit={onSubmit}
         className="bg-background/95 supports-[backdrop-filter]:bg-background/90 sticky z-10 mt-auto border-t border-border pt-3 pb-1 backdrop-blur-sm max-md:bottom-[calc(4.25rem+env(safe-area-inset-bottom,0px))] md:bottom-0"
       >
+        {univName.trim().length === 0 ? (
+          <div className="text-muted-foreground mb-2 flex gap-2 text-sm">
+            <Info
+              className="mt-0.5 size-4 shrink-0 text-blue-600 dark:text-blue-400"
+              aria-hidden
+            />
+            <p className="leading-snug">
+              정확한 답변을 위해 위에서 대학을 먼저 선택하세요.
+              <br />
+              선택하지 않으면 전체 자료에서 검색합니다.
+            </p>
+          </div>
+        ) : null}
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
           <textarea
             ref={textareaRef}
