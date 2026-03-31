@@ -113,7 +113,8 @@ export const DASHBOARD_MORE_SECTIONS: DashboardMenuSection[] = [
   {
     title: "성적 관리",
     items: [
-      { href: "/dashboard/scores", label: "Z점수 판별", icon: BarChart2 },
+      { href: "/dashboard/scores", label: "성적 관리", icon: BarChart3 },
+      { href: "/dashboard/zscore", label: "Z점수 판별", icon: BarChart2 },
       { href: "/dashboard/gachaejeom", label: "수능 가채점 계산기", icon: Calculator },
       { href: "/dashboard/grade-simulator", label: "성적 예측 시뮬레이터", icon: Activity },
       { href: "/dashboard/scores", label: "나이스 이미지 파싱", icon: ScanLine },
