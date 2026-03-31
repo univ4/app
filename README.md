@@ -39,7 +39,6 @@ npm run dev
 
 For full product, architecture, API, schema, test specs, and user manual, see:
 
-- [`docs/01_PRD.md`](./docs/01_PRD.md)
 - [`docs/01_PRD_v2.md`](./docs/01_PRD_v2.md)
 - [`docs/02_SYSTEM_ARCHITECTURE.md`](./docs/02_SYSTEM_ARCHITECTURE.md)
 - [`docs/03_DATA_MODEL.md`](./docs/03_DATA_MODEL.md)

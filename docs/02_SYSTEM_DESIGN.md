@@ -1,7 +1,7 @@
 # System Design: univ4 (수험생·학부모 AI 대입 전략)
 
 **근거 PRD**: [`docs/01_PRD_v2.md`](./01_PRD_v2.md) · **로드맵 정본**: [`docs/05_ROADMAP.md`](./05_ROADMAP.md)  
-PRD v1 보관본: [`docs/01_PRD.md`](./01_PRD.md)
+PRD v1 보관본: [`docs/archive/01_PRD.md`](./archive/01_PRD.md)
 
 스키마·Track 1/2 확장 요약은 [`docs/02_SYSTEM_ARCHITECTURE.md`](./02_SYSTEM_ARCHITECTURE.md)를 참조합니다.  
 데이터 파이프라인·자산 목록은 PRD v2 **§11 데이터 소스 및 파이프라인**과 동기화한다.

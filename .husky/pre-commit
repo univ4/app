@@ -2,8 +2,8 @@
 
 echo "--- Pre-commit 검사 시작 ---"
 
-# 검사 1. PRD 변경 시 ROADMAP 동시 업데이트 강제
-if git diff --cached --name-only | grep -q "docs/01_PRD.md"; then
+# 검사 1. PRD(v2) 변경 시 ROADMAP 동시 업데이트 강제
+if git diff --cached --name-only | grep -q "docs/01_PRD_v2.md"; then
   if ! git diff --cached --name-only | grep -q "docs/05_ROADMAP.md"; then
     echo "ERROR: PRD 변경 시 docs/05_ROADMAP.md 도 함께 스테이징해야 합니다."
     exit 1

@@ -34,6 +34,7 @@
   - `data-testid` 규칙
   - E2E 테스트 안정성 규칙
   모두 존재 확인.
+- PRD 정본 경로를 `docs/01_PRD_v2.md`로 통일하고, 기존 `docs/01_PRD.md`는 `docs/archive/01_PRD.md`로 아카이브 정리(README/관련 문서 링크, pre-commit 훅 참조 동기화).
 
 ## 다음 작업 (우선순위)
 

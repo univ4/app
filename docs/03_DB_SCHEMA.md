@@ -1,7 +1,7 @@
 # DB Schema Design (Supabase PostgreSQL + pgvector)
 
 **현행 요구·로드맵**: [`docs/01_PRD_v2.md`](./01_PRD_v2.md), [`docs/05_ROADMAP.md`](./05_ROADMAP.md)  
-(보관 PRD: [`docs/01_PRD.md`](./01_PRD.md)) · 아키텍처 요약: [`docs/02_SYSTEM_DESIGN.md`](./02_SYSTEM_DESIGN.md)
+(보관 PRD: [`docs/archive/01_PRD.md`](./archive/01_PRD.md)) · 아키텍처 요약: [`docs/02_SYSTEM_DESIGN.md`](./02_SYSTEM_DESIGN.md)
 
 실제 적용 SQL은 아래 마이그레이션(파일명 순)에 포함됩니다:  
 `20260325000000_init.sql`, `20260326000000_multi_student.sql`, `20260327000000_subject_profiles.sql`, `20260329000001_admission_records.sql`, `20260329000002_admission_records.sql`, `20260329120000_chat_rag.sql`, `20260329140000_academic_records_neis.sql`, `20260329150000_academic_records_neis_upsert_unique.sql`, `20260329160000_student_record_tables.sql`, `20260329170000_academic_records_fix_unique.sql`, `20260330180000_calendar_events.sql`, `20260330190000_student_certificates_school_violence.sql`, `20260330210000_simulator_portfolios.sql`, `20260330230000_susi_gpa_rules_interview_required.sql`, `20260330240000_admission_records_nulsul_type.sql`, `20260330280000_exam_chunks.sql`.  

@@ -7,7 +7,7 @@ alwaysApply: true
 
 ## 규칙 1. 문서 선행 원칙
 코드를 작성하기 전에 반드시 아래 순서로 확인:
-1. docs/01_PRD.md 에서 관련 기능 정의 확인
+1. docs/01_PRD_v2.md 에서 관련 기능 정의 확인
 2. docs/03_DATA_MODEL.md 에서 스키마 확인
 3. docs/04_API_SPEC.md 에서 엔드포인트 스펙 확인
 4. 위 문서에 정의되지 않은 코드는 작성 금지
@@ -21,7 +21,7 @@ alwaysApply: true
 | supabase/migrations/*.sql | docs/03_DATA_MODEL.md, docs/03_DB_SCHEMA.md, .context/current_state.md |
 | src/lib/calculators/*.ts | docs/04_API_SPEC.md, docs/07_TEST_SPEC.md |
 | src/app/api/**/*.ts | docs/04_API_SPEC.md |
-| docs/01_PRD.md | docs/05_ROADMAP.md |
+| docs/01_PRD_v2.md | docs/05_ROADMAP.md |
 | docs/02_SYSTEM_ARCHITECTURE.md | .cursor/rules/02_architecture.mdc |
 | .cursor/rules/*.mdc | .context/current_state.md |
 
