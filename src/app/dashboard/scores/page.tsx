@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useForm, type Resolver } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -8,9 +9,16 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { PageHeader } from "@/components/common/PageHeader";
 import { ImageUpload } from "@/components/scores/ImageUpload";
 import { ScoreTrendChart, type MockExamTrendRecord } from "@/components/scores/ScoreTrendChart";
-import { ZScoreDisplay, type ZScoreDisplayData } from "@/components/scores/ZScoreDisplay";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -21,6 +29,11 @@ import {
   type SchoolGpaFormValues,
   type SubjectCategory,
 } from "@/lib/validation/schoolGpaScore";
+import {
+  SHORT_SUBJECT_CATEGORY_LABEL,
+  buildSchoolSections,
+  type SchoolYearFilter,
+} from "@/lib/scores/schoolGpaSections";
 
 const mockExamSchema = z.object({
   exam_date: z.string().min(1, "시험 날짜를 입력하세요."),
@@ -86,11 +99,10 @@ export default function ScoresPage() {
   const [mockTrendRecords, setMockTrendRecords] = useState<MockExamTrendRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
-  const [zscoreData, setZscoreData] = useState<ZScoreDisplayData | null>(null);
-  const [zscoreLoading, setZscoreLoading] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [editingRecordId, setEditingRecordId] = useState<number | null>(null);
   const [rowActionLoadingId, setRowActionLoadingId] = useState<number | null>(null);
+  const [schoolYearFilter, setSchoolYearFilter] = useState<SchoolYearFilter>("ALL");
 
   const mockForm = useForm<MockExamFormValues>({
     resolver: zodResolver(mockExamSchema) as unknown as Resolver<MockExamFormValues>,
@@ -170,23 +182,6 @@ export default function ScoresPage() {
     [recordListType, records],
   );
 
-  async function fetchZscoreSummary() {
-    setZscoreLoading(true);
-    try {
-      const response = await fetch("/api/scores/zscore", { cache: "no-store" });
-      const json = await response.json();
-      if (!response.ok) {
-        setZscoreData(null);
-        return;
-      }
-      setZscoreData(json.data ?? null);
-    } catch {
-      setZscoreData(null);
-    } finally {
-      setZscoreLoading(false);
-    }
-  }
-
   async function fetchRecords() {
     setLoading(true);
     setApiError(null);
@@ -220,7 +215,6 @@ export default function ScoresPage() {
   useEffect(() => {
     void fetchRecords();
     void fetchMockTrendRecords();
-    void fetchZscoreSummary();
   }, []);
 
   async function submitMock(values: MockExamFormValues) {
@@ -273,7 +267,6 @@ export default function ScoresPage() {
       achievement_level: "",
     } as unknown as SchoolGpaFormValues);
     await fetchRecords();
-    await fetchZscoreSummary();
   }
 
   function buildEditDefaults(record: AcademicRecord): SchoolGpaFormValues {
@@ -319,7 +312,6 @@ export default function ScoresPage() {
     setEditingRecordId(null);
     setRowActionLoadingId(null);
     await fetchRecords();
-    await fetchZscoreSummary();
   }
 
   async function deleteRecord(id: number) {
@@ -338,8 +330,16 @@ export default function ScoresPage() {
     if (editingRecordId === id) setEditingRecordId(null);
     setRowActionLoadingId(null);
     await fetchRecords();
-    await fetchZscoreSummary();
   }
+
+  const schoolRecords = useMemo(
+    () => records.filter((record) => record.record_type === "SCHOOL_GPA"),
+    [records],
+  );
+  const schoolSections = useMemo(
+    () => buildSchoolSections(schoolRecords, schoolYearFilter),
+    [schoolRecords, schoolYearFilter],
+  );
 
   return (
     <div className="mx-auto w-full min-w-0 max-w-6xl space-y-6 bg-background p-4 sm:p-6">
@@ -628,11 +628,12 @@ export default function ScoresPage() {
               </form>
 
               <div className="mt-8 space-y-2 border-t pt-6">
-                {zscoreLoading ? (
-                  <p className="text-muted-foreground text-sm">Z점수 계산 중...</p>
-                ) : (
-                  <ZScoreDisplay data={zscoreData} />
-                )}
+                <p className="text-sm text-muted-foreground">
+                  Z점수는 전용 화면에서 확인할 수 있습니다.
+                </p>
+                <Button asChild variant="outline" size="sm">
+                  <Link href="/dashboard/zscore">Z점수 페이지로 이동</Link>
+                </Button>
               </div>
             </TabsContent>
 
@@ -640,7 +641,6 @@ export default function ScoresPage() {
               <ImageUpload
                 onSaved={() => {
                   void fetchRecords();
-                  void fetchZscoreSummary();
                 }}
               />
             </TabsContent>
@@ -674,46 +674,66 @@ export default function ScoresPage() {
                       <TableHead>학기</TableHead>
                       <TableHead>구분</TableHead>
                       <TableHead>과목명</TableHead>
-                      <TableHead>석차등급·성취</TableHead>
-                      <TableHead>원점수/평균</TableHead>
+                      <TableHead className="hidden sm:table-cell">석차등급·성취</TableHead>
+                      <TableHead className="hidden md:table-cell">원점수/평균</TableHead>
                       {isAdmin ? <TableHead>작업</TableHead> : null}
                     </>
                   )}
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredRecords.length === 0 ? (
+                {recordListType === "SCHOOL_GPA" && (
+                  <TableRow>
+                    <TableCell colSpan={isAdmin ? 6 : 5}>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground">학년 필터</span>
+                        <select
+                          className="border-input bg-background min-h-9 rounded-md border px-2 text-sm"
+                          value={schoolYearFilter}
+                          onChange={(event) => setSchoolYearFilter(event.target.value as SchoolYearFilter)}
+                        >
+                          <option value="ALL">전체</option>
+                          <option value="1">1학년</option>
+                          <option value="2">2학년</option>
+                          <option value="3">3학년</option>
+                        </select>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
+                {filteredRecords.length === 0 && recordListType === "MOCK_EXAM" ? (
                   <TableRow>
                     <TableCell colSpan={recordListType === "MOCK_EXAM" ? 5 : isAdmin ? 6 : 5}>
                       입력된 성적이 없습니다.
                     </TableCell>
                   </TableRow>
-                ) : (
-                  filteredRecords.map((record) =>
-                    recordListType === "MOCK_EXAM" ? (
-                      <TableRow key={record.id}>
-                        <TableCell>{record.exam_date}</TableCell>
-                        <TableCell>{record.korean_grade ?? "-"}</TableCell>
-                        <TableCell>{record.math_grade ?? "-"}</TableCell>
-                        <TableCell>{record.english_grade ?? "-"}</TableCell>
-                        <TableCell>{parseScienceLabel(record.subject_name)}</TableCell>
-                      </TableRow>
-                    ) : (
+                ) : recordListType === "SCHOOL_GPA" && schoolSections.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={isAdmin ? 6 : 5}>선택한 조건의 내신 성적이 없습니다.</TableCell>
+                  </TableRow>
+                ) : recordListType === "SCHOOL_GPA" ? (
+                  schoolSections.flatMap((section) => [
+                    <TableRow key={`section-${section.semester}`}>
+                      <TableCell colSpan={isAdmin ? 6 : 5} className="bg-muted/40 font-medium">
+                        {section.title}
+                      </TableCell>
+                    </TableRow>,
+                    ...section.items.map((record) => (
                       <TableRow key={record.id}>
                         <TableCell>{record.semester ?? record.exam_date}</TableCell>
                         <TableCell>
                           {record.subject_category &&
-                          record.subject_category in SUBJECT_CATEGORY_LABEL
-                            ? SUBJECT_CATEGORY_LABEL[record.subject_category]
+                          record.subject_category in SHORT_SUBJECT_CATEGORY_LABEL
+                            ? SHORT_SUBJECT_CATEGORY_LABEL[record.subject_category]
                             : "-"}
                         </TableCell>
                         <TableCell>{record.subject_name ?? "-"}</TableCell>
-                        <TableCell>
+                        <TableCell className="hidden sm:table-cell">
                           {[record.school_grade != null ? `등급 ${record.school_grade}` : null, record.achievement_level ?? null]
                             .filter(Boolean)
                             .join(" · ") || "-"}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="hidden md:table-cell">
                           {record.raw_score ?? "-"} / {record.avg_score ?? "-"}
                         </TableCell>
                         {isAdmin ? (
@@ -741,16 +761,31 @@ export default function ScoresPage() {
                           </TableCell>
                         ) : null}
                       </TableRow>
-                    ),
+                    )),
+                  ])
+                ) : (
+                  filteredRecords.map((record) =>
+                    recordListType === "MOCK_EXAM" ? (
+                      <TableRow key={record.id}>
+                        <TableCell>{record.exam_date}</TableCell>
+                        <TableCell>{record.korean_grade ?? "-"}</TableCell>
+                        <TableCell>{record.math_grade ?? "-"}</TableCell>
+                        <TableCell>{record.english_grade ?? "-"}</TableCell>
+                        <TableCell>{parseScienceLabel(record.subject_name)}</TableCell>
+                      </TableRow>
+                    ) : null,
                   )
                 )}
               </TableBody>
             </Table>
             </div>
           )}
-          {isAdmin && recordListType === "SCHOOL_GPA" && editingRecordId ? (
-            <div className="mt-6 space-y-4 border-t pt-6">
-              <p className="text-sm font-medium">내신 성적 수정</p>
+          <Dialog open={Boolean(isAdmin && editingRecordId)} onOpenChange={(open) => !open && setEditingRecordId(null)}>
+            <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
+              <DialogHeader>
+                <DialogTitle>내신 성적 수정</DialogTitle>
+                <DialogDescription>선택한 내신 과목 정보를 수정합니다.</DialogDescription>
+              </DialogHeader>
               <form onSubmit={editForm.handleSubmit(submitEdit)} className="space-y-4">
                 <div className="grid gap-4 md:grid-cols-3">
                   <Field label="학년·학기" error={editErrors.semester?.message}>
@@ -831,7 +866,7 @@ export default function ScoresPage() {
                     </Field>
                   </div>
                 ) : null}
-                <div className="flex items-center gap-2">
+                <DialogFooter className="flex items-center gap-2">
                   <Button type="submit" disabled={editForm.formState.isSubmitting}>
                     수정 저장
                   </Button>
@@ -843,10 +878,10 @@ export default function ScoresPage() {
                   >
                     취소
                   </Button>
-                </div>
+                </DialogFooter>
               </form>
-            </div>
-          ) : null}
+            </DialogContent>
+          </Dialog>
         </CardContent>
       </Card>
     </div>
